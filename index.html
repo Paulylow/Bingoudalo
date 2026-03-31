@@ -26,6 +26,15 @@
   input[type="text"] { width:100%; background:var(--bg); border:1.5px solid var(--border); border-radius:8px; padding:14px 16px; font-family:'DM Sans',sans-serif; font-size:15px; color:var(--text); outline:none; transition:border-color 0.2s; }
   input[type="text"]:focus { border-color:var(--accent2); }
   input[type="text"]::placeholder { color:var(--muted); }
+  
+  /* SÉLECTION D'AVATARS */
+  .avatar-selection { margin-top: 4px; display: flex; flex-direction: column; gap: 10px; }
+  .avatar-selection p { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin: 0; }
+  .avatar-grid { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-start; }
+  .avatar-option { width: 42px; height: 42px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: all 0.2s; object-fit: cover; background: var(--bg); }
+  .avatar-option.selected { border-color: var(--accent2); transform: scale(1.15); box-shadow: 0 0 15px rgba(255,209,102,0.4); z-index: 2; }
+  .avatar-option:hover:not(.selected) { transform: scale(1.1); border-color: var(--muted); }
+
   button { font-family:'DM Sans',sans-serif; font-weight:700; font-size:13px; letter-spacing:1.5px; text-transform:uppercase; border:none; border-radius:8px; cursor:pointer; padding:12px 24px; transition:all 0.18s ease; }
   .btn-primary { background:var(--accent); color:white; box-shadow:0 4px 24px rgba(255,77,109,0.4); }
   .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 32px rgba(255,77,109,0.55); }
@@ -36,11 +45,13 @@
   .btn-danger { background:var(--accent); color:white; box-shadow:0 4px 24px rgba(255,77,109,0.4); }
   .btn-danger:hover { transform:translateY(-2px); }
   button:disabled { opacity:0.35; cursor:not-allowed; transform:none !important; }
+  
   .players-list { width:100%; background:var(--surface); border:1.5px solid var(--border); border-radius:16px; padding:20px; margin-bottom:20px; }
   .players-list h3 { font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:14px; }
-  .player-row { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); font-size:14px; font-weight:500; animation:fadeIn 0.3s ease; }
+  .player-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); font-size:14px; font-weight:500; animation:fadeIn 0.3s ease; }
   .player-row:last-child { border-bottom:none; }
-  .player-avatar { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-family:'Bebas Neue',sans-serif; flex-shrink:0; }
+  .player-avatar { width:36px; height:36px; border-radius:50%; object-fit: cover; background: var(--bg); border: 1.5px solid var(--border); flex-shrink:0; }
+  
   .badge { font-size:10px; letter-spacing:1px; text-transform:uppercase; padding:3px 8px; border-radius:4px; font-weight:700; margin-left:auto; }
   .badge-master { background:rgba(255,209,102,0.15); color:var(--accent2); border:1px solid rgba(255,209,102,0.3); }
   .badge-ready { background:rgba(6,214,160,0.15); color:var(--accent3); border:1px solid rgba(6,214,160,0.3); }
@@ -49,7 +60,8 @@
   .phase-banner { width:100%; text-align:center; padding:10px; border-radius:8px; font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin-bottom:14px; }
   .phase-lobby { background:rgba(255,209,102,0.1); color:var(--accent2); border:1px solid rgba(255,209,102,0.25); }
   .game-topbar { display:flex; align-items:center; justify-content:space-between; width:100%; margin-bottom:16px; gap:12px; flex-wrap:wrap; }
-  .player-tag { font-size:12px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); }
+  .player-tag { font-size:12px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:8px;}
+  .player-tag img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
   .player-tag span { color:var(--accent2); font-weight:700; }
   .score-bar { display:flex; align-items:center; gap:16px; margin-bottom:14px; font-size:13px; color:var(--muted); width:100%; position:relative; z-index:1; }
   .score-count { font-family:'Bebas Neue',sans-serif; font-size:22px; color:var(--accent2); letter-spacing:2px; }
@@ -127,7 +139,8 @@
   .lb-row.first{border-color:var(--accent2);box-shadow:0 0 24px rgba(255,209,102,0.2)}.lb-row.second{border-color:#c0c0c0}.lb-row.third{border-color:#cd7f32}
   .lb-rank{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;width:36px;text-align:center;flex-shrink:0}
   .lb-rank.gold{color:var(--accent2)}.lb-rank.silver{color:#c0c0c0}.lb-rank.bronze{color:#cd7f32}
-  .lb-name{flex:1;font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px}
+  .lb-name{flex:1;font-weight:700;font-size:15px;display:flex;align-items:center;gap:12px}
+  .lb-name img { width:32px; height:32px; border-radius:50%; object-fit:cover; border:1.5px solid var(--border); }
   .you-tag{font-size:10px;color:var(--accent3);letter-spacing:1px;text-transform:uppercase}
   .lb-score{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;color:var(--accent3)}
   .lb-breakdown{font-size:10px;color:var(--muted);text-align:right;line-height:1.6}
@@ -144,9 +157,16 @@
   <div class="tagline">La réunion en mode jeu</div>
   <div class="join-card">
     <h2>Rejoindre la partie</h2>
-    <p>Entre ton pseudo pour rejoindre. Le premier arrivé devient <strong style="color:var(--accent2)">maître du jeu</strong> et peut démarrer la partie.</p>
+    <p>Le premier arrivé devient <strong style="color:var(--accent2)">maître du jeu</strong> et peut démarrer la partie.</p>
+    
     <input type="text" id="pseudoInput" placeholder="Ton pseudo..." maxlength="20" />
-    <button class="btn-primary" id="joinBtn" onclick="joinGame()">Rejoindre →</button>
+    
+    <div class="avatar-selection">
+      <p>Choisis ton avatar :</p>
+      <div class="avatar-grid" id="avatarGrid"></div>
+    </div>
+
+    <button class="btn-primary" id="joinBtn" onclick="joinGame()" style="margin-top: 8px;">Rejoindre →</button>
   </div>
 </div>
 
@@ -169,7 +189,10 @@
 
 <div class="screen" id="screenGame">
   <div class="game-topbar">
-    <div class="player-tag">Joueur : <span id="gamePlayerName"></span></div>
+    <div class="player-tag">
+      <img id="gamePlayerAvatar" src="" alt="Avatar" />
+      <span>Joueur : <span id="gamePlayerName"></span></span>
+    </div>
     <button class="btn-danger" id="btnEndGame" style="display:none" onclick="endGame()">🏁 Terminer la partie</button>
   </div>
 
@@ -238,18 +261,31 @@ const WIN_LINES = [
   [0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24],
   [0,6,12,18,24],[4,8,12,16,20]
 ];
-const COLORS = ['#ff4d6d','#ffd166','#06d6a0','#118ab2','#a855f7','#f97316','#ec4899','#14b8a6'];
+const AVATARS = ['avatar/1.png', 'avatar/2.png', 'avatar/3.png', 'avatar/4.png', 'avatar/5.png', 'avatar/6.png', 'avatar/7.png', 'avatar/8.png'];
 
-let myPseudo='', myGrid=[], myChecked=new Set(), myGolden=new Set(), myWonLines=new Set();
+let myPseudo='', myAvatar='', myGrid=[], myChecked=new Set(), myGolden=new Set(), myWonLines=new Set();
 let isMaster=false, gamePhase='lobby', bingoShown=false;
 let lastStateStr = '';
 let prepTimerInterval = null;
 let myLastBingoTime = 0;
 
 function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-function avatarColor(n){let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))&0xffffffff;return COLORS[Math.abs(h)%COLORS.length];}
 function showToast(msg,green=false){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(green?' green':'');setTimeout(()=>t.className='toast',2800);}
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+// ── SÉLECTION AVATAR ──
+function renderAvatarSelection() {
+  const grid = document.getElementById('avatarGrid');
+  if (!myAvatar) myAvatar = AVATARS[0]; // Par défaut
+  grid.innerHTML = AVATARS.map(src => 
+    `<img src="${src}" class="avatar-option ${src === myAvatar ? 'selected' : ''}" onclick="selectAvatar('${src}')" alt="Avatar">`
+  ).join('');
+}
+
+function selectAvatar(src) {
+  myAvatar = src;
+  renderAvatarSelection();
+}
 
 // ── DB ──
 async function getState(){
@@ -296,7 +332,6 @@ function handleStateUpdate(state){
     renderLobby(state);
   } 
   
-  // Live Leaderboard Update
   if(['prep_gold', 'prep_custom', 'game'].includes(state.phase)){
     renderLiveLeaderboard(state);
     const b=document.getElementById('btnEndGame');
@@ -304,7 +339,7 @@ function handleStateUpdate(state){
   }
 }
 
-// ── GENERER LA GRILLE (24 phrases aléatoires + 1 case prémonition) ──
+// ── GENERER LA GRILLE ──
 function generateGrid() {
   let newGrid = shuffle(PHRASES);
   newGrid[24] = "Ta Prémonition ! (Tu vas bientôt pouvoir écrire ici)";
@@ -320,22 +355,29 @@ async function joinGame(){
   btn.disabled=true; btn.textContent='Connexion…';
 
   localStorage.setItem('bingoudalo_pseudo', pseudo);
+  localStorage.setItem('bingoudalo_avatar', myAvatar);
   myPseudo=pseudo;
   
   let state=await getState();
 
-  if(!state){
-    state={phase:'lobby',master:pseudo,players:{}};
+  if(!state || !state.players || Object.keys(state.players).length === 0){
+    state={phase:'lobby', master:pseudo, players:{}};
     isMaster=true;
   } else {
+    if (!state.players[state.master]) {
+      state.master = pseudo;
+    }
     isMaster=(state.master===pseudo);
   }
 
   if(!state.players[pseudo]){
     state.players[pseudo]={
-      pseudo, grid: generateGrid(), checked: [], golden: [], 
+      pseudo, avatar: myAvatar, grid: generateGrid(), checked: [], golden: [], 
       score: 0, bingo: false, lastBingoTime: 0, joinedAt: Date.now()
     };
+  } else {
+    // Si le joueur revient, on met à jour son avatar s'il a changé
+    state.players[pseudo].avatar = myAvatar;
   }
 
   myGrid=state.players[pseudo].grid;
@@ -364,9 +406,9 @@ function renderLobby(state){
   isMaster=(state.master===myPseudo);
   const players=Object.values(state.players).sort((a,b)=>a.joinedAt-b.joinedAt);
   document.getElementById('playersList').innerHTML=players.map(p=>{
-    const col=avatarColor(p.pseudo);
+    const pAvatar = p.avatar || AVATARS[0];
     return `<div class="player-row">
-      <div class="player-avatar" style="background:${col}22;color:${col}">${p.pseudo[0].toUpperCase()}</div>
+      <img src="${pAvatar}" class="player-avatar" alt="Avatar">
       <span>${p.pseudo}${p.pseudo===myPseudo?' <span style="color:var(--muted);font-size:11px">(toi)</span>':''}</span>
       ${p.pseudo===state.master?'<span class="badge badge-master">👑 Maître</span>':'<span class="badge badge-ready">✓ Prêt</span>'}
     </div>`;
@@ -378,7 +420,6 @@ function renderLobby(state){
     ?`Tu es maître du jeu · ${players.length} joueur(s) connecté(s)`
     :`En attente que ${state.master} démarre la partie…`;
     
-  // Aperçu
   const el = document.getElementById('lobbyGridPreview');
   el.innerHTML = myGrid.map((phrase, i) => {
     return `<div class="cell ${i === 24 ? 'custom-purple' : ''}">${phrase}</div>`;
@@ -414,12 +455,13 @@ async function startGame(){
   if(!isMaster)return;
   const state=await getState(); if(!state)return;
   state.phase='prep_gold';
-  state.phaseEndTime = Date.now() + 20000; // Timer 20s
+  state.phaseEndTime = Date.now() + 20000;
   await setState(state);
 }
 
 function enterPrepGold(endTime){
   showScreen('screenGame');
+  document.getElementById('gamePlayerAvatar').src=myAvatar;
   document.getElementById('gamePlayerName').textContent=myPseudo;
   document.getElementById('btnEndGame').style.display='none';
   document.getElementById('scoreBanner').style.display='none';
@@ -464,7 +506,6 @@ function enterPrepCustom(endTime){
   });
 }
 
-// ── MISE A JOUR EN DIRECT DE L'INPUT ──
 document.getElementById('customCellInput').addEventListener('input', (e) => {
   if (gamePhase === 'prep_custom') {
     myGrid[24] = e.target.value.trim() || "Ma Prémonition";
@@ -475,6 +516,7 @@ document.getElementById('customCellInput').addEventListener('input', (e) => {
 // ── GAME ──
 function enterGame(){
   showScreen('screenGame');
+  document.getElementById('gamePlayerAvatar').src=myAvatar;
   document.getElementById('gamePlayerName').textContent=myPseudo;
   document.getElementById('btnEndGame').style.display=isMaster?'block':'none';
   document.getElementById('prepGoldBanner').style.display='none';
@@ -495,7 +537,7 @@ async function endGame(){
 function renderGrid(){
   const el=document.getElementById('grid'); el.innerHTML='';
   myGrid.forEach((phrase,i)=>{
-    const isCustom = (i === 24); // La 25ème case (index 24)
+    const isCustom = (i === 24); 
     const isChecked = myChecked.has(i);
     const isGolden = myGolden.has(i);
     const isWin = isChecked && [...myWonLines].some(k=>k.split(',').map(Number).includes(i));
@@ -532,7 +574,7 @@ async function toggleCell(i){
     renderGrid();
   } 
   else if (gamePhase === 'prep_custom') {
-    // Rien à faire, la grille est bloquée le temps d'écrire l'input
+    // Bloqué pendant l'édition
   }
   else if (gamePhase === 'game') {
     if(myChecked.has(i)) myChecked.delete(i); else myChecked.add(i);
@@ -548,7 +590,7 @@ function calcScore(){
     else pts += 1;
   }
   for(const line of WIN_LINES) if(line.every(i=>myChecked.has(i))) pts+=6;
-  if(myChecked.size===25) pts+=20; // Probablement impossible à cause des points de bonus, mais on laisse !
+  if(myChecked.size===25) pts+=20;
   return pts;
 }
 
@@ -560,7 +602,7 @@ function updateScore(){
 
 async function saveProgress(){
   const state=await getState(); if(!state)return;
-  state.players[myPseudo].grid=[...myGrid]; // Sauvegarde vitale pour la case prémonition !
+  state.players[myPseudo].grid=[...myGrid];
   state.players[myPseudo].checked=[...myChecked];
   state.players[myPseudo].golden=[...myGolden];
   state.players[myPseudo].score=calcScore();
@@ -593,7 +635,7 @@ function checkBingo(){
 }
 function closeBanner(){document.getElementById('bingoBanner').classList.remove('show');}
 
-// ── LEADERBOARD EN DIRECT ET BINGO FLASH ──
+// ── LEADERBOARDS ──
 let lbTimeout = null;
 
 function renderLiveLeaderboard(state){
@@ -602,21 +644,23 @@ function renderLiveLeaderboard(state){
   let nextClearTime = Infinity;
 
   document.getElementById('liveLeaderboard').innerHTML = players.map(p => {
+    const pAvatar = p.avatar || AVATARS[0];
     const timeSinceBingo = p.lastBingoTime ? (now - p.lastBingoTime) : Infinity;
     const isRecent = timeSinceBingo < 5000;
     
-    // Si c'est un bingo récent, on planifie le moment où l'effet visuel doit disparaître
     if(isRecent && (5000 - timeSinceBingo) < nextClearTime) {
       nextClearTime = 5000 - timeSinceBingo;
     }
 
     return `<div class="live-lb-row ${isRecent ? 'bingo-player' : ''}">
-      <div class="name">${p.pseudo}</div>
+      <div class="name" style="display:flex;align-items:center;">
+        <img src="${pAvatar}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;margin-right:10px;" alt="">
+        ${p.pseudo}
+      </div>
       <div class="score">${p.score} pts</div>
     </div>`;
   }).join('');
 
-  // S'il y a un joueur qui vient de faire un bingo, on rafraîchit précisément au bout de 5 sec
   if (lbTimeout) clearTimeout(lbTimeout);
   if (nextClearTime !== Infinity) {
     lbTimeout = setTimeout(() => {
@@ -625,7 +669,6 @@ function renderLiveLeaderboard(state){
   }
 }
 
-// ── LEADERBOARD FIN ──
 function showLeaderboard(state){
   showScreen('screenLeaderboard');
   const players=Object.values(state.players).sort((a,b)=>b.score-a.score);
@@ -634,11 +677,11 @@ function showLeaderboard(state){
   document.getElementById('lbList').innerHTML=players.map((p,idx)=>{
     const checked=(p.checked||[]).length;
     const lines=WIN_LINES.filter(l=>l.every(i=>(p.checked||[]).includes(i))).length;
-    const col=avatarColor(p.pseudo);
+    const pAvatar = p.avatar || AVATARS[0];
     return `<div class="lb-row ${idx===0?'first':idx===1?'second':idx===2?'third':''}">
       <div class="lb-rank ${medals[idx]||''}">${emoji[idx]||(idx+1)}</div>
       <div class="lb-name">
-        <div style="width:26px;height:26px;border-radius:50%;background:${col}22;color:${col};display:inline-flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:13px;flex-shrink:0">${p.pseudo[0].toUpperCase()}</div>
+        <img src="${pAvatar}" alt="Avatar">
         ${p.pseudo}${p.pseudo===myPseudo?'<span class="you-tag">toi</span>':''}
       </div>
       <div style="text-align:right">
@@ -650,14 +693,22 @@ function showLeaderboard(state){
 }
 
 async function resetAll(){
-  await setState({phase:'lobby',master:myPseudo,players:{}});
-  localStorage.removeItem('bingoudalo_pseudo');
+  await setState({phase:'lobby', master:myPseudo, players:{}});
+  // On ne vide pas le localStorage pour relancer automatiquement en tant que maître
   location.reload();
 }
 
 // ── INIT ET AUTO-CONNEXION ──
 window.onload = () => {
+  renderAvatarSelection();
   const savedPseudo = localStorage.getItem('bingoudalo_pseudo');
+  const savedAvatar = localStorage.getItem('bingoudalo_avatar');
+  
+  if(savedAvatar) {
+    myAvatar = savedAvatar;
+    renderAvatarSelection(); // Met à jour la sélection visuelle
+  }
+  
   if(savedPseudo) {
     document.getElementById('pseudoInput').value = savedPseudo;
     joinGame();
@@ -665,7 +716,6 @@ window.onload = () => {
 };
 
 document.getElementById('pseudoInput').addEventListener('keydown',e=>{
-  // On s'assure que c'est bien l'input du lobby
   if(e.key==='Enter' && document.getElementById('screenJoin').classList.contains('active')) {
     joinGame();
   }
