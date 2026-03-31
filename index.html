@@ -96,7 +96,6 @@
 </head>
 <body>
 
-<!-- JOIN -->
 <div class="screen active" id="screenJoin">
   <div class="logo">BINGOUDALO</div>
   <div class="tagline">La réunion en mode jeu</div>
@@ -109,7 +108,6 @@
   </div>
 </div>
 
-<!-- LOBBY -->
 <div class="screen" id="screenLobby">
   <div class="logo">BINGOUDALO</div>
   <div class="tagline">En attente des joueurs…</div>
@@ -122,7 +120,6 @@
   <div class="lobby-hint" id="lobbyHint"></div>
 </div>
 
-<!-- GAME -->
 <div class="screen" id="screenGame">
   <div class="game-topbar">
     <div class="player-tag">Joueur : <span id="gamePlayerName"></span></div>
@@ -139,7 +136,6 @@
   <footer>Case = 1pt · Ligne/col complète = +6pt · Grille entière = +20pt</footer>
 </div>
 
-<!-- LEADERBOARD -->
 <div class="screen" id="screenLeaderboard">
   <div class="lb-title">Résultats</div>
   <div class="lb-sub">Partie terminée par le maître du jeu</div>
@@ -175,6 +171,7 @@ const COLORS = ['#ff4d6d','#ffd166','#06d6a0','#118ab2','#a855f7','#f97316','#ec
 
 let myPseudo='', myGrid=[], myChecked=new Set(), myWonLines=new Set();
 let isMaster=false, gamePhase='lobby', bingoShown=false;
+let lastStateStr = '';
 
 function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function avatarColor(n){let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))&0xffffffff;return COLORS[Math.abs(h)%COLORS.length];}
@@ -191,16 +188,32 @@ async function setState(d){
   await sb.from('bingo_state').upsert({id:GAME_ID,data:d,updated_at:new Date().toISOString()},{onConflict:'id'});
 }
 
-// ── REALTIME ──
-function subscribeRealtime(){
+// ── SYNC (REALTIME + POLLING) ──
+let syncInterval = null;
+
+function startSync(){
+  // 1. Abonnement WebSockets Supabase (si configuré côté base de données)
   sb.channel('bingo:'+GAME_ID)
-    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'bingo_state',filter:`id=eq.${GAME_ID}`},
+    .on('postgres_changes',{event:'*',schema:'public',table:'bingo_state'},
       payload=>{ if(payload.new?.data) handleStateUpdate(payload.new.data); })
     .subscribe();
+
+  // 2. Polling de sécurité toutes les 3 secondes (assure que ça marche 100% du temps)
+  if(syncInterval) clearInterval(syncInterval);
+  syncInterval = setInterval(async () => {
+    const state = await getState();
+    if(state) handleStateUpdate(state);
+  }, 3000);
 }
 
 function handleStateUpdate(state){
+  // On vérifie si l'état a vraiment changé pour ne pas faire clignoter l'écran
+  const stateStr = JSON.stringify(state);
+  if (stateStr === lastStateStr) return;
+  lastStateStr = stateStr;
+
   isMaster=(state.master===myPseudo);
+  
   if(state.phase==='game'&&gamePhase==='lobby'){
     gamePhase='game'; showToast('La partie commence !',true); enterGame();
   } else if(state.phase==='end'&&gamePhase!=='end'){
@@ -221,14 +234,16 @@ async function joinGame(){
   const btn=document.getElementById('joinBtn');
   btn.disabled=true; btn.textContent='Connexion…';
 
+  // SAUVEGARDE LOCALE : Le navigateur retient le pseudo pour contrer le bouton F5
+  localStorage.setItem('bingoudalo_pseudo', pseudo);
   myPseudo=pseudo;
+  
   let state=await getState();
 
   if(!state){
     state={phase:'lobby',master:pseudo,players:{}};
     isMaster=true;
   } else {
-    // Only become master if the state has no master set
     isMaster=(state.master===pseudo);
   }
 
@@ -241,7 +256,7 @@ async function joinGame(){
   gamePhase=state.phase;
 
   await setState(state);
-  subscribeRealtime();
+  startSync();
 
   if(state.phase==='game') enterGame();
   else if(state.phase==='end') showLeaderboard(state);
@@ -391,8 +406,18 @@ function showLeaderboard(state){
 
 async function resetAll(){
   await setState({phase:'lobby',master:myPseudo,players:{}});
+  localStorage.removeItem('bingoudalo_pseudo');
   location.reload();
 }
+
+// ── INIT ET AUTO-CONNEXION ──
+window.onload = () => {
+  const savedPseudo = localStorage.getItem('bingoudalo_pseudo');
+  if(savedPseudo) {
+    document.getElementById('pseudoInput').value = savedPseudo;
+    joinGame(); // On relance la connexion automatiquement si le joueur a fait F5 !
+  }
+};
 
 document.getElementById('pseudoInput').addEventListener('keydown',e=>{if(e.key==='Enter')joinGame();});
 </script>
