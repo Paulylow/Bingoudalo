@@ -1,115 +1,475 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kavale - Multiplayer</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        body { 
-            background-color: #0b0c10; 
-            color: white; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh; 
-            margin: 0;
-            background-image: linear-gradient(0deg, #111 25%, #0b0c10 100%);
-        }
-        h1 {
-            color: #00FFFF;
-            text-shadow: 0 0 10px #00FFFF;
-            font-style: italic;
-            text-transform: uppercase;
-        }
-        #menu { 
-            background: rgba(20, 20, 30, 0.8); 
-            padding: 40px; 
-            border: 2px solid #333; 
-            border-radius: 15px; 
-            text-align: center; 
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(5px);
-        }
-        input { 
-            padding: 12px; 
-            margin: 15px 0; 
-            width: 80%; 
-            font-size: 16px; 
-            text-align: center;
-            background: #111;
-            border: 1px solid #444;
-            color: white;
-            border-radius: 5px;
-        }
-        .btn-container { display: flex; gap: 15px; justify-content: center; margin-top: 10px; }
-        button { 
-            padding: 12px 25px; 
-            font-size: 16px; 
-            cursor: pointer; 
-            border: none; 
-            font-weight: bold;
-            border-radius: 5px;
-            text-transform: uppercase;
-            transition: 0.2s;
-        }
-        #btnP1 { background-color: #00FFFF; color: #000; box-shadow: 0 0 10px #00FFFF; }
-        #btnP1:hover { box-shadow: 0 0 20px #00FFFF; transform: scale(1.05); }
-        #btnP2 { background-color: #FF00FF; color: #000; box-shadow: 0 0 10px #FF00FF; }
-        #btnP2:hover { box-shadow: 0 0 20px #FF00FF; transform: scale(1.05); }
-        
-        #gameContainer { display: none; text-align: center; }
-        canvas { 
-            border: 4px solid #333; 
-            background: #000; 
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
-            background-image: 
-                linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
-            background-size: 20px 20px; /* Effet grille Tron */
-        }
-        #status { 
-            margin-bottom: 20px; 
-            font-size: 24px; 
-            font-weight: bold;
-            text-transform: uppercase; 
-            height: 30px;
-        }
-        .hub-link {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: #aaa;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .hub-link:hover { color: white; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KAVALE 🏍️💨</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0b0c10; --surface: #14141e; --border: #1f2833;
+    --cyan: #00FFFF; --magenta: #FF00FF; --accent3: #45a29e;
+    --text: #c5c6c7; --muted: #66fcf1;
+  }
+  body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:32px 16px; position:relative; overflow-x:hidden; }
+  body::before { content:''; position:fixed; inset:0; background-image: linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px); background-size: 30px 30px; pointer-events:none; z-index:0; }
+  
+  .hub-link { position: absolute; top: 20px; left: 20px; color: var(--muted); text-decoration: none; font-weight: bold; z-index: 10; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s;}
+  .hub-link:hover { color: var(--cyan); text-shadow: 0 0 10px var(--cyan); }
+
+  .screen { display:none; flex-direction:column; align-items:center; width:100%; max-width:720px; position:relative; z-index:1; }
+  .screen.active { display:flex; }
+  .logo { font-family:'Bebas Neue',sans-serif; font-size:clamp(52px,10vw,88px); letter-spacing:8px; line-height:1; background:linear-gradient(135deg,var(--cyan) 0%,var(--magenta) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; filter:drop-shadow(0 0 20px rgba(0,255,255,0.4)); font-style: italic; }
+  .tagline { color:var(--muted); font-size:14px; letter-spacing:4px; text-transform:uppercase; margin-top:6px; margin-bottom:32px; font-weight: bold;}
+  
+  .join-card, .players-list { background:rgba(20,20,30,0.8); border:1px solid var(--border); border-radius:16px; padding:36px 32px; width:100%; max-width:450px; display:flex; flex-direction:column; gap:16px; backdrop-filter: blur(10px); box-shadow: 0 0 30px rgba(0,255,255,0.1); }
+  .join-card h2, .players-list h3 { font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:2px; color:white; margin:0;}
+  
+  input[type="text"] { width:100%; background:rgba(0,0,0,0.5); border:1px solid var(--border); border-radius:8px; padding:14px 16px; font-family:'DM Sans',sans-serif; font-size:15px; color:white; outline:none; transition:0.2s; }
+  input[type="text"]:focus { border-color:var(--cyan); box-shadow: 0 0 15px rgba(0,255,255,0.2);}
+  
+  /* SÉLECTION D'AVATARS */
+  .avatar-selection { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+  .avatar-selection p { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin: 0; }
+  .avatar-grid { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .avatar-option { width: 45px; height: 45px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: 0.2s; object-fit: cover; background: #000; }
+  .avatar-option.selected { border-color: var(--cyan); transform: scale(1.15); box-shadow: 0 0 15px rgba(0,255,255,0.5); z-index: 2; }
+  
+  /* SÉLECTION COULEUR MOTO */
+  .bike-selection { display: flex; gap: 15px; justify-content: center; margin-top: 10px; }
+  .bike-option { padding: 10px 20px; border-radius: 8px; border: 2px solid transparent; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 12px; transition: 0.2s; background: rgba(0,0,0,0.5); }
+  .bike-cyan { color: var(--cyan); }
+  .bike-magenta { color: var(--magenta); }
+  .bike-option.selected.bike-cyan { border-color: var(--cyan); background: rgba(0,255,255,0.1); box-shadow: 0 0 15px rgba(0,255,255,0.3); }
+  .bike-option.selected.bike-magenta { border-color: var(--magenta); background: rgba(255,0,255,0.1); box-shadow: 0 0 15px rgba(255,0,255,0.3); }
+
+  button { font-family:'DM Sans',sans-serif; font-weight:700; font-size:14px; letter-spacing:2px; text-transform:uppercase; border:none; border-radius:8px; cursor:pointer; padding:14px 24px; transition:0.2s; width: 100%;}
+  .btn-primary { background:var(--cyan); color:#000; box-shadow:0 0 20px rgba(0,255,255,0.3); }
+  .btn-primary:hover { transform:translateY(-2px); box-shadow:0 0 30px rgba(0,255,255,0.6); }
+  .btn-danger { background:var(--magenta); color:#fff; box-shadow:0 0 20px rgba(255,0,255,0.3); }
+  button:disabled { opacity:0.5; cursor:not-allowed; transform:none !important; }
+
+  /* LOBBY */
+  .player-row { display:flex; align-items:center; gap:15px; padding:12px 0; border-bottom:1px solid var(--border); font-size:15px; font-weight:bold; color: white;}
+  .player-row:last-child { border-bottom:none; }
+  .player-avatar { width:40px; height:40px; border-radius:50%; object-fit: cover; border: 2px solid #444; }
+  .badge { font-size:10px; letter-spacing:1px; text-transform:uppercase; padding:4px 8px; border-radius:4px; margin-left:auto; }
+  .badge-master { background:rgba(0,255,255,0.1); color:var(--cyan); border:1px solid var(--cyan); }
+  
+  /* JEU */
+  #gameCanvas { border: 4px solid var(--border); background: #000; box-shadow: 0 0 40px rgba(0,0,0,0.8); border-radius: 8px; margin-top: 20px;}
+  .game-header { display: flex; justify-content: space-between; width: 600px; margin-bottom: 10px; align-items: center;}
+  .player-hud { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;}
+  .player-hud img { width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent;}
+  #hud-p1 img { border-color: var(--cyan); }
+  #hud-p2 img { border-color: var(--magenta); }
+  #statusText { font-family: 'Bebas Neue'; font-size: 32px; letter-spacing: 2px; text-align: center; height: 40px;}
+
+</style>
 </head>
 <body>
 
-    <a href="../index.html" class="hub-link">← Retour au Hub</a>
+<a href="../index.html" class="hub-link">← Retour au Hub</a>
 
-    <div id="menu">
-        <h1>KAVALE</h1>
-        <p>Entrez un nom de salle secret pour jouer avec un ami</p>
-        <input type="text" id="roomName" placeholder="Ex: salle-secrete-123">
-        
-        <div class="btn-container">
-            <button id="btnP1">Joueur 1 (Cyan)</button>
-            <button id="btnP2">Joueur 2 (Magenta)</button>
+<div class="screen active" id="screenJoin">
+  <div class="logo">KAVALE</div>
+  <div class="tagline">Course mortelle en réseau</div>
+  
+  <div class="join-card">
+    <h2>Rejoindre l'arène</h2>
+    <input type="text" id="pseudoInput" placeholder="Ton pseudo..." maxlength="15" />
+    
+    <div class="avatar-selection">
+      <p>1. Choisis ton avatar :</p>
+      <div class="avatar-grid" id="avatarGrid"></div>
+    </div>
+
+    <div class="avatar-selection">
+      <p>2. Choisis ta moto :</p>
+      <div class="bike-selection">
+        <div class="bike-option bike-cyan selected" onclick="selectColor('cyan')" id="btnColorCyan">Cyan (J1)</div>
+        <div class="bike-option bike-magenta" onclick="selectColor('magenta')" id="btnColorMagenta">Magenta (J2)</div>
+      </div>
+    </div>
+
+    <button class="btn-primary" id="joinBtn" onclick="joinLobby()" style="margin-top: 15px;">Entrer dans le Lobby</button>
+  </div>
+</div>
+
+<div class="screen" id="screenLobby">
+  <div class="logo">KAVALE</div>
+  <div class="tagline" id="lobbySubtitle">En attente des pilotes...</div>
+  
+  <div class="players-list">
+    <h3>Pilotes connectés (Max 2)</h3>
+    <div id="playersList"></div>
+    
+    <div id="lobbyControls" style="margin-top: 15px;">
+       </div>
+  </div>
+</div>
+
+<div class="screen" id="screenGame">
+    <div id="statusText">PRÉPARATION...</div>
+    
+    <div class="game-header">
+        <div class="player-hud" id="hud-p1" style="color: var(--cyan); opacity: 0.5;">
+            <img src="" id="img-p1" alt="">
+            <span id="name-p1">En attente...</span>
         </div>
-        <p style="color: #666; font-size: 0.9em; margin-top: 20px;">Contrôles : Flèches directionnelles</p>
+        <div class="player-hud" id="hud-p2" style="color: var(--magenta); opacity: 0.5;">
+            <span id="name-p2">En attente...</span>
+            <img src="" id="img-p2" alt="">
+        </div>
     </div>
 
-    <div id="gameContainer">
-        <div id="status">En attente...</div>
-        <canvas id="gameCanvas" width="600" height="600"></canvas>
-    </div>
+    <canvas id="gameCanvas" width="600" height="600"></canvas>
+    <p style="color: #666; font-size: 12px; margin-top: 15px; text-transform: uppercase; letter-spacing: 1px;">Contrôles : Flèches directionnelles</p>
+</div>
 
-    <script src="script.js"></script>
+<script>
+// --- CONFIGURATION SUPABASE ---
+const SUPABASE_URL = 'https://pdybshweyfvxzvngnuxe.supabase.co'; 
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkeWJzaHdleWZ2eHp2bmdudXhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDg2MDAsImV4cCI6MjA5MDUyNDYwMH0.u442X28Mhs-4T-tydabnMm8now8VfAEeNU-Sicuipq4'; 
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+const GAME_ID = 'kavale_main_lobby';
+
+// --- VARIABLES GLOBALES ---
+const AVATARS = [
+  '../avatar/9k.png', '../avatar/bbc.png', '../avatar/christophe.jpg', 
+  '../avatar/coudoux.png', '../avatar/elian.jpg', '../avatar/matheo.jpg', 
+  '../avatar/paulin.jpg', '../avatar/paulo1.jpg', '../avatar/tom.png'
+];
+
+let myPseudo = '';
+let myAvatar = AVATARS[0];
+let myColor = 'cyan'; // 'cyan' (J1) ou 'magenta' (J2)
+let isMaster = false;
+let gameState = 'lobby'; // 'lobby', 'playing', 'ended'
+let realtimeChannel = null; // Pour le jeu en direct
+let dbSyncInterval = null; // Pour le lobby
+
+// --- MOTEUR DE JEU KAVALE ---
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const gridSize = 10;
+let gameLoop = null;
+let playersGameData = {}; // Coordonnées et traînées pendant la partie
+
+// --- UI : AVATAR & COULEUR ---
+function renderAvatarSelection() {
+  document.getElementById('avatarGrid').innerHTML = AVATARS.map(src => 
+    `<img src="${src}" class="avatar-option ${src === myAvatar ? 'selected' : ''}" onclick="selectAvatar('${src}')">`
+  ).join('');
+}
+function selectAvatar(src) { myAvatar = src; renderAvatarSelection(); }
+function selectColor(color) {
+    myColor = color;
+    document.getElementById('btnColorCyan').classList.remove('selected');
+    document.getElementById('btnColorMagenta').classList.remove('selected');
+    if(color === 'cyan') document.getElementById('btnColorCyan').classList.add('selected');
+    if(color === 'magenta') document.getElementById('btnColorMagenta').classList.add('selected');
+}
+
+// --- NAVIGATION ---
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// --- BASE DE DONNÉES (LOBBY) ---
+async function fetchLobbyState() {
+    const {data, error} = await sb.from('bingo_state').select('data').eq('id', GAME_ID).maybeSingle();
+    return data?.data || null;
+}
+async function updateLobbyState(newState) {
+    await sb.from('bingo_state').upsert({ id: GAME_ID, data: newState, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+}
+
+// --- REJOINDRE LE LOBBY ---
+async function joinLobby() {
+    myPseudo = document.getElementById('pseudoInput').value.trim();
+    if(!myPseudo) return alert("Choisis un pseudo !");
+    
+    document.getElementById('joinBtn').disabled = true;
+    document.getElementById('joinBtn').textContent = 'Connexion...';
+
+    let state = await fetchLobbyState();
+    
+    // Si pas de salle ou salle vide, on crée et on est maître
+    if(!state || !state.players || Object.keys(state.players).length === 0) {
+        state = { phase: 'lobby', master: myPseudo, players: {} };
+    }
+
+    // Vérifier s'il y a de la place (max 2 joueurs) ou si c'est une reconnexion
+    if(Object.keys(state.players).length >= 2 && !state.players[myPseudo]) {
+        alert("La salle est pleine (2 joueurs max) !");
+        document.getElementById('joinBtn').disabled = false;
+        document.getElementById('joinBtn').textContent = 'Entrer dans le Lobby';
+        return;
+    }
+
+    isMaster = (state.master === myPseudo);
+
+    // Ajouter ou mettre à jour le joueur
+    state.players[myPseudo] = { pseudo: myPseudo, avatar: myAvatar, color: myColor };
+    
+    await updateLobbyState(state);
+    
+    showScreen('screenLobby');
+    startLobbySync(); // Commencer à écouter la base de données
+}
+
+// --- SYNCHRONISATION LOBBY ---
+function startLobbySync() {
+    updateLobbyUI(null); // Premier affichage manuel
+    
+    // Polling toutes les 2 secondes (suffisant pour un lobby)
+    if(dbSyncInterval) clearInterval(dbSyncInterval);
+    dbSyncInterval = setInterval(async () => {
+        const state = await fetchLobbyState();
+        if(state) updateLobbyUI(state);
+    }, 2000);
+}
+
+function updateLobbyUI(state) {
+    if(!state) return; // Sécurité
+    
+    isMaster = (state.master === myPseudo);
+    const playersList = Object.values(state.players);
+    
+    // Afficher les joueurs
+    document.getElementById('playersList').innerHTML = playersList.map(p => `
+        <div class="player-row">
+            <img src="${p.avatar}" class="player-avatar" style="border-color: ${p.color === 'cyan' ? 'var(--cyan)' : 'var(--magenta)'}">
+            <span>${p.pseudo} <span style="font-size:11px; color:${p.color === 'cyan' ? 'var(--cyan)' : 'var(--magenta)'}">(${p.color})</span></span>
+            ${state.master === p.pseudo ? '<span class="badge badge-master">👑 Maître</span>' : ''}
+        </div>
+    `).join('');
+
+    // Si on est dans le lobby
+    if(state.phase === 'lobby') {
+        const controls = document.getElementById('lobbyControls');
+        if(isMaster) {
+            controls.innerHTML = `<button class="btn-primary" onclick="launchGameFromLobby()">🏁 Lancer la course</button>`;
+            document.getElementById('lobbySubtitle').textContent = `Tu es le maître. Attends un adversaire.`;
+            // Désactiver le bouton s'il n'y a qu'un joueur
+            if(playersList.length < 2) controls.querySelector('button').disabled = true;
+        } else {
+            controls.innerHTML = '';
+            document.getElementById('lobbySubtitle').textContent = `Attends que ${state.master} lance la course...`;
+        }
+    } 
+    // Si le maître a cliqué sur Démarrer
+    else if(state.phase === 'playing' && gameState === 'lobby') {
+        gameState = 'playing';
+        clearInterval(dbSyncInterval); // On arrête d'écouter la BDD
+        initGameEngine(state.players); // On lance le jeu !
+    }
+}
+
+// --- LE MAÎTRE LANCE LE JEU ---
+async function launchGameFromLobby() {
+    let state = await fetchLobbyState();
+    state.phase = 'playing';
+    await updateLobbyState(state); // Change le statut dans la DB pour avertir l'autre joueur
+    
+    gameState = 'playing';
+    clearInterval(dbSyncInterval);
+    initGameEngine(state.players);
+}
+
+// ==========================================
+// MOTEUR DE JEU KAVALE (BROADCAST EN DIRECT)
+// ==========================================
+
+function initGameEngine(lobbyPlayers) {
+    showScreen('screenGame');
+    
+    // 1. Initialiser le HUD et les positions de départ selon les couleurs choisies
+    playersGameData = {};
+    
+    Object.values(lobbyPlayers).forEach(p => {
+        if(p.color === 'cyan') {
+            document.getElementById('hud-p1').style.opacity = '1';
+            document.getElementById('name-p1').textContent = p.pseudo;
+            document.getElementById('img-p1').src = p.avatar;
+            playersGameData[p.pseudo] = { x: 100, y: 300, color: '#00FFFF', direction: 'right', nextDir: 'right', trail: [], dead: false };
+        } else {
+            document.getElementById('hud-p2').style.opacity = '1';
+            document.getElementById('name-p2').textContent = p.pseudo;
+            document.getElementById('img-p2').src = p.avatar;
+            playersGameData[p.pseudo] = { x: 500, y: 300, color: '#FF00FF', direction: 'left', nextDir: 'left', trail: [], dead: false };
+        }
+    });
+
+    // 2. Connexion WebSocket (Broadcast) ultra-rapide
+    realtimeChannel = sb.channel('kavale_arena');
+    
+    realtimeChannel.on('broadcast', { event: 'move' }, (payload) => {
+        const data = payload.payload;
+        if(data.pseudo !== myPseudo && playersGameData[data.pseudo]) {
+            playersGameData[data.pseudo].nextDir = data.direction;
+            playersGameData[data.pseudo].x = data.x;
+            playersGameData[data.pseudo].y = data.y;
+        }
+    });
+
+    realtimeChannel.on('broadcast', { event: 'start' }, () => {
+        startCountdown();
+    });
+
+    realtimeChannel.subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+            document.getElementById('statusText').textContent = "CONNEXION ÉTABLIE...";
+            // Le non-maître signale qu'il est prêt via WebSocket
+            if(!isMaster) realtimeChannel.send({ type: 'broadcast', event: 'start', payload: {} });
+            // Le maître démarre aussi s'il reçoit ou s'il est seul (pour tester)
+            if(isMaster && Object.keys(lobbyPlayers).length === 1) startCountdown();
+        }
+    });
+}
+
+function startCountdown() {
+    let count = 3;
+    const statusEl = document.getElementById('statusText');
+    const interval = setInterval(() => {
+        statusEl.textContent = count > 0 ? count : "GO !";
+        statusEl.style.color = count > 0 ? "white" : "var(--cyan)";
+        if(count === 0) {
+            clearInterval(interval);
+            setTimeout(() => statusEl.textContent = "", 1000); // Effacer le GO
+            if(gameLoop) clearInterval(gameLoop);
+            gameLoop = setInterval(updatePhysics, 80); // Vitesse du jeu
+        }
+        count--;
+    }, 1000);
+}
+
+// --- PHYSIQUE ET DESSIN ---
+function updatePhysics() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const pseudos = Object.keys(playersGameData);
+    
+    pseudos.forEach(pseudo => {
+        const p = playersGameData[pseudo];
+        if (p.dead) return;
+
+        // Historique pour la traînée
+        p.trail.push({ x: p.x, y: p.y });
+        p.direction = p.nextDir;
+
+        // Mouvement
+        if (p.direction === 'up') p.y -= gridSize;
+        if (p.direction === 'down') p.y += gridSize;
+        if (p.direction === 'left') p.x -= gridSize;
+        if (p.direction === 'right') p.x += gridSize;
+
+        checkCollisions(pseudo, pseudos);
+
+        // Rendu Visuel (Neon)
+        ctx.fillStyle = p.color;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = p.color;
+        p.trail.forEach(pos => ctx.fillRect(pos.x, pos.y, gridSize, gridSize));
+        
+        ctx.fillStyle = 'white';
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = 'white';
+        ctx.fillRect(p.x, p.y, gridSize, gridSize);
+        ctx.shadowBlur = 0; // Reset
+    });
+
+    checkWinCondition(pseudos);
+}
+
+// --- CONTRÔLES ---
+window.addEventListener('keydown', e => {
+    if (gameState !== 'playing' || !playersGameData[myPseudo] || playersGameData[myPseudo].dead) return;
+
+    let newDir = null;
+    const p = playersGameData[myPseudo];
+
+    if (e.code === 'ArrowUp' && p.direction !== 'down') newDir = 'up';
+    if (e.code === 'ArrowDown' && p.direction !== 'up') newDir = 'down';
+    if (e.code === 'ArrowLeft' && p.direction !== 'right') newDir = 'left';
+    if (e.code === 'ArrowRight' && p.direction !== 'left') newDir = 'right';
+
+    if (newDir && newDir !== p.nextDir) {
+        p.nextDir = newDir;
+        // Envoi INSTANTANÉ via Broadcast
+        if(realtimeChannel) {
+            realtimeChannel.send({
+                type: 'broadcast',
+                event: 'move',
+                payload: { pseudo: myPseudo, direction: newDir, x: p.x, y: p.y }
+            });
+        }
+    }
+});
+
+// --- COLLISIONS ET FIN ---
+function checkCollisions(myId, allIds) {
+    const p = playersGameData[myId];
+    
+    // 1. Murs
+    if (p.x < 0 || p.x >= canvas.width || p.y < 0 || p.y >= canvas.height) { p.dead = true; return;}
+
+    // 2. Traînées (La sienne et celle des autres)
+    allIds.forEach(otherId => {
+        const otherP = playersGameData[otherId];
+        for (let i = 0; i < otherP.trail.length; i++) {
+            if (p.x === otherP.trail[i].x && p.y === otherP.trail[i].y) p.dead = true;
+        }
+        // Choc frontal
+        if (myId !== otherId && p.x === otherP.x && p.y === otherP.y) {
+            p.dead = true;
+            otherP.dead = true;
+        }
+    });
+}
+
+function checkWinCondition(allIds) {
+    const alive = allIds.filter(id => !playersGameData[id].dead);
+    const statusEl = document.getElementById('statusText');
+
+    if (alive.length === 0 && allIds.length > 0) {
+        clearInterval(gameLoop);
+        statusEl.textContent = "CRASH TOTAL ! ÉGALITÉ";
+        statusEl.style.color = "white";
+        endGameCleanup();
+    } else if (alive.length === 1 && allIds.length > 1) {
+        clearInterval(gameLoop);
+        const winner = playersGameData[alive[0]];
+        statusEl.textContent = `VICTOIRE ${alive[0]} !`;
+        statusEl.style.color = winner.color;
+        endGameCleanup();
+    }
+}
+
+async function endGameCleanup() {
+    if(realtimeChannel) {
+        setTimeout(() => sb.removeChannel(realtimeChannel), 2000);
+    }
+    // Le maître réinitialise le lobby en DB après 5 secondes pour rejouer
+    if(isMaster) {
+        setTimeout(async () => {
+             let state = await fetchLobbyState();
+             state.phase = 'lobby';
+             await updateLobbyState(state);
+             location.reload(); // Recharger la page pour tout le monde (simplifie le reset)
+        }, 5000);
+    } else {
+        setTimeout(() => location.reload(), 5000);
+    }
+}
+
+// Initialisation au chargement
+window.onload = renderAvatarSelection;
+</script>
 </body>
 </html>
