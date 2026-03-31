@@ -48,7 +48,8 @@
     /* LE FRANCKY */
     .francky-btn {
         width: 250px; height: 250px; border-radius: 50%;
-        background-image: url('../bingoudalo/avatar/francky.jpg'); 
+        /* CORRECTION : L'image principale de Francky en .png */
+        background-image: url('../bingoudalo/avatar/francky.png'); 
         background-size: cover; background-position: center;
         border: 4px solid var(--cyan);
         box-shadow: 0 0 50px rgba(0, 255, 255, 0.4), inset 0 0 20px rgba(0,0,0,0.8);
@@ -152,15 +153,15 @@
     let score = 0;
     let scorePerSecond = 0;
 
-    // --- LA BOUTIQUE (Tes références exactes !) ---
-    // Les icônes sont maintenant des balises <img> qui pointent vers les fichiers de ton dossier bingoudalo/avatar
+    // --- LA BOUTIQUE ---
+    // CORRECTION : Les icônes pointent maintenant vers des fichiers .png !
     let buildings = [
         { 
             id: 'tom', 
             name: 'Suce un peu', 
             baseCost: 15, 
             bps: 1, 
-            icon: '<img src="../bingoudalo/avatar/tom.jpg" class="upgrade-icon">', 
+            icon: '<img src="../bingoudalo/avatar/tom.png" class="upgrade-icon">', 
             count: 0 
         },
         { 
@@ -168,7 +169,7 @@
             name: 'Affronte mon regard', 
             baseCost: 100, 
             bps: 5, 
-            icon: '<img src="../bingoudalo/avatar/affronte.jpg" class="upgrade-icon">', 
+            icon: '<img src="../bingoudalo/avatar/affronte.png" class="upgrade-icon">', 
             count: 0 
         },
         { 
@@ -176,7 +177,7 @@
             name: "De l'argent contre votre fils", 
             baseCost: 1100, 
             bps: 50, 
-            icon: '<img src="../bingoudalo/avatar/epstein.jpg" class="upgrade-icon">', 
+            icon: '<img src="../bingoudalo/avatar/epstein.png" class="upgrade-icon">', 
             count: 0 
         },
         { 
@@ -184,7 +185,7 @@
             name: 'Complexe cette bite', 
             baseCost: 12000, 
             bps: 400, 
-            icon: '<img src="../bingoudalo/avatar/wilbaut_suss.jpg" class="upgrade-icon">', 
+            icon: '<img src="../bingoudalo/avatar/wilbaut_suss.png" class="upgrade-icon">', 
             count: 0 
         }
     ];
@@ -196,23 +197,21 @@
         renderVisuals();
         updateScoreUI();
         
-        // La boucle principale (tourne 10 fois par seconde pour une fluidité parfaite)
+        // La boucle principale
         setInterval(gameLoop, 100);
         
-        // Sauvegarde auto toutes les 5 secondes
+        // Sauvegarde auto
         setInterval(saveGame, 5000);
     }
 
     // --- MÉCANIQUES DE JEU ---
     function clickFrancky() {
-        // Le clic rapporte 1 par défaut, ou plus si on veut faire des améliorations de clic !
         score += 1; 
         updateScoreUI();
         updateShopColors();
     }
 
     function gameLoop() {
-        // On ajoute un dixième des points par seconde (car la boucle tourne toutes les 100ms)
         score += scorePerSecond / 10;
         updateScoreUI();
         updateShopColors();
@@ -227,15 +226,14 @@
             b.count += 1;
             
             recalculateBPS();
-            renderShop(); // Met à jour les prix
-            renderVisuals(); // Ajoute la photo au milieu
+            renderShop(); 
+            renderVisuals(); 
             updateScoreUI();
             saveGame();
         }
     }
 
     // --- CALCULS ---
-    // Le prix augmente de 15% à chaque achat
     function getCost(building) {
         return Math.floor(building.baseCost * Math.pow(1.15, building.count));
     }
@@ -253,7 +251,6 @@
         document.getElementById('bpsDisplay').innerText = scorePerSecond + " pts / sec";
     }
 
-    // Grise les objets qu'on ne peut pas acheter
     function updateShopColors() {
         buildings.forEach((b, index) => {
             let el = document.getElementById('shop-item-' + index);
@@ -293,10 +290,8 @@
         visualCenter.innerHTML = '';
 
         buildings.forEach(b => {
-            // On affiche une étagère seulement si on possède au moins 1 image de ce type
             if (b.count > 0) {
                 let rowHtml = `<div class="visual-row">`;
-                // On dessine autant d'images que le nombre possédé
                 for(let i = 0; i < b.count; i++) {
                     rowHtml += `<div class="visual-item">${b.icon}</div>`;
                 }
@@ -336,7 +331,6 @@
         }
     }
 
-    // Lancer le jeu au chargement de la page
     window.onload = initGame;
 
 </script>
