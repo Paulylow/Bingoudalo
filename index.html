@@ -394,6 +394,7 @@ async function joinGame(){
   await setState(state);
   startSync();
 
+  // Si on rafraichit la page pendant la partie, on s'y remet directement
   if(state.phase==='game') enterGame();
   else if(state.phase==='prep_gold') enterPrepGold(state.phaseEndTime);
   else if(state.phase==='prep_custom') enterPrepCustom(state.phaseEndTime);
@@ -694,24 +695,25 @@ function showLeaderboard(state){
 
 async function resetAll(){
   await setState({phase:'lobby', master:myPseudo, players:{}});
-  // On ne vide pas le localStorage pour relancer automatiquement en tant que maître
   location.reload();
 }
 
-// ── INIT ET AUTO-CONNEXION ──
+// ── INIT ET AUTO-CONNEXION CORRIGÉE ──
 window.onload = () => {
   renderAvatarSelection();
+  
   const savedPseudo = localStorage.getItem('bingoudalo_pseudo');
   const savedAvatar = localStorage.getItem('bingoudalo_avatar');
   
   if(savedAvatar) {
     myAvatar = savedAvatar;
-    renderAvatarSelection(); // Met à jour la sélection visuelle
+    renderAvatarSelection();
   }
   
   if(savedPseudo) {
     document.getElementById('pseudoInput').value = savedPseudo;
-    joinGame();
+    // On ne lance plus joinGame() automatiquement ici.
+    // Ça te laisse l'opportunité de changer ton avatar et de cliquer toi-même sur "Rejoindre" !
   }
 };
 
