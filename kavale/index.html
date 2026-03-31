@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KAVALE 🏍️💨</title>
+<title>KAVALE 🏍️💨 - Arène Multijoueur</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -19,39 +19,31 @@
   .hub-link { position: absolute; top: 20px; left: 20px; color: var(--muted); text-decoration: none; font-weight: bold; z-index: 10; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s;}
   .hub-link:hover { color: var(--cyan); text-shadow: 0 0 10px var(--cyan); }
 
-  .screen { display:none; flex-direction:column; align-items:center; width:100%; max-width:720px; position:relative; z-index:1; }
+  .screen { display:none; flex-direction:column; align-items:center; width:100%; max-width:800px; position:relative; z-index:1; }
   .screen.active { display:flex; }
   .logo { font-family:'Bebas Neue',sans-serif; font-size:clamp(52px,10vw,88px); letter-spacing:8px; line-height:1; background:linear-gradient(135deg,var(--cyan) 0%,var(--magenta) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; filter:drop-shadow(0 0 20px rgba(0,255,255,0.4)); font-style: italic; }
   .tagline { color:var(--muted); font-size:14px; letter-spacing:4px; text-transform:uppercase; margin-top:6px; margin-bottom:32px; font-weight: bold;}
   
-  .join-card, .players-list { background:rgba(20,20,30,0.8); border:1px solid var(--border); border-radius:16px; padding:36px 32px; width:100%; max-width:450px; display:flex; flex-direction:column; gap:16px; backdrop-filter: blur(10px); box-shadow: 0 0 30px rgba(0,255,255,0.1); }
+  .join-card, .players-list { background:rgba(20,20,30,0.8); border:1px solid var(--border); border-radius:16px; padding:36px 32px; width:100%; max-width:500px; display:flex; flex-direction:column; gap:16px; backdrop-filter: blur(10px); box-shadow: 0 0 30px rgba(0,255,255,0.1); }
   .join-card h2, .players-list h3 { font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:2px; color:white; margin:0;}
   
   input[type="text"] { width:100%; background:rgba(0,0,0,0.5); border:1px solid var(--border); border-radius:8px; padding:14px 16px; font-family:'DM Sans',sans-serif; font-size:15px; color:white; outline:none; transition:0.2s; }
   input[type="text"]:focus { border-color:var(--cyan); box-shadow: 0 0 15px rgba(0,255,255,0.2);}
   
-  /* SÉLECTION D'AVATARS */
   .avatar-selection { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
   .avatar-selection p { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin: 0; }
   .avatar-grid { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
   .avatar-option { width: 45px; height: 45px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: 0.2s; object-fit: cover; background: #000; }
   .avatar-option.selected { border-color: var(--cyan); transform: scale(1.15); box-shadow: 0 0 15px rgba(0,255,255,0.5); z-index: 2; }
   
-  /* SÉLECTION COULEUR MOTO */
-  .bike-selection { display: flex; gap: 15px; justify-content: center; margin-top: 10px; }
-  .bike-option { padding: 10px 20px; border-radius: 8px; border: 2px solid transparent; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 12px; transition: 0.2s; background: rgba(0,0,0,0.5); }
-  .bike-cyan { color: var(--cyan); }
-  .bike-magenta { color: var(--magenta); }
-  .bike-option.selected.bike-cyan { border-color: var(--cyan); background: rgba(0,255,255,0.1); box-shadow: 0 0 15px rgba(0,255,255,0.3); }
-  .bike-option.selected.bike-magenta { border-color: var(--magenta); background: rgba(255,0,255,0.1); box-shadow: 0 0 15px rgba(255,0,255,0.3); }
-
+  .bike-selection { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 5px; }
+  .bike-option { padding: 10px 15px; border-radius: 8px; border: 2px solid #333; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 12px; transition: 0.2s; background: rgba(0,0,0,0.5); }
+  
   button { font-family:'DM Sans',sans-serif; font-weight:700; font-size:14px; letter-spacing:2px; text-transform:uppercase; border:none; border-radius:8px; cursor:pointer; padding:14px 24px; transition:0.2s; width: 100%;}
   .btn-primary { background:var(--cyan); color:#000; box-shadow:0 0 20px rgba(0,255,255,0.3); }
   .btn-primary:hover { transform:translateY(-2px); box-shadow:0 0 30px rgba(0,255,255,0.6); }
-  .btn-danger { background:var(--magenta); color:#fff; box-shadow:0 0 20px rgba(255,0,255,0.3); }
   button:disabled { opacity:0.5; cursor:not-allowed; transform:none !important; }
 
-  /* LOBBY */
   .player-row { display:flex; align-items:center; gap:15px; padding:12px 0; border-bottom:1px solid var(--border); font-size:15px; font-weight:bold; color: white;}
   .player-row:last-child { border-bottom:none; }
   .player-avatar { width:40px; height:40px; border-radius:50%; object-fit: cover; border: 2px solid #444; }
@@ -59,13 +51,12 @@
   .badge-master { background:rgba(0,255,255,0.1); color:var(--cyan); border:1px solid var(--cyan); }
   
   /* JEU */
-  #gameCanvas { border: 4px solid var(--border); background: #000; box-shadow: 0 0 40px rgba(0,0,0,0.8); border-radius: 8px; margin-top: 20px;}
-  .game-header { display: flex; justify-content: space-between; width: 600px; margin-bottom: 10px; align-items: center;}
-  .player-hud { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;}
-  .player-hud img { width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent;}
-  #hud-p1 img { border-color: var(--cyan); }
-  #hud-p2 img { border-color: var(--magenta); }
-  #statusText { font-family: 'Bebas Neue'; font-size: 32px; letter-spacing: 2px; text-align: center; height: 40px;}
+  #gameCanvas { border: 4px solid var(--border); background: #000; box-shadow: 0 0 40px rgba(0,0,0,0.8); border-radius: 8px; margin-top: 10px; max-width: 100%;}
+  .game-header { display: flex; justify-content: space-around; width: 100%; margin-bottom: 10px; flex-wrap: wrap; gap: 15px; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 10px; border: 1px solid #333;}
+  .player-hud { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s;}
+  .player-hud img { width: 35px; height: 35px; border-radius: 50%; border: 2px solid transparent; object-fit: cover;}
+  .player-hud .score-hud { font-size: 20px; font-family: 'Bebas Neue'; background: rgba(255,255,255,0.1); padding: 2px 10px; border-radius: 5px; }
+  #statusText { font-family: 'Bebas Neue'; font-size: 38px; letter-spacing: 2px; text-align: center; height: 45px;}
 
 </style>
 </head>
@@ -75,7 +66,7 @@
 
 <div class="screen active" id="screenJoin">
   <div class="logo">KAVALE</div>
-  <div class="tagline">Course mortelle en réseau</div>
+  <div class="tagline">3 manches gagnantes - Jusqu'à 4 joueurs</div>
   
   <div class="join-card">
     <h2>Rejoindre l'arène</h2>
@@ -87,10 +78,12 @@
     </div>
 
     <div class="avatar-selection">
-      <p>2. Choisis ta moto :</p>
+      <p>2. Choisis ta couleur :</p>
       <div class="bike-selection">
-        <div class="bike-option bike-cyan selected" onclick="selectColor('cyan')" id="btnColorCyan">Cyan (J1)</div>
-        <div class="bike-option bike-magenta" onclick="selectColor('magenta')" id="btnColorMagenta">Magenta (J2)</div>
+        <div class="bike-option" style="color:#00FFFF" onclick="selectColor('#00FFFF', this)">Cyan</div>
+        <div class="bike-option" style="color:#FF00FF" onclick="selectColor('#FF00FF', this)">Magenta</div>
+        <div class="bike-option" style="color:#FFFF00" onclick="selectColor('#FFFF00', this)">Jaune</div>
+        <div class="bike-option" style="color:#00FF00" onclick="selectColor('#00FF00', this)">Vert</div>
       </div>
     </div>
 
@@ -103,28 +96,15 @@
   <div class="tagline" id="lobbySubtitle">En attente des pilotes...</div>
   
   <div class="players-list">
-    <h3>Pilotes connectés (Max 2)</h3>
+    <h3>Pilotes (Max 4)</h3>
     <div id="playersList"></div>
-    
-    <div id="lobbyControls" style="margin-top: 15px;">
-       </div>
+    <div id="lobbyControls" style="margin-top: 15px;"></div>
   </div>
 </div>
 
 <div class="screen" id="screenGame">
     <div id="statusText">PRÉPARATION...</div>
-    
-    <div class="game-header">
-        <div class="player-hud" id="hud-p1" style="color: var(--cyan); opacity: 0.5;">
-            <img src="" id="img-p1" alt="">
-            <span id="name-p1">En attente...</span>
-        </div>
-        <div class="player-hud" id="hud-p2" style="color: var(--magenta); opacity: 0.5;">
-            <span id="name-p2">En attente...</span>
-            <img src="" id="img-p2" alt="">
-        </div>
-    </div>
-
+    <div class="game-header" id="gameHeader"></div>
     <canvas id="gameCanvas" width="600" height="600"></canvas>
     <p style="color: #666; font-size: 12px; margin-top: 15px; text-transform: uppercase; letter-spacing: 1px;">Contrôles : Flèches directionnelles</p>
 </div>
@@ -138,7 +118,6 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const GAME_ID = 'kavale_main_lobby';
 
 // --- VARIABLES GLOBALES ---
-// CORRECTION DES CHEMINS D'AVATARS : On pointe vers le dossier bingoudalo
 const AVATARS = [
   '../bingoudalo/avatar/9k.png', '../bingoudalo/avatar/bbc.png', '../bingoudalo/avatar/christophe.jpg', 
   '../bingoudalo/avatar/coudoux.png', '../bingoudalo/avatar/elian.jpg', '../bingoudalo/avatar/matheo.jpg', 
@@ -147,9 +126,9 @@ const AVATARS = [
 
 let myPseudo = '';
 let myAvatar = AVATARS[0];
-let myColor = 'cyan'; // 'cyan' (J1) ou 'magenta' (J2)
+let myColorCode = '#00FFFF'; 
 let isMaster = false;
-let gameState = 'lobby'; // 'lobby', 'playing', 'ended'
+let gameState = 'lobby'; 
 let realtimeChannel = null; 
 let dbSyncInterval = null; 
 
@@ -159,9 +138,10 @@ const ctx = canvas.getContext('2d');
 const gridSize = 10;
 let gameLoop = null;
 let playersGameData = {}; 
+let orderedPlayerNames = []; // Pour attribuer les positions de départ
 
-// Variables pour la synchro blindée
 let isCountingDown = false;
+let isRoundEnding = false;
 let syncSpamInterval = null;
 
 // --- UI : AVATAR & COULEUR ---
@@ -171,15 +151,25 @@ function renderAvatarSelection() {
   ).join('');
 }
 function selectAvatar(src) { myAvatar = src; renderAvatarSelection(); }
-function selectColor(color) {
-    myColor = color;
-    document.getElementById('btnColorCyan').classList.remove('selected');
-    document.getElementById('btnColorMagenta').classList.remove('selected');
-    if(color === 'cyan') document.getElementById('btnColorCyan').classList.add('selected');
-    if(color === 'magenta') document.getElementById('btnColorMagenta').classList.add('selected');
+
+function selectColor(hex, el) {
+    myColorCode = hex;
+    document.querySelectorAll('.bike-option').forEach(btn => {
+        btn.style.borderColor = '#333';
+        btn.style.background = 'rgba(0,0,0,0.5)';
+        btn.style.boxShadow = 'none';
+    });
+    el.style.borderColor = hex;
+    el.style.background = `rgba(${hexToRgb(hex)}, 0.1)`;
+    el.style.boxShadow = `0 0 15px rgba(${hexToRgb(hex)}, 0.4)`;
 }
 
-// --- NAVIGATION ---
+// Fonction utilitaire pour ombre couleur
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '255,255,255';
+}
+
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -187,7 +177,7 @@ function showScreen(id){
 
 // --- BASE DE DONNÉES (LOBBY) ---
 async function fetchLobbyState() {
-    const {data, error} = await sb.from('bingo_state').select('data').eq('id', GAME_ID).maybeSingle();
+    const {data} = await sb.from('bingo_state').select('data').eq('id', GAME_ID).maybeSingle();
     return data?.data || null;
 }
 async function updateLobbyState(newState) {
@@ -208,18 +198,17 @@ async function joinLobby() {
         state = { phase: 'lobby', master: myPseudo, players: {} };
     }
 
-    if(Object.keys(state.players).length >= 2 && !state.players[myPseudo]) {
-        alert("La salle est pleine (2 joueurs max) !");
+    if(Object.keys(state.players).length >= 4 && !state.players[myPseudo]) {
+        alert("La salle est pleine (4 joueurs max) !");
         document.getElementById('joinBtn').disabled = false;
         document.getElementById('joinBtn').textContent = 'Entrer dans le Lobby';
         return;
     }
 
     isMaster = (state.master === myPseudo);
-    state.players[myPseudo] = { pseudo: myPseudo, avatar: myAvatar, color: myColor };
+    state.players[myPseudo] = { pseudo: myPseudo, avatar: myAvatar, colorCode: myColorCode, score: 0 };
     
     await updateLobbyState(state);
-    
     showScreen('screenLobby');
     startLobbySync(); 
 }
@@ -227,7 +216,6 @@ async function joinLobby() {
 // --- SYNCHRONISATION LOBBY ---
 function startLobbySync() {
     updateLobbyUI(null); 
-    
     if(dbSyncInterval) clearInterval(dbSyncInterval);
     dbSyncInterval = setInterval(async () => {
         const state = await fetchLobbyState();
@@ -243,8 +231,8 @@ function updateLobbyUI(state) {
     
     document.getElementById('playersList').innerHTML = playersList.map(p => `
         <div class="player-row">
-            <img src="${p.avatar}" class="player-avatar" style="border-color: ${p.color === 'cyan' ? 'var(--cyan)' : 'var(--magenta)'}" onerror="this.src='https://via.placeholder.com/40/333/fff?text=?'">
-            <span>${p.pseudo} <span style="font-size:11px; color:${p.color === 'cyan' ? 'var(--cyan)' : 'var(--magenta)'}">(${p.color})</span></span>
+            <img src="${p.avatar}" class="player-avatar" style="border-color: ${p.colorCode}" onerror="this.src='https://via.placeholder.com/40/333/fff?text=?'">
+            <span>${p.pseudo}</span>
             ${state.master === p.pseudo ? '<span class="badge badge-master">👑 Maître</span>' : ''}
         </div>
     `).join('');
@@ -252,12 +240,12 @@ function updateLobbyUI(state) {
     if(state.phase === 'lobby') {
         const controls = document.getElementById('lobbyControls');
         if(isMaster) {
-            controls.innerHTML = `<button class="btn-primary" onclick="launchGameFromLobby()">🏁 Lancer la course</button>`;
-            document.getElementById('lobbySubtitle').textContent = `Tu es le maître. Attends un adversaire.`;
+            controls.innerHTML = `<button class="btn-primary" onclick="launchGameFromLobby()">🏁 Démarrer la partie</button>`;
+            document.getElementById('lobbySubtitle').textContent = `Tu es le maître. Attends des adversaires.`;
             if(playersList.length < 2) controls.querySelector('button').disabled = true;
         } else {
             controls.innerHTML = '';
-            document.getElementById('lobbySubtitle').textContent = `Attends que ${state.master} lance la course...`;
+            document.getElementById('lobbySubtitle').textContent = `Attends que ${state.master} lance la partie...`;
         }
     } 
     else if(state.phase === 'playing' && gameState === 'lobby') {
@@ -279,31 +267,47 @@ async function launchGameFromLobby() {
 }
 
 // ==========================================
-// MOTEUR DE JEU KAVALE (BROADCAST EN DIRECT)
+// MOTEUR DE JEU (BROADCAST + ROUNDS)
 // ==========================================
 
 function initGameEngine(lobbyPlayers) {
     showScreen('screenGame');
     
-    playersGameData = {};
+    orderedPlayerNames = Object.keys(lobbyPlayers);
+    const numPlayers = orderedPlayerNames.length;
     
-    Object.values(lobbyPlayers).forEach(p => {
-        if(p.color === 'cyan') {
-            document.getElementById('hud-p1').style.opacity = '1';
-            document.getElementById('name-p1').textContent = p.pseudo;
-            document.getElementById('img-p1').src = p.avatar;
-            playersGameData[p.pseudo] = { x: 100, y: 300, color: '#00FFFF', direction: 'right', nextDir: 'right', trail: [], dead: false };
-        } else {
-            document.getElementById('hud-p2').style.opacity = '1';
-            document.getElementById('name-p2').textContent = p.pseudo;
-            document.getElementById('img-p2').src = p.avatar;
-            playersGameData[p.pseudo] = { x: 500, y: 300, color: '#FF00FF', direction: 'left', nextDir: 'left', trail: [], dead: false };
-        }
+    // Grille Dynamique : 500px (2j) | 650px (3j) | 800px (4j)
+    const newSize = 500 + ((numPlayers - 2) * 150);
+    canvas.width = newSize;
+    canvas.height = newSize;
+    
+    playersGameData = {};
+    const header = document.getElementById('gameHeader');
+    header.innerHTML = '';
+
+    orderedPlayerNames.forEach(pseudo => {
+        const p = lobbyPlayers[pseudo];
+        
+        // Initialiser les stats
+        playersGameData[pseudo] = { 
+            color: p.colorCode, score: 0, dead: false, 
+            x: 0, y: 0, direction: 'right', nextDir: 'right', trail: [] 
+        };
+        
+        // HUD
+        header.innerHTML += `
+            <div class="player-hud" id="hud-${pseudo}" style="color: ${p.colorCode};">
+                <img src="${p.avatar}" style="border-color: ${p.colorCode}">
+                <span>${pseudo} : <span class="score-hud" id="score-${pseudo}">0</span>/3</span>
+            </div>
+        `;
     });
+
+    resetPlayerPositions(); // Place les joueurs sur la grille
 
     realtimeChannel = sb.channel('kavale_arena');
     
-    // 1. Écouter les mouvements
+    // Mouvements
     realtimeChannel.on('broadcast', { event: 'move' }, (payload) => {
         const data = payload.payload;
         if(data.pseudo !== myPseudo && playersGameData[data.pseudo]) {
@@ -313,43 +317,70 @@ function initGameEngine(lobbyPlayers) {
         }
     });
 
-    // 2. Le Maître écoute les cris "Je suis prêt !" du Joueur 2
+    // Prêt Initial
     realtimeChannel.on('broadcast', { event: 'p2_ready' }, () => {
         if (isMaster && !isCountingDown) {
-            // Le maitre a entendu ! Il prévient tout le monde de démarrer.
-            realtimeChannel.send({ type: 'broadcast', event: 'start_game', payload: {} });
+            realtimeChannel.send({ type: 'broadcast', event: 'start_countdown', payload: {} });
             startCountdown();
         }
     });
 
-    // 3. Le Joueur 2 écoute le top départ du Maître
-    realtimeChannel.on('broadcast', { event: 'start_game' }, () => {
+    // Décompte
+    realtimeChannel.on('broadcast', { event: 'start_countdown' }, () => {
         if (!isMaster && !isCountingDown) {
-            clearInterval(syncSpamInterval); // On peut arrêter de crier
+            clearInterval(syncSpamInterval); 
             startCountdown();
         }
     });
 
-    // 4. On se connecte au réseau
+    // Nouvelle manche
+    realtimeChannel.on('broadcast', { event: 'next_round' }, () => {
+        if (!isMaster) prepareNextRound(false);
+    });
+
     realtimeChannel.subscribe((status) => {
         if (status === 'SUBSCRIBED') {
             document.getElementById('statusText').textContent = "SYNCHRONISATION...";
-            
             if (!isMaster) {
-                // Le joueur 2 spamme "je suis prêt" toutes les 500ms
-                syncSpamInterval = setInterval(() => {
-                    realtimeChannel.send({ type: 'broadcast', event: 'p2_ready', payload: {} });
-                }, 500);
-            } else if (Object.keys(lobbyPlayers).length === 1) {
-                // Si le maître est tout seul (test solo)
+                syncSpamInterval = setInterval(() => { realtimeChannel.send({ type: 'broadcast', event: 'p2_ready', payload: {} }); }, 500);
+            } else if (numPlayers === 1) {
                 startCountdown();
             }
         }
     });
 }
 
+// Place les motos équitablement selon la taille du terrain
+function resetPlayerPositions() {
+    const size = canvas.width;
+    const spawnPoints = [
+        { x: 100, y: size/2, dir: 'right' },            // Gauche, va à droite
+        { x: size - 100, y: size/2, dir: 'left' },      // Droite, va à gauche
+        { x: size/2, y: 100, dir: 'down' },             // Haut, va en bas
+        { x: size/2, y: size - 100, dir: 'up' }         // Bas, va en haut
+    ];
+
+    orderedPlayerNames.forEach((pseudo, index) => {
+        const p = playersGameData[pseudo];
+        const sp = spawnPoints[index];
+        // Arrondi pour coller à la grille
+        p.x = Math.round(sp.x / 10) * 10;
+        p.y = Math.round(sp.y / 10) * 10;
+        p.direction = sp.dir;
+        p.nextDir = sp.dir;
+        p.trail = [];
+        p.dead = false;
+        
+        // Transparence HUD
+        document.getElementById(`hud-${pseudo}`).style.opacity = '1';
+    });
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
 function startCountdown() {
     isCountingDown = true;
+    isRoundEnding = false;
     let count = 3;
     const statusEl = document.getElementById('statusText');
     const interval = setInterval(() => {
@@ -365,11 +396,12 @@ function startCountdown() {
     }, 1000);
 }
 
-// --- PHYSIQUE ET DESSIN ---
+// --- PHYSIQUE ---
 function updatePhysics() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (isRoundEnding) return;
 
-    const pseudos = Object.keys(playersGameData);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const pseudos = orderedPlayerNames;
     
     pseudos.forEach(pseudo => {
         const p = playersGameData[pseudo];
@@ -385,6 +417,7 @@ function updatePhysics() {
 
         checkCollisions(pseudo, pseudos);
 
+        // Dessin
         ctx.fillStyle = p.color;
         ctx.shadowBlur = 10;
         ctx.shadowColor = p.color;
@@ -402,7 +435,7 @@ function updatePhysics() {
 
 // --- CONTRÔLES ---
 window.addEventListener('keydown', e => {
-    if (gameState !== 'playing' || !playersGameData[myPseudo] || playersGameData[myPseudo].dead) return;
+    if (gameState !== 'playing' || isRoundEnding || !playersGameData[myPseudo] || playersGameData[myPseudo].dead) return;
 
     let newDir = null;
     const p = playersGameData[myPseudo];
@@ -415,68 +448,107 @@ window.addEventListener('keydown', e => {
     if (newDir && newDir !== p.nextDir) {
         p.nextDir = newDir;
         if(realtimeChannel) {
-            realtimeChannel.send({
-                type: 'broadcast',
-                event: 'move',
-                payload: { pseudo: myPseudo, direction: newDir, x: p.x, y: p.y }
-            });
+            realtimeChannel.send({ type: 'broadcast', event: 'move', payload: { pseudo: myPseudo, direction: newDir, x: p.x, y: p.y }});
         }
     }
 });
 
-// --- COLLISIONS ET FIN ---
+// --- COLLISIONS ---
 function checkCollisions(myId, allIds) {
     const p = playersGameData[myId];
-    
-    if (p.x < 0 || p.x >= canvas.width || p.y < 0 || p.y >= canvas.height) { p.dead = true; return;}
+    if (p.x < 0 || p.x >= canvas.width || p.y < 0 || p.y >= canvas.height) { p.dead = true; document.getElementById(`hud-${myId}`).style.opacity = '0.4'; return;}
 
     allIds.forEach(otherId => {
         const otherP = playersGameData[otherId];
         for (let i = 0; i < otherP.trail.length; i++) {
-            if (p.x === otherP.trail[i].x && p.y === otherP.trail[i].y) p.dead = true;
+            if (p.x === otherP.trail[i].x && p.y === otherP.trail[i].y) { p.dead = true; document.getElementById(`hud-${myId}`).style.opacity = '0.4';}
         }
         if (myId !== otherId && p.x === otherP.x && p.y === otherP.y) {
-            p.dead = true;
-            otherP.dead = true;
+            p.dead = true; otherP.dead = true;
+            document.getElementById(`hud-${myId}`).style.opacity = '0.4';
+            document.getElementById(`hud-${otherId}`).style.opacity = '0.4';
         }
     });
 }
 
+// --- GESTION DES MANCHES (3 GAGNANTES) ---
 function checkWinCondition(allIds) {
     const alive = allIds.filter(id => !playersGameData[id].dead);
-    const statusEl = document.getElementById('statusText');
-
-    if (alive.length === 0 && allIds.length > 0) {
-        clearInterval(gameLoop);
-        statusEl.textContent = "CRASH TOTAL ! ÉGALITÉ";
-        statusEl.style.color = "white";
-        endGameCleanup();
-    } else if (alive.length === 1 && allIds.length > 1) {
-        clearInterval(gameLoop);
-        const winner = playersGameData[alive[0]];
-        statusEl.textContent = `VICTOIRE ${alive[0]} !`;
-        statusEl.style.color = winner.color;
-        endGameCleanup();
+    // Si la manche est finie (il reste 0 ou 1 joueur, avec un minimum de 2 joueurs au total)
+    if (alive.length <= 1 && allIds.length > 1) {
+        isRoundEnding = true;
+        handleRoundEnd(alive);
+    } else if (allIds.length === 1 && alive.length === 0) {
+        // Mode solo
+        isRoundEnding = true;
+        handleRoundEnd([]);
     }
 }
 
+function handleRoundEnd(alivePlayers) {
+    clearInterval(gameLoop);
+    const statusEl = document.getElementById('statusText');
+
+    if(alivePlayers.length === 0) {
+        statusEl.textContent = "CRASH TOTAL ! MANCHE NULLE";
+        statusEl.style.color = "white";
+        setTimeout(() => prepareNextRound(true), 3000);
+    } else {
+        const winnerPseudo = alivePlayers[0];
+        const winner = playersGameData[winnerPseudo];
+        winner.score++;
+        document.getElementById(`score-${winnerPseudo}`).textContent = winner.score;
+        
+        if(winner.score >= 3) {
+            statusEl.textContent = `🏆 VICTOIRE TOTALE DE ${winnerPseudo} ! 🏆`;
+            statusEl.style.color = winner.color;
+            endGameCleanup();
+        } else {
+            statusEl.textContent = `MANCHE POUR ${winnerPseudo} !`;
+            statusEl.style.color = winner.color;
+            setTimeout(() => prepareNextRound(true), 3000);
+        }
+    }
+}
+
+function prepareNextRound(triggerBroadcast) {
+    resetPlayerPositions();
+    if(isMaster && triggerBroadcast) {
+        realtimeChannel.send({ type: 'broadcast', event: 'next_round', payload: {} });
+        startCountdown();
+    } else if (!isMaster && !triggerBroadcast) {
+        // Appelé par le broadcast reçu
+        startCountdown();
+    }
+}
+
+// --- NETTOYAGE DB (TRÈS IMPORTANT) ---
 async function endGameCleanup() {
     if(realtimeChannel) {
         setTimeout(() => sb.removeChannel(realtimeChannel), 2000);
     }
     if(isMaster) {
-        setTimeout(async () => {
-             let state = await fetchLobbyState();
-             state.phase = 'lobby';
-             await updateLobbyState(state);
-             location.reload(); 
-        }, 5000);
+        // LE MAITRE SUPPRIME LA LIGNE DANS SUPABASE !
+        await sb.from('bingo_state').delete().eq('id', GAME_ID);
+        setTimeout(() => location.reload(), 6000);
     } else {
-        setTimeout(() => location.reload(), 5000);
+        setTimeout(() => location.reload(), 6000);
     }
 }
 
-window.onload = renderAvatarSelection;
+// --- BONUS : Sécurité si on ferme l'onglet pendant le lobby ---
+window.addEventListener("beforeunload", async (e) => {
+    if (gameState === 'lobby' && isMaster) {
+        // Le maître part : on détruit le lobby pour ne pas bloquer les autres
+        await sb.from('bingo_state').delete().eq('id', GAME_ID);
+    }
+});
+
+// Selection par défaut au chargement
+window.onload = () => {
+    document.querySelectorAll('.bike-option')[0].click();
+    renderAvatarSelection();
+};
 </script>
 </body>
 </html>
