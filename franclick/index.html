@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FRANCLICK 🖱️</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;700&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg: #0b0c10; --surface: #14141e; --border: #1f2833;
+        --cyan: #00FFFF; --magenta: #FF00FF; --yellow: #FFFF00;
+        --text: #c5c6c7;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    
+    body {
+        background-color: var(--bg); color: var(--text);
+        font-family: 'DM Sans', sans-serif; height: 100vh;
+        display: flex; flex-direction: column; overflow: hidden;
+    }
+
+    /* HEADER */
+    header {
+        text-align: center; padding: 15px; background: rgba(0,0,0,0.5);
+        border-bottom: 2px solid var(--border);
+    }
+    h1 {
+        font-family: 'Bebas Neue'; font-size: 40px; letter-spacing: 4px;
+        background: linear-gradient(90deg, var(--cyan), var(--magenta));
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    /* LAYOUT 3 COLONNES */
+    .game-container { display: flex; flex: 1; overflow: hidden; }
+
+    /* COLONNE GAUCHE : LE CLIC */
+    .col-left {
+        width: 30%; border-right: 2px solid var(--border);
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        background: radial-gradient(circle at center, #1a1a2e 0%, #0b0c10 100%);
+    }
+
+    .score-container { text-align: center; margin-bottom: 40px; }
+    .score-number { font-family: 'Bebas Neue'; font-size: 60px; color: white; text-shadow: 0 0 20px var(--cyan); }
+    .score-bps { font-size: 16px; color: var(--cyan); font-weight: bold; }
+
+    /* LE FRANCKY */
+    .francky-btn {
+        width: 250px; height: 250px; border-radius: 50%;
+        background-image: url('../bingoudalo/avatar/francky.jpg'); 
+        background-size: cover; background-position: center;
+        border: 4px solid var(--cyan);
+        box-shadow: 0 0 50px rgba(0, 255, 255, 0.4), inset 0 0 20px rgba(0,0,0,0.8);
+        cursor: pointer; transition: transform 0.05s ease;
+    }
+    .francky-btn:active { transform: scale(0.95); box-shadow: 0 0 80px rgba(0, 255, 255, 0.8); }
+
+    /* COLONNE MILIEU : LE VISUEL */
+    .col-center {
+        width: 45%; padding: 20px; overflow-y: auto;
+        display: flex; flex-direction: column; gap: 15px;
+    }
+    .visual-row {
+        background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+        border-radius: 10px; padding: 10px; min-height: 80px;
+        display: flex; flex-wrap: wrap; gap: 8px; align-items: center; align-content: flex-start;
+    }
+    
+    /* Le conteneur d'une image sur l'étagère */
+    .visual-item {
+        width: 45px; height: 45px; border-radius: 5px; background: #000;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 0 10px rgba(0,0,0,0.8); overflow: hidden;
+        border: 1px solid #444;
+    }
+
+    /* COLONNE DROITE : LA BOUTIQUE */
+    .col-right {
+        width: 25%; border-left: 2px solid var(--border);
+        background: var(--surface); overflow-y: auto; padding: 20px;
+    }
+    .shop-title {
+        font-family: 'Bebas Neue'; font-size: 28px; text-align: center;
+        margin-bottom: 20px; color: var(--magenta); border-bottom: 2px solid; padding-bottom: 10px;
+    }
+
+    .shop-item {
+        background: rgba(0,0,0,0.4); border: 2px solid var(--border);
+        border-radius: 10px; padding: 15px; margin-bottom: 15px;
+        cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center;
+    }
+    .shop-item:hover { border-color: var(--magenta); background: rgba(255,0,255,0.1); }
+    .shop-item.disabled { opacity: 0.5; filter: grayscale(1); cursor: not-allowed; }
+    .shop-item.disabled:hover { border-color: var(--border); background: rgba(0,0,0,0.4); }
+
+    .item-info h3 { font-size: 16px; color: white; margin-bottom: 5px; display: flex; align-items: center; }
+    .item-info p { font-size: 12px; color: #888; margin-left: 35px;}
+    .item-cost { font-weight: bold; color: var(--magenta); font-size: 16px; margin-left: 35px; margin-top: 5px;}
+    .item-count { font-family: 'Bebas Neue'; font-size: 30px; color: #555; }
+
+    /* CSS POUR LES IMAGES DE TES POTES */
+    .upgrade-icon {
+        width: 30px; height: 30px; object-fit: cover; border-radius: 4px; 
+        margin-right: 8px; border: 1px solid #555;
+    }
+    /* Sur l'étagère du milieu, l'image prend toute la place du bloc */
+    .visual-item .upgrade-icon {
+        width: 100%; height: 100%; margin: 0; border: none; border-radius: 0;
+    }
+
+    /* BOUTON RESET */
+    .reset-btn {
+        margin-top: 30px; width: 100%; padding: 10px; background: transparent;
+        border: 1px solid red; color: red; border-radius: 5px; cursor: pointer;
+        font-family: 'DM Sans'; font-weight: bold; text-transform: uppercase;
+    }
+    .reset-btn:hover { background: red; color: white; }
+
+</style>
+</head>
+<body>
+
+    <header>
+        <h1>FRANCLICK</h1>
+    </header>
+
+    <div class="game-container">
+        
+        <div class="col-left">
+            <div class="score-container">
+                <div class="score-number" id="scoreDisplay">0</div>
+                <div class="score-bps" id="bpsDisplay">0 pts / sec</div>
+            </div>
+            <div class="francky-btn" id="franckyBtn" onclick="clickFrancky()"></div>
+        </div>
+
+        <div class="col-center" id="visualCenter">
+            </div>
+
+        <div class="col-right">
+            <div class="shop-title">MARCHÉ NOIR</div>
+            <div id="shopContainer">
+                </div>
+            <button class="reset-btn" onclick="resetGame()">Effacer la sauvegarde</button>
+        </div>
+
+    </div>
+
+<script>
+    // --- VARIABLES GLOBALES ---
+    let score = 0;
+    let scorePerSecond = 0;
+
+    // --- LA BOUTIQUE (Tes références exactes !) ---
+    // Les icônes sont maintenant des balises <img> qui pointent vers les fichiers de ton dossier bingoudalo/avatar
+    let buildings = [
+        { 
+            id: 'tom', 
+            name: 'Suce un peu', 
+            baseCost: 15, 
+            bps: 1, 
+            icon: '<img src="../bingoudalo/avatar/tom.jpg" class="upgrade-icon">', 
+            count: 0 
+        },
+        { 
+            id: 'affronte', 
+            name: 'Affronte mon regard', 
+            baseCost: 100, 
+            bps: 5, 
+            icon: '<img src="../bingoudalo/avatar/affronte.jpg" class="upgrade-icon">', 
+            count: 0 
+        },
+        { 
+            id: 'epstein', 
+            name: "De l'argent contre votre fils", 
+            baseCost: 1100, 
+            bps: 50, 
+            icon: '<img src="../bingoudalo/avatar/epstein.jpg" class="upgrade-icon">', 
+            count: 0 
+        },
+        { 
+            id: 'complexe', 
+            name: 'Complexe cette bite', 
+            baseCost: 12000, 
+            bps: 400, 
+            icon: '<img src="../bingoudalo/avatar/wilbaut_suss.jpg" class="upgrade-icon">', 
+            count: 0 
+        }
+    ];
+
+    // --- INITIALISATION ---
+    function initGame() {
+        loadGame();
+        renderShop();
+        renderVisuals();
+        updateScoreUI();
+        
+        // La boucle principale (tourne 10 fois par seconde pour une fluidité parfaite)
+        setInterval(gameLoop, 100);
+        
+        // Sauvegarde auto toutes les 5 secondes
+        setInterval(saveGame, 5000);
+    }
+
+    // --- MÉCANIQUES DE JEU ---
+    function clickFrancky() {
+        // Le clic rapporte 1 par défaut, ou plus si on veut faire des améliorations de clic !
+        score += 1; 
+        updateScoreUI();
+        updateShopColors();
+    }
+
+    function gameLoop() {
+        // On ajoute un dixième des points par seconde (car la boucle tourne toutes les 100ms)
+        score += scorePerSecond / 10;
+        updateScoreUI();
+        updateShopColors();
+    }
+
+    function buyBuilding(index) {
+        let b = buildings[index];
+        let cost = getCost(b);
+
+        if (score >= cost) {
+            score -= cost;
+            b.count += 1;
+            
+            recalculateBPS();
+            renderShop(); // Met à jour les prix
+            renderVisuals(); // Ajoute la photo au milieu
+            updateScoreUI();
+            saveGame();
+        }
+    }
+
+    // --- CALCULS ---
+    // Le prix augmente de 15% à chaque achat
+    function getCost(building) {
+        return Math.floor(building.baseCost * Math.pow(1.15, building.count));
+    }
+
+    function recalculateBPS() {
+        scorePerSecond = 0;
+        buildings.forEach(b => {
+            scorePerSecond += b.count * b.bps;
+        });
+    }
+
+    // --- GESTION DE L'INTERFACE (UI) ---
+    function updateScoreUI() {
+        document.getElementById('scoreDisplay').innerText = Math.floor(score);
+        document.getElementById('bpsDisplay').innerText = scorePerSecond + " pts / sec";
+    }
+
+    // Grise les objets qu'on ne peut pas acheter
+    function updateShopColors() {
+        buildings.forEach((b, index) => {
+            let el = document.getElementById('shop-item-' + index);
+            if (el) {
+                if (score >= getCost(b)) {
+                    el.classList.remove('disabled');
+                } else {
+                    el.classList.add('disabled');
+                }
+            }
+        });
+    }
+
+    function renderShop() {
+        const shopContainer = document.getElementById('shopContainer');
+        shopContainer.innerHTML = '';
+
+        buildings.forEach((b, index) => {
+            let currentCost = getCost(b);
+            let disabledClass = score >= currentCost ? '' : 'disabled';
+
+            shopContainer.innerHTML += `
+                <div class="shop-item ${disabledClass}" id="shop-item-${index}" onclick="buyBuilding(${index})">
+                    <div class="item-info">
+                        <h3>${b.icon} ${b.name}</h3>
+                        <p>Génère ${b.bps} pts/s</p>
+                        <div class="item-cost">${currentCost} pts</div>
+                    </div>
+                    <div class="item-count">${b.count}</div>
+                </div>
+            `;
+        });
+    }
+
+    function renderVisuals() {
+        const visualCenter = document.getElementById('visualCenter');
+        visualCenter.innerHTML = '';
+
+        buildings.forEach(b => {
+            // On affiche une étagère seulement si on possède au moins 1 image de ce type
+            if (b.count > 0) {
+                let rowHtml = `<div class="visual-row">`;
+                // On dessine autant d'images que le nombre possédé
+                for(let i = 0; i < b.count; i++) {
+                    rowHtml += `<div class="visual-item">${b.icon}</div>`;
+                }
+                rowHtml += `</div>`;
+                visualCenter.innerHTML += rowHtml;
+            }
+        });
+    }
+
+    // --- SAUVEGARDE (LocalStorage) ---
+    function saveGame() {
+        let saveData = {
+            score: score,
+            buildings: buildings.map(b => b.count)
+        };
+        localStorage.setItem('franclickSave', JSON.stringify(saveData));
+    }
+
+    function loadGame() {
+        let saveFile = localStorage.getItem('franclickSave');
+        if (saveFile) {
+            let saveData = JSON.parse(saveFile);
+            score = saveData.score;
+            if(saveData.buildings) {
+                buildings.forEach((b, index) => {
+                    b.count = saveData.buildings[index] || 0;
+                });
+            }
+            recalculateBPS();
+        }
+    }
+
+    function resetGame() {
+        if(confirm("T'es sûr de vouloir tout effacer ? Tu vas retomber à 0 !")) {
+            localStorage.removeItem('franclickSave');
+            location.reload(); 
+        }
+    }
+
+    // Lancer le jeu au chargement de la page
+    window.onload = initGame;
+
+</script>
+</body>
+</html>
