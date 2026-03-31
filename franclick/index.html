@@ -45,11 +45,10 @@
     .score-number { font-family: 'Bebas Neue'; font-size: 60px; color: white; text-shadow: 0 0 20px var(--cyan); }
     .score-bps { font-size: 16px; color: var(--cyan); font-weight: bold; }
 
-    /* LE FRANCKY */
+    /* LE FRANCKY (REMIS EN JPG) */
     .francky-btn {
         width: 250px; height: 250px; border-radius: 50%;
-        /* CORRECTION : L'image principale de Francky en .png */
-        background-image: url('../bingoudalo/avatar/francky.png'); 
+        background-image: url('../bingoudalo/avatar/francky.jpg'); 
         background-size: cover; background-position: center;
         border: 4px solid var(--cyan);
         box-shadow: 0 0 50px rgba(0, 255, 255, 0.4), inset 0 0 20px rgba(0,0,0,0.8);
@@ -63,9 +62,13 @@
         display: flex; flex-direction: column; gap: 15px;
     }
     .visual-row {
-        background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+        /* On retire le background par défaut pour laisser le JS faire la magie */
+        border: 1px solid var(--border);
         border-radius: 10px; padding: 10px; min-height: 80px;
         display: flex; flex-wrap: wrap; gap: 8px; align-items: center; align-content: flex-start;
+        background-size: cover;
+        background-position: center;
+        box-shadow: inset 0 0 20px rgba(0,0,0,0.8); /* Petite ombre interne pour faire style "boîte" */
     }
     
     /* Le conteneur d'une image sur l'étagère */
@@ -105,7 +108,6 @@
         width: 30px; height: 30px; object-fit: cover; border-radius: 4px; 
         margin-right: 8px; border: 1px solid #555;
     }
-    /* Sur l'étagère du milieu, l'image prend toute la place du bloc */
     .visual-item .upgrade-icon {
         width: 100%; height: 100%; margin: 0; border: none; border-radius: 0;
     }
@@ -154,7 +156,8 @@
     let scorePerSecond = 0;
 
     // --- LA BOUTIQUE ---
-    // CORRECTION : Les icônes pointent maintenant vers des fichiers .png !
+    // TOUTES LES IMAGES SONT REMISES EN .jpg !
+    // J'ai ajouté une propriété 'bg' pour personnaliser le fond de la rangée au milieu.
     let buildings = [
         { 
             id: 'tom', 
@@ -162,7 +165,8 @@
             baseCost: 15, 
             bps: 1, 
             icon: '<img src="../bingoudalo/avatar/tom.png" class="upgrade-icon">', 
-            count: 0 
+            count: 0,
+            bg: 'linear-gradient(90deg, rgba(20, 10, 40, 0.8), rgba(0, 0, 0, 0.5))' // Dégradé violet sombre
         },
         { 
             id: 'affronte', 
@@ -170,7 +174,8 @@
             baseCost: 100, 
             bps: 5, 
             icon: '<img src="../bingoudalo/avatar/affronte.png" class="upgrade-icon">', 
-            count: 0 
+            count: 0,
+            bg: 'linear-gradient(90deg, rgba(0, 40, 40, 0.8), rgba(0, 0, 0, 0.5))' // Dégradé cyan sombre
         },
         { 
             id: 'epstein', 
@@ -178,7 +183,8 @@
             baseCost: 1100, 
             bps: 50, 
             icon: '<img src="../bingoudalo/avatar/epstein.png" class="upgrade-icon">', 
-            count: 0 
+            count: 0,
+            bg: 'linear-gradient(90deg, rgba(50, 0, 0, 0.8), rgba(0, 0, 0, 0.5))' // Dégradé rouge sombre
         },
         { 
             id: 'complexe', 
@@ -186,7 +192,10 @@
             baseCost: 12000, 
             bps: 400, 
             icon: '<img src="../bingoudalo/avatar/wilbaut_suss.png" class="upgrade-icon">', 
-            count: 0 
+            count: 0,
+            /* Si tu veux mettre une image de fond au lieu d'une couleur, utilise cette syntaxe : */
+            /* bg: 'url("../images/ton-image-de-fond.jpg")' */
+            bg: 'linear-gradient(90deg, rgba(50, 50, 0, 0.8), rgba(0, 0, 0, 0.5))' // Dégradé jaune sombre
         }
     ];
 
@@ -197,10 +206,7 @@
         renderVisuals();
         updateScoreUI();
         
-        // La boucle principale
         setInterval(gameLoop, 100);
-        
-        // Sauvegarde auto
         setInterval(saveGame, 5000);
     }
 
@@ -291,7 +297,8 @@
 
         buildings.forEach(b => {
             if (b.count > 0) {
-                let rowHtml = `<div class="visual-row">`;
+                // MAGIE ICI : On applique le style 'bg' directement à la rangée !
+                let rowHtml = `<div class="visual-row" style="background: ${b.bg};">`;
                 for(let i = 0; i < b.count; i++) {
                     rowHtml += `<div class="visual-item">${b.icon}</div>`;
                 }
