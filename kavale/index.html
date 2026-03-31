@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kavale - Multiplayer</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { 
+            background-color: #0b0c10; 
+            color: white; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0;
+            background-image: linear-gradient(0deg, #111 25%, #0b0c10 100%);
+        }
+        h1 {
+            color: #00FFFF;
+            text-shadow: 0 0 10px #00FFFF;
+            font-style: italic;
+            text-transform: uppercase;
+        }
+        #menu { 
+            background: rgba(20, 20, 30, 0.8); 
+            padding: 40px; 
+            border: 2px solid #333; 
+            border-radius: 15px; 
+            text-align: center; 
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+        input { 
+            padding: 12px; 
+            margin: 15px 0; 
+            width: 80%; 
+            font-size: 16px; 
+            text-align: center;
+            background: #111;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 5px;
+        }
+        .btn-container { display: flex; gap: 15px; justify-content: center; margin-top: 10px; }
+        button { 
+            padding: 12px 25px; 
+            font-size: 16px; 
+            cursor: pointer; 
+            border: none; 
+            font-weight: bold;
+            border-radius: 5px;
+            text-transform: uppercase;
+            transition: 0.2s;
+        }
+        #btnP1 { background-color: #00FFFF; color: #000; box-shadow: 0 0 10px #00FFFF; }
+        #btnP1:hover { box-shadow: 0 0 20px #00FFFF; transform: scale(1.05); }
+        #btnP2 { background-color: #FF00FF; color: #000; box-shadow: 0 0 10px #FF00FF; }
+        #btnP2:hover { box-shadow: 0 0 20px #FF00FF; transform: scale(1.05); }
+        
+        #gameContainer { display: none; text-align: center; }
+        canvas { 
+            border: 4px solid #333; 
+            background: #000; 
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px; /* Effet grille Tron */
+        }
+        #status { 
+            margin-bottom: 20px; 
+            font-size: 24px; 
+            font-weight: bold;
+            text-transform: uppercase; 
+            height: 30px;
+        }
+        .hub-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #aaa;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .hub-link:hover { color: white; }
+    </style>
+</head>
+<body>
+
+    <a href="../index.html" class="hub-link">← Retour au Hub</a>
+
+    <div id="menu">
+        <h1>KAVALE</h1>
+        <p>Entrez un nom de salle secret pour jouer avec un ami</p>
+        <input type="text" id="roomName" placeholder="Ex: salle-secrete-123">
+        
+        <div class="btn-container">
+            <button id="btnP1">Joueur 1 (Cyan)</button>
+            <button id="btnP2">Joueur 2 (Magenta)</button>
+        </div>
+        <p style="color: #666; font-size: 0.9em; margin-top: 20px;">Contrôles : Flèches directionnelles</p>
+    </div>
+
+    <div id="gameContainer">
+        <div id="status">En attente...</div>
+        <canvas id="gameCanvas" width="600" height="600"></canvas>
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
