@@ -3,18 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CDSI GAMES - Salle d'arcade de Paulylow</title>
+    <title>CDSI GAMES - Salle d'arcade</title>
     <style>
-        /* Style global (Thème Sombre / Gaming) */
+        /* =========================================
+           LE FOND ANIMÉ EN PUR CSS (COULEURS CHAUDES)
+           ========================================= */
         body {
             margin: 0;
             padding: 0;
-            background-color: #0d0e11; /* Un peu plus sombre */
+            /* Le dégradé qui mélange rouge foncé, orange et jaune chaud */
+            background: linear-gradient(-45deg, #2b0b12, #7a1b1b, #c0392b, #d35400);
+            background-size: 400% 400%; /* On l'agrandit pour pouvoir l'animer */
+            animation: fondChaud 15s ease infinite; /* Animation fluide en boucle */
+            
             color: white;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
+            min-height: 100vh; /* S'assure que le fond prend au moins tout l'écran */
+        }
+
+        /* L'animation qui fait bouger le dégradé */
+        @keyframes fondChaud {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         header {
@@ -28,57 +42,68 @@
 
         /* LOGO PRINCIPAL */
         .main-logo {
-            max-width: 400px; /* Taille maximale du logo */
+            max-width: 400px;
             width: 100%;
             height: auto;
-            border-radius: 10px; /* Légers arrondis */
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3); /* Effet neon */
+            border-radius: 10px;
+            /* Une ombre jaune/orange pour le faire ressortir */
+            box-shadow: 0 0 30px rgba(243, 156, 18, 0.4);
+            transition: transform 0.3s ease;
+        }
+
+        .main-logo:hover {
+            transform: scale(1.02); /* Petit effet de zoom au survol */
         }
 
         p.subtitle {
-            color: #aaa;
+            color: #f1c40f; /* Un jaune clair pour le sous-titre */
             font-size: 1.2em;
             margin-top: -15px;
             margin-bottom: 30px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
         /* La grille pour les jeux */
         .games-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Un peu plus large pour les vignettes */
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 30px;
             width: 85%;
             max-width: 1100px;
             padding: 20px;
+            margin-bottom: 50px;
         }
 
-        /* Le style d'une vignette (Carte cliquable) */
+        /* Le style d'une vignette */
         .game-card {
-            background-color: #1a1a24;
-            border-radius: 20px; /* Arrondis correspondants aux images */
+            background-color: rgba(20, 20, 20, 0.7); /* Fond noir légèrement transparent */
+            border-radius: 20px;
             overflow: hidden;
-            text-decoration: none; /* Enlever le soulignement du lien */
+            text-decoration: none;
             color: white;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             border: 2px solid transparent;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            backdrop-filter: blur(5px); /* Effet verre trempé (glassmorphism) */
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
         }
 
         .game-card:hover {
             transform: translateY(-10px);
-            border-color: #FF00FF; /* Neon rose au survol */
-            box-shadow: 0 10px 25px rgba(255, 0, 255, 0.3);
+            border-color: #f39c12; /* Bordure orange au survol */
+            box-shadow: 0 15px 30px rgba(211, 84, 0, 0.5);
         }
 
         /* L'image de la vignette */
         .game-thumbnail {
             width: 100%;
-            height: 180px; /* Un peu plus haut */
-            background-color: #2a2a35; /* Couleur de fond si l'image ne charge pas */
-            object-fit: cover; /* Recadre l'image proprement */
-            border-bottom: 2px solid #333; /* Séparation fine */
+            height: 180px;
+            background-color: #2a2a35;
+            object-fit: cover;
+            border-bottom: 2px solid #f39c12;
         }
 
         /* Le texte sous l'image */
@@ -90,14 +115,14 @@
         .game-info h2 {
             margin: 0 0 10px 0;
             font-size: 1.6em;
-            background: linear-gradient(90deg, #00FFFF, #FF00FF);
+            background: linear-gradient(90deg, #f1c40f, #e67e22);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
         .game-info span {
             font-size: 0.9em;
-            color: #bbb;
+            color: #bdc3c7;
         }
     </style>
 </head>
@@ -107,7 +132,7 @@
         <img src="images/cdsi-games-logo.png" alt="CDSI GAMES" class="main-logo">
     </header>
     
-    <p class="subtitle">Sélectionne un jeu pour commencer</p>
+    <p class="subtitle">Sélectionne un jeu</p>
 
     <div class="games-grid">
         
