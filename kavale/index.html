@@ -58,6 +58,15 @@
   .player-hud .score-hud { font-size: 20px; font-family: 'Bebas Neue'; background: rgba(255,255,255,0.1); padding: 2px 10px; border-radius: 5px; }
   #statusText { font-family: 'Bebas Neue'; font-size: 38px; letter-spacing: 2px; text-align: center; height: 45px;}
 
+  /* ÉCRAN DE VICTOIRE */
+  .victory-card { text-align: center; padding: 40px; background: rgba(20,20,30,0.95); border: 2px solid; border-radius: 20px; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); backdrop-filter: blur(10px); width: 100%; max-width: 500px; display: flex; flex-direction: column; align-items: center;}
+  .victory-avatar { width: 120px; height: 120px; border-radius: 50%; border: 4px solid; margin-bottom: 20px; object-fit: cover; }
+  .victory-title { font-family: 'Bebas Neue'; font-size: 70px; margin-bottom: 5px; letter-spacing: 4px;}
+  .victory-name { font-size: 35px; margin-bottom: 30px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;}
+  .btn-outline { background: transparent; border: 2px solid #555; color: white; box-shadow: none; margin-top: 15px;}
+  .btn-outline:hover { border-color: white; transform: translateY(-2px);}
+  @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
 </style>
 </head>
 <body>
@@ -107,6 +116,17 @@
     <div class="game-header" id="gameHeader"></div>
     <canvas id="gameCanvas" width="600" height="600"></canvas>
     <p style="color: #666; font-size: 12px; margin-top: 15px; text-transform: uppercase; letter-spacing: 1px;">Contrôles : Flèches directionnelles</p>
+</div>
+
+<div class="screen" id="screenVictory">
+  <div class="logo" style="margin-bottom: 40px;">KAVALE</div>
+  <div class="victory-card" id="victoryCard">
+    <h2 class="victory-title" id="victoryTitle">VICTOIRE !</h2>
+    <img src="" id="victoryAvatar" class="victory-avatar" onerror="this.src='https://via.placeholder.com/120/333/fff?text=?'">
+    <div class="victory-name" id="victoryName">Pseudo</div>
+    <button class="btn-primary" onclick="location.reload()">🔄 Rejouer</button>
+    <button class="btn-outline" onclick="window.location.href='../index.html'">🏠 Retour au Hub</button>
+  </div>
 </div>
 
 <script>
@@ -288,9 +308,9 @@ function initGameEngine(lobbyPlayers) {
     orderedPlayerNames.forEach(pseudo => {
         const p = lobbyPlayers[pseudo];
         
-        // Initialiser les stats
+        // On sauvegarde aussi l'avatar pour l'écran de victoire !
         playersGameData[pseudo] = { 
-            color: p.colorCode, score: 0, dead: false, 
+            color: p.colorCode, avatar: p.avatar, score: 0, dead: false, 
             x: 0, y: 0, direction: 'right', nextDir: 'right', trail: [] 
         };
         
@@ -303,11 +323,10 @@ function initGameEngine(lobbyPlayers) {
         `;
     });
 
-    resetPlayerPositions(); // Place les joueurs sur la grille
+    resetPlayerPositions(); 
 
     realtimeChannel = sb.channel('kavale_arena');
     
-    // Mouvements
     realtimeChannel.on('broadcast', { event: 'move' }, (payload) => {
         const data = payload.payload;
         if(data.pseudo !== myPseudo && playersGameData[data.pseudo]) {
@@ -317,7 +336,6 @@ function initGameEngine(lobbyPlayers) {
         }
     });
 
-    // Prêt Initial
     realtimeChannel.on('broadcast', { event: 'p2_ready' }, () => {
         if (isMaster && !isCountingDown) {
             realtimeChannel.send({ type: 'broadcast', event: 'start_countdown', payload: {} });
@@ -325,7 +343,6 @@ function initGameEngine(lobbyPlayers) {
         }
     });
 
-    // Décompte
     realtimeChannel.on('broadcast', { event: 'start_countdown' }, () => {
         if (!isMaster && !isCountingDown) {
             clearInterval(syncSpamInterval); 
@@ -333,7 +350,6 @@ function initGameEngine(lobbyPlayers) {
         }
     });
 
-    // Nouvelle manche
     realtimeChannel.on('broadcast', { event: 'next_round' }, () => {
         if (!isMaster) prepareNextRound(false);
     });
@@ -350,20 +366,18 @@ function initGameEngine(lobbyPlayers) {
     });
 }
 
-// Place les motos équitablement selon la taille du terrain
 function resetPlayerPositions() {
     const size = canvas.width;
     const spawnPoints = [
-        { x: 100, y: size/2, dir: 'right' },            // Gauche, va à droite
-        { x: size - 100, y: size/2, dir: 'left' },      // Droite, va à gauche
-        { x: size/2, y: 100, dir: 'down' },             // Haut, va en bas
-        { x: size/2, y: size - 100, dir: 'up' }         // Bas, va en haut
+        { x: 100, y: size/2, dir: 'right' },            
+        { x: size - 100, y: size/2, dir: 'left' },      
+        { x: size/2, y: 100, dir: 'down' },             
+        { x: size/2, y: size - 100, dir: 'up' }         
     ];
 
     orderedPlayerNames.forEach((pseudo, index) => {
         const p = playersGameData[pseudo];
         const sp = spawnPoints[index];
-        // Arrondi pour coller à la grille
         p.x = Math.round(sp.x / 10) * 10;
         p.y = Math.round(sp.y / 10) * 10;
         p.direction = sp.dir;
@@ -371,7 +385,6 @@ function resetPlayerPositions() {
         p.trail = [];
         p.dead = false;
         
-        // Transparence HUD
         document.getElementById(`hud-${pseudo}`).style.opacity = '1';
     });
     
@@ -417,7 +430,6 @@ function updatePhysics() {
 
         checkCollisions(pseudo, pseudos);
 
-        // Dessin
         ctx.fillStyle = p.color;
         ctx.shadowBlur = 10;
         ctx.shadowColor = p.color;
@@ -471,15 +483,15 @@ function checkCollisions(myId, allIds) {
     });
 }
 
-// --- GESTION DES MANCHES (3 GAGNANTES) ---
+// --- GESTION DES MANCHES ET VICTOIRE ---
 function checkWinCondition(allIds) {
     const alive = allIds.filter(id => !playersGameData[id].dead);
-    // Si la manche est finie (il reste 0 ou 1 joueur, avec un minimum de 2 joueurs au total)
+    
     if (alive.length <= 1 && allIds.length > 1) {
         isRoundEnding = true;
         handleRoundEnd(alive);
     } else if (allIds.length === 1 && alive.length === 0) {
-        // Mode solo
+        // Test Solo
         isRoundEnding = true;
         handleRoundEnd([]);
     }
@@ -500,9 +512,9 @@ function handleRoundEnd(alivePlayers) {
         document.getElementById(`score-${winnerPseudo}`).textContent = winner.score;
         
         if(winner.score >= 3) {
-            statusEl.textContent = `🏆 VICTOIRE TOTALE DE ${winnerPseudo} ! 🏆`;
+            statusEl.textContent = `🏆 VICTOIRE TOTALE ! 🏆`;
             statusEl.style.color = winner.color;
-            endGameCleanup();
+            setTimeout(() => triggerVictoryScreen(winnerPseudo), 2000);
         } else {
             statusEl.textContent = `MANCHE POUR ${winnerPseudo} !`;
             statusEl.style.color = winner.color;
@@ -517,34 +529,46 @@ function prepareNextRound(triggerBroadcast) {
         realtimeChannel.send({ type: 'broadcast', event: 'next_round', payload: {} });
         startCountdown();
     } else if (!isMaster && !triggerBroadcast) {
-        // Appelé par le broadcast reçu
         startCountdown();
     }
 }
 
-// --- NETTOYAGE DB (TRÈS IMPORTANT) ---
-async function endGameCleanup() {
+// --- L'ÉCRAN DE VICTOIRE ET NETTOYAGE ---
+async function triggerVictoryScreen(winnerPseudo) {
+    const winner = playersGameData[winnerPseudo];
+    
+    // Mettre à jour l'écran de victoire
+    document.getElementById('victoryName').textContent = winnerPseudo;
+    document.getElementById('victoryName').style.color = winner.color;
+    document.getElementById('victoryAvatar').src = winner.avatar;
+    document.getElementById('victoryAvatar').style.borderColor = winner.color;
+    
+    // Dynamiser les néons avec la couleur du gagnant
+    document.getElementById('victoryCard').style.borderColor = winner.color;
+    document.getElementById('victoryCard').style.boxShadow = `0 0 50px ${winner.color}`;
+    document.getElementById('victoryTitle').style.color = winner.color;
+    document.getElementById('victoryTitle').style.textShadow = `0 0 20px ${winner.color}`;
+
+    // Afficher l'écran
+    showScreen('screenVictory');
+
+    // Déconnecter proprement et nettoyer la DB
     if(realtimeChannel) {
-        setTimeout(() => sb.removeChannel(realtimeChannel), 2000);
+        sb.removeChannel(realtimeChannel);
     }
     if(isMaster) {
-        // LE MAITRE SUPPRIME LA LIGNE DANS SUPABASE !
+        // Le Maître nettoie la salle pour les prochaines parties !
         await sb.from('bingo_state').delete().eq('id', GAME_ID);
-        setTimeout(() => location.reload(), 6000);
-    } else {
-        setTimeout(() => location.reload(), 6000);
     }
 }
 
-// --- BONUS : Sécurité si on ferme l'onglet pendant le lobby ---
+// --- Sécurité si on ferme l'onglet pendant le lobby ---
 window.addEventListener("beforeunload", async (e) => {
     if (gameState === 'lobby' && isMaster) {
-        // Le maître part : on détruit le lobby pour ne pas bloquer les autres
         await sb.from('bingo_state').delete().eq('id', GAME_ID);
     }
 });
 
-// Selection par défaut au chargement
 window.onload = () => {
     document.querySelectorAll('.bike-option')[0].click();
     renderAvatarSelection();
