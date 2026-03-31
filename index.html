@@ -60,9 +60,36 @@
   .cell { background:var(--surface); border:1.5px solid var(--border); border-radius:10px; min-height:var(--cell-h); display:flex; align-items:center; justify-content:center; text-align:center; padding:10px 8px; font-size:clamp(9px,1.6vw,12px); font-weight:500; line-height:1.35; cursor:pointer; transition:all 0.2s ease; position:relative; overflow:hidden; user-select:none; animation:fadeIn 0.4s ease both; }
   .cell::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,0.03),transparent); border-radius:inherit; }
   .cell:hover { border-color:var(--accent2); transform:scale(1.03); z-index:2; }
+  
+  /* STYLES CASES OR (BONUS) */
+  .cell.golden { border-color: var(--accent2); color: var(--accent2); box-shadow: inset 0 0 15px rgba(255,209,102,0.1); }
   .cell.checked { background:var(--accent); border-color:var(--accent); color:white; box-shadow:0 0 28px rgba(255,77,109,0.5); transform:scale(1.04); z-index:2; }
+  .cell.golden.checked { background: var(--accent2); border-color: var(--accent2); color: #0e0e14; box-shadow: 0 0 28px rgba(255,209,102,0.6); }
   .cell.checked::after { content:'✓'; position:absolute; top:6px; right:8px; font-size:14px; font-weight:700; opacity:0.8; }
+  .cell.golden.checked::after { content:'x2'; }
   .cell.win { background:linear-gradient(135deg,var(--accent2),var(--accent3)); border-color:var(--accent2); color:#0e0e14; animation:winPulse 0.6s ease; box-shadow:0 0 40px rgba(255,209,102,0.7); }
+  
+  /* LOBBY PREVIEW */
+  .lobby-preview-container { transform: scale(0.6); transform-origin: top center; margin-bottom: -160px; pointer-events: none; opacity: 0.7; }
+  
+  /* GAME LAYOUT & SIDEBAR */
+  .game-layout { display: flex; flex-direction: column; width: 100%; gap: 24px; }
+  .game-main { flex: 1; min-width: 0; }
+  .game-sidebar { background: var(--surface); border: 1.5px solid var(--border); border-radius: 16px; padding: 20px; width: 100%; height: fit-content; }
+  @media (min-width: 900px) {
+      .game-layout { flex-direction: row; align-items: flex-start; }
+      .game-sidebar { width: 300px; flex-shrink: 0; position: sticky; top: 20px; }
+      #screenGame { max-width: 1000px; }
+  }
+  .game-sidebar h3 { font-size: 13px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent2); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .live-lb-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; font-weight: 500; transition: all 0.3s; }
+  .live-lb-row:last-child { border-bottom: none; }
+  .live-lb-row.bingo-player { color: var(--accent3); font-weight: 700; background: linear-gradient(90deg, rgba(6,214,160,0.1), transparent); padding: 10px; border-radius: 8px; border-bottom: none; margin-bottom: 4px; }
+  .live-lb-row.bingo-player .name::after { content: 'BINGO!'; font-size: 11px; font-family: 'Bebas Neue'; letter-spacing: 1px; background: var(--accent3); color: #0e0e14; padding: 2px 6px; border-radius: 4px; margin-left: 8px; vertical-align: middle; animation: fadeIn 0.5s infinite alternate; }
+  
+  /* PREP BANNER */
+  .prep-bar { display: flex; align-items: center; justify-content: space-between; background: rgba(255,209,102,0.1); border: 1.5px solid var(--accent2); border-radius: 12px; padding: 14px 20px; margin-bottom: 16px; font-size: 13px; animation: slideUp 0.3s ease; }
+
   .cell:nth-child(1){animation-delay:.00s}.cell:nth-child(2){animation-delay:.03s}.cell:nth-child(3){animation-delay:.06s}.cell:nth-child(4){animation-delay:.09s}.cell:nth-child(5){animation-delay:.12s}
   .cell:nth-child(6){animation-delay:.15s}.cell:nth-child(7){animation-delay:.18s}.cell:nth-child(8){animation-delay:.21s}.cell:nth-child(9){animation-delay:.24s}.cell:nth-child(10){animation-delay:.27s}
   .cell:nth-child(11){animation-delay:.30s}.cell:nth-child(12){animation-delay:.33s}.cell:nth-child(13){animation-delay:.36s}.cell:nth-child(14){animation-delay:.39s}.cell:nth-child(15){animation-delay:.42s}
@@ -104,7 +131,6 @@
     <p>Entre ton pseudo pour rejoindre. Le premier arrivé devient <strong style="color:var(--accent2)">maître du jeu</strong> et peut démarrer la partie.</p>
     <input type="text" id="pseudoInput" placeholder="Ton pseudo..." maxlength="20" />
     <button class="btn-primary" id="joinBtn" onclick="joinGame()">Rejoindre →</button>
-    <div id="joinError" style="color:var(--accent);font-size:12px;display:none;text-align:center"></div>
   </div>
 </div>
 
@@ -112,12 +138,17 @@
   <div class="logo">BINGOUDALO</div>
   <div class="tagline">En attente des joueurs…</div>
   <div class="phase-banner phase-lobby">⏳ Lobby — Randomise ta grille avant le début</div>
+  
   <div class="players-list">
     <h3>Joueurs connectés</h3>
     <div id="playersList"></div>
   </div>
   <div class="lobby-controls" id="lobbyControls"></div>
   <div class="lobby-hint" id="lobbyHint"></div>
+
+  <div class="grid-wrapper lobby-preview-container">
+    <div class="grid" id="lobbyGridPreview"></div>
+  </div>
 </div>
 
 <div class="screen" id="screenGame">
@@ -125,15 +156,32 @@
     <div class="player-tag">Joueur : <span id="gamePlayerName"></span></div>
     <button class="btn-danger" id="btnEndGame" style="display:none" onclick="endGame()">🏁 Terminer la partie</button>
   </div>
-  <div class="score-bar">
-    <div><span class="score-count" id="scoreCount">0</span>/25</div>
-    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
-    <div style="margin-left:auto"><span style="font-size:11px;color:var(--muted);letter-spacing:1px">POINTS </span><span class="score-pts" id="scorePoints">0</span></div>
+
+  <div class="game-layout">
+    <div class="game-main">
+      <div class="prep-bar" id="prepBanner" style="display:none;">
+         <div style="color:var(--accent2); font-weight:700;">PHASE BONUS : CHOISIS 3 CASES OR (x2)</div>
+         <div>Temps restant : <span id="prepTimerSeconds" style="font-size:22px;font-family:'Bebas Neue'">20</span>s</div>
+         <div>Sélection : <span id="prepGoldenCount" style="color:var(--accent2);font-weight:bold">0</span>/3</div>
+      </div>
+
+      <div class="score-bar" id="scoreBanner">
+        <div><span class="score-count" id="scoreCount">0</span>/25</div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        <div style="margin-left:auto"><span style="font-size:11px;color:var(--muted);letter-spacing:1px">POINTS </span><span class="score-pts" id="scorePoints">0</span></div>
+      </div>
+      
+      <div class="grid-wrapper">
+        <div class="grid" id="grid"></div>
+      </div>
+      <footer style="margin-top:20px;text-align:left;">Case = 1pt (Or = 2pts) · Ligne complète = +6pt · Grille = +20pt</footer>
+    </div>
+
+    <div class="game-sidebar">
+      <h3>🏆 Classement En Direct</h3>
+      <div id="liveLeaderboard">En attente des scores...</div>
+    </div>
   </div>
-  <div class="grid-wrapper">
-    <div class="grid" id="grid"></div>
-  </div>
-  <footer>Case = 1pt · Ligne/col complète = +6pt · Grille entière = +20pt</footer>
 </div>
 
 <div class="screen" id="screenLeaderboard">
@@ -169,9 +217,10 @@ const WIN_LINES = [
 ];
 const COLORS = ['#ff4d6d','#ffd166','#06d6a0','#118ab2','#a855f7','#f97316','#ec4899','#14b8a6'];
 
-let myPseudo='', myGrid=[], myChecked=new Set(), myWonLines=new Set();
+let myPseudo='', myGrid=[], myChecked=new Set(), myGolden=new Set(), myWonLines=new Set();
 let isMaster=false, gamePhase='lobby', bingoShown=false;
 let lastStateStr = '';
+let prepTimerInterval = null;
 
 function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function avatarColor(n){let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))&0xffffffff;return COLORS[Math.abs(h)%COLORS.length];}
@@ -192,13 +241,11 @@ async function setState(d){
 let syncInterval = null;
 
 function startSync(){
-  // 1. Abonnement WebSockets Supabase (si configuré côté base de données)
   sb.channel('bingo:'+GAME_ID)
     .on('postgres_changes',{event:'*',schema:'public',table:'bingo_state'},
       payload=>{ if(payload.new?.data) handleStateUpdate(payload.new.data); })
     .subscribe();
 
-  // 2. Polling de sécurité toutes les 3 secondes (assure que ça marche 100% du temps)
   if(syncInterval) clearInterval(syncInterval);
   syncInterval = setInterval(async () => {
     const state = await getState();
@@ -207,20 +254,25 @@ function startSync(){
 }
 
 function handleStateUpdate(state){
-  // On vérifie si l'état a vraiment changé pour ne pas faire clignoter l'écran
   const stateStr = JSON.stringify(state);
   if (stateStr === lastStateStr) return;
   lastStateStr = stateStr;
 
   isMaster=(state.master===myPseudo);
   
-  if(state.phase==='game'&&gamePhase==='lobby'){
-    gamePhase='game'; showToast('La partie commence !',true); enterGame();
-  } else if(state.phase==='end'&&gamePhase!=='end'){
+  if(state.phase==='prep' && gamePhase!=='prep' && gamePhase!=='game'){
+    gamePhase='prep'; enterPrep(state.prepEndTime);
+  } else if(state.phase==='game' && gamePhase!=='game'){
+    gamePhase='game'; enterGame();
+  } else if(state.phase==='end' && gamePhase!=='end'){
     gamePhase='end'; showLeaderboard(state);
-  } else if(state.phase==='lobby'&&document.getElementById('screenLobby').classList.contains('active')){
+  } else if(state.phase==='lobby' && document.getElementById('screenLobby').classList.contains('active')){
     renderLobby(state);
-  } else if(state.phase==='game'){
+  } 
+  
+  // Update Live Leaderboard constantly during game or prep
+  if(state.phase==='game' || state.phase==='prep'){
+    renderLiveLeaderboard(state);
     const b=document.getElementById('btnEndGame');
     if(b) b.style.display=isMaster?'block':'none';
   }
@@ -234,7 +286,6 @@ async function joinGame(){
   const btn=document.getElementById('joinBtn');
   btn.disabled=true; btn.textContent='Connexion…';
 
-  // SAUVEGARDE LOCALE : Le navigateur retient le pseudo pour contrer le bouton F5
   localStorage.setItem('bingoudalo_pseudo', pseudo);
   myPseudo=pseudo;
   
@@ -248,17 +299,25 @@ async function joinGame(){
   }
 
   if(!state.players[pseudo]){
-    state.players[pseudo]={pseudo,grid:shuffle(PHRASES),checked:[],score:0,joinedAt:Date.now()};
+    state.players[pseudo]={pseudo, grid:shuffle(PHRASES), checked:[], golden:[], score:0, bingo:false, joinedAt:Date.now()};
   }
 
   myGrid=state.players[pseudo].grid;
   myChecked=new Set(state.players[pseudo].checked||[]);
-  gamePhase=state.phase;
+  myGolden=new Set(state.players[pseudo].golden||[]);
+  
+  // Recalcule wonLines locaux au join
+  myWonLines = new Set();
+  for(const line of WIN_LINES) {
+    if(line.every(i=>myChecked.has(i))) myWonLines.add(line.join(','));
+  }
 
+  gamePhase=state.phase;
   await setState(state);
   startSync();
 
   if(state.phase==='game') enterGame();
+  else if(state.phase==='prep') enterPrep(state.prepEndTime);
   else if(state.phase==='end') showLeaderboard(state);
   else{showScreen('screenLobby');renderLobby(state);}
 }
@@ -281,26 +340,66 @@ function renderLobby(state){
   document.getElementById('lobbyHint').textContent=isMaster
     ?`Tu es maître du jeu · ${players.length} joueur(s) connecté(s)`
     :`En attente que ${state.master} démarre la partie…`;
+    
+  // Aperçu de la grille
+  const el = document.getElementById('lobbyGridPreview');
+  el.innerHTML = myGrid.map(phrase => `<div class="cell">${phrase}</div>`).join('');
 }
 
 async function randomizeGrid(){
-  myGrid=shuffle(PHRASES); myChecked=new Set();
+  myGrid=shuffle(PHRASES); myChecked=new Set(); myGolden=new Set();
   const state=await getState();
   if(!state||state.phase!=='lobby')return;
   state.players[myPseudo].grid=myGrid;
   state.players[myPseudo].checked=[];
+  state.players[myPseudo].golden=[];
   state.players[myPseudo].score=0;
   await setState(state);
   showToast('Grille randomisée !',true);
 }
 
-// ── START / END ──
+// ── START / PREP / END ──
 async function startGame(){
   if(!isMaster)return;
   const state=await getState(); if(!state)return;
-  state.phase='game';
+  state.phase='prep';
+  state.prepEndTime = Date.now() + 20000; // Timer de 20s
   await setState(state);
-  gamePhase='game'; enterGame();
+}
+
+function enterPrep(endTime){
+  showScreen('screenGame');
+  document.getElementById('gamePlayerName').textContent=myPseudo;
+  document.getElementById('btnEndGame').style.display='none';
+  document.getElementById('scoreBanner').style.display='none';
+  document.getElementById('prepBanner').style.display='flex';
+  document.getElementById('prepGoldenCount').textContent = myGolden.size;
+  renderGrid();
+
+  if(prepTimerInterval) clearInterval(prepTimerInterval);
+  prepTimerInterval = setInterval(async () => {
+    let remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
+    document.getElementById('prepTimerSeconds').textContent = remaining;
+    if(remaining <= 0) {
+      clearInterval(prepTimerInterval);
+      await saveProgress();
+      if(isMaster) {
+        const st = await getState();
+        if(st && st.phase === 'prep') { st.phase = 'game'; await setState(st); }
+      }
+    }
+  }, 1000);
+}
+
+// ── GAME ──
+function enterGame(){
+  showScreen('screenGame');
+  document.getElementById('gamePlayerName').textContent=myPseudo;
+  document.getElementById('btnEndGame').style.display=isMaster?'block':'none';
+  document.getElementById('prepBanner').style.display='none';
+  document.getElementById('scoreBanner').style.display='flex';
+  if(prepTimerInterval) clearInterval(prepTimerInterval);
+  renderGrid(); updateScore();
 }
 
 async function endGame(){
@@ -309,40 +408,48 @@ async function endGame(){
   const state=await getState(); if(!state)return;
   state.phase='end';
   await setState(state);
-  gamePhase='end'; showLeaderboard(state);
-}
-
-// ── GAME ──
-function enterGame(){
-  showScreen('screenGame');
-  document.getElementById('gamePlayerName').textContent=myPseudo;
-  document.getElementById('btnEndGame').style.display=isMaster?'block':'none';
-  renderGrid(); updateScore();
 }
 
 function renderGrid(){
   const el=document.getElementById('grid'); el.innerHTML='';
   myGrid.forEach((phrase,i)=>{
     const isChecked=myChecked.has(i);
+    const isGolden=myGolden.has(i);
     const isWin=isChecked&&[...myWonLines].some(k=>k.split(',').map(Number).includes(i));
+    
     const cell=document.createElement('div');
-    cell.className='cell'+(isChecked?' checked':'')+(isWin?' win':'');
-    cell.textContent=phrase;
+    let classes = ['cell'];
+    if(isGolden) classes.push('golden');
+    if(isChecked) classes.push('checked');
+    if(isWin) classes.push('win');
+    cell.className=classes.join(' ');
+    
+    let html = phrase;
+    if(isGolden) html = `<div style="position:absolute;top:4px;left:6px;font-size:12px">⭐</div>` + html;
+    if(gamePhase === 'prep' && isGolden) html += `<div style="position:absolute;bottom:4px;right:6px;font-size:11px;color:var(--accent2);font-weight:bold">X2</div>`;
+    
+    cell.innerHTML = html;
     cell.onclick=()=>toggleCell(i);
     el.appendChild(cell);
   });
 }
 
 async function toggleCell(i){
-  if(myChecked.has(i))myChecked.delete(i); else myChecked.add(i);
-  const cells=document.querySelectorAll('.cell');
-  cells[i].classList.toggle('checked',myChecked.has(i));
-  if(!myChecked.has(i))cells[i].classList.remove('win');
-  updateScore(); await saveProgress(); checkBingo(cells);
+  if(gamePhase === 'prep') {
+    if(myGolden.has(i)) myGolden.delete(i);
+    else if(myGolden.size < 3) myGolden.add(i);
+    document.getElementById('prepGoldenCount').textContent = myGolden.size;
+    renderGrid();
+  } 
+  else if (gamePhase === 'game') {
+    if(myChecked.has(i)) myChecked.delete(i); else myChecked.add(i);
+    renderGrid(); updateScore(); checkBingo(); await saveProgress();
+  }
 }
 
 function calcScore(){
   let pts=myChecked.size;
+  for(const g of myGolden) if(myChecked.has(g)) pts+=1; // +1 pt si case OR
   for(const line of WIN_LINES) if(line.every(i=>myChecked.has(i))) pts+=6;
   if(myChecked.size===25) pts+=20;
   return pts;
@@ -357,11 +464,14 @@ function updateScore(){
 async function saveProgress(){
   const state=await getState(); if(!state)return;
   state.players[myPseudo].checked=[...myChecked];
+  state.players[myPseudo].golden=[...myGolden];
   state.players[myPseudo].score=calcScore();
+  state.players[myPseudo].bingo = myWonLines.size > 0;
   await setState(state);
 }
 
-function checkBingo(cells){
+function checkBingo(){
+  const cells=document.querySelectorAll('.cell');
   for(const line of WIN_LINES){
     const key=line.join(',');
     if(!myWonLines.has(key)&&line.every(i=>myChecked.has(i))){
@@ -374,13 +484,22 @@ function checkBingo(cells){
           setTimeout(()=>bingoShown=false,4000);
         },300);
       }
-      break;
     }
   }
 }
 function closeBanner(){document.getElementById('bingoBanner').classList.remove('show');}
 
-// ── LEADERBOARD ──
+// ── LEADERBOARD EN DIRECT ET FINAL ──
+function renderLiveLeaderboard(state){
+  const players=Object.values(state.players).sort((a,b)=>b.score-a.score);
+  document.getElementById('liveLeaderboard').innerHTML = players.map(p => {
+    return `<div class="live-lb-row ${p.bingo ? 'bingo-player' : ''}">
+      <div class="name">${p.pseudo}</div>
+      <div class="score">${p.score} pts</div>
+    </div>`;
+  }).join('');
+}
+
 function showLeaderboard(state){
   showScreen('screenLeaderboard');
   const players=Object.values(state.players).sort((a,b)=>b.score-a.score);
@@ -415,7 +534,7 @@ window.onload = () => {
   const savedPseudo = localStorage.getItem('bingoudalo_pseudo');
   if(savedPseudo) {
     document.getElementById('pseudoInput').value = savedPseudo;
-    joinGame(); // On relance la connexion automatiquement si le joueur a fait F5 !
+    joinGame();
   }
 };
 
