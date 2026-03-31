@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Le Hub de Paulylow</title>
+    <title>CDSI GAMES - Salle d'arcade de Paulylow</title>
     <style>
         /* Style global (Thème Sombre / Gaming) */
         body {
             margin: 0;
             padding: 0;
-            background-color: #0f0f13;
+            background-color: #0d0e11; /* Un peu plus sombre */
             color: white;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
@@ -21,35 +21,41 @@
             margin-top: 50px;
             margin-bottom: 30px;
             text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        h1 {
-            font-size: 3em;
-            margin: 0;
-            background: linear-gradient(90deg, #00FFFF, #FF00FF);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        /* LOGO PRINCIPAL */
+        .main-logo {
+            max-width: 400px; /* Taille maximale du logo */
+            width: 100%;
+            height: auto;
+            border-radius: 10px; /* Légers arrondis */
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3); /* Effet neon */
         }
 
-        p {
+        p.subtitle {
             color: #aaa;
             font-size: 1.2em;
+            margin-top: -15px;
+            margin-bottom: 30px;
         }
 
         /* La grille pour les jeux */
         .games-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Un peu plus large pour les vignettes */
             gap: 30px;
-            width: 80%;
-            max-width: 1000px;
+            width: 85%;
+            max-width: 1100px;
             padding: 20px;
         }
 
         /* Le style d'une vignette (Carte cliquable) */
         .game-card {
             background-color: #1a1a24;
-            border-radius: 15px;
+            border-radius: 20px; /* Arrondis correspondants aux images */
             overflow: hidden;
             text-decoration: none; /* Enlever le soulignement du lien */
             color: white;
@@ -57,20 +63,22 @@
             border: 2px solid transparent;
             display: flex;
             flex-direction: column;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
         }
 
         .game-card:hover {
             transform: translateY(-10px);
-            border-color: #00FFFF;
-            box-shadow: 0 10px 20px rgba(0, 255, 255, 0.2);
+            border-color: #FF00FF; /* Neon rose au survol */
+            box-shadow: 0 10px 25px rgba(255, 0, 255, 0.3);
         }
 
         /* L'image de la vignette */
         .game-thumbnail {
             width: 100%;
-            height: 150px;
-            background-color: #333; /* Couleur de fond si l'image ne charge pas */
+            height: 180px; /* Un peu plus haut */
+            background-color: #2a2a35; /* Couleur de fond si l'image ne charge pas */
             object-fit: cover; /* Recadre l'image proprement */
+            border-bottom: 2px solid #333; /* Séparation fine */
         }
 
         /* Le texte sous l'image */
@@ -81,26 +89,30 @@
 
         .game-info h2 {
             margin: 0 0 10px 0;
-            font-size: 1.5em;
+            font-size: 1.6em;
+            background: linear-gradient(90deg, #00FFFF, #FF00FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .game-info span {
             font-size: 0.9em;
-            color: #888;
+            color: #bbb;
         }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>Arcade Hub</h1>
-        <p>Sélectionne un jeu pour commencer</p>
+        <img src="images/cdsi-games-logo.png" alt="CDSI GAMES" class="main-logo">
     </header>
+    
+    <p class="subtitle">Sélectionne un jeu pour commencer</p>
 
     <div class="games-grid">
         
         <a href="bingoudalo/index.html" class="game-card">
-            <img src="https://via.placeholder.com/400x200/444444/FFFFFF?text=Bingoudalo" alt="Vignette Bingoudalo" class="game-thumbnail">
+            <img src="images/bingoudalo-vignette.png" alt="Vignette Bingoudalo" class="game-thumbnail">
             <div class="game-info">
                 <h2>Bingoudalo</h2>
                 <span>Jeu solo</span>
@@ -108,14 +120,14 @@
         </a>
 
         <a href="kavale/index.html" class="game-card">
-            <img src="https://via.placeholder.com/400x200/111111/00FFFF?text=Kavale" alt="Vignette Kavale" class="game-thumbnail">
+            <img src="images/kavale-vignette.png" alt="Vignette Kavale" class="game-thumbnail">
             <div class="game-info">
                 <h2>Kavale</h2>
                 <span>Multijoueur en ligne</span>
             </div>
         </a>
 
-        </div>
+    </div>
 
 </body>
 </html>
