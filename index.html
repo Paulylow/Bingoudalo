@@ -11,20 +11,17 @@
         body {
             margin: 0;
             padding: 0;
-            /* Le dégradé qui mélange rouge foncé, orange et jaune chaud */
             background: linear-gradient(-45deg, #2b0b12, #7a1b1b, #c0392b, #d35400);
-            background-size: 400% 400%; /* On l'agrandit pour pouvoir l'animer */
-            animation: fondChaud 15s ease infinite; /* Animation fluide en boucle */
-            
+            background-size: 400% 400%;
+            animation: fondChaud 15s ease infinite;
             color: white;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh; /* S'assure que le fond prend au moins tout l'écran */
+            min-height: 100vh;
         }
 
-        /* L'animation qui fait bouger le dégradé */
         @keyframes fondChaud {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
@@ -47,25 +44,24 @@
             height: auto;
             border: none;
             background: transparent;
-            /* Drop-shadow épouse la forme transparente du PNG (fini le carré moche) */
             filter: drop-shadow(0 0 15px rgba(243, 156, 18, 0.6));
             transition: transform 0.3s ease, filter 0.3s ease;
         }
 
         .main-logo:hover {
-            transform: scale(1.05); /* Petit effet de zoom au survol */
-            filter: drop-shadow(0 0 25px rgba(243, 156, 18, 0.9)); /* Le halo s'intensifie */
+            transform: scale(1.05);
+            filter: drop-shadow(0 0 25px rgba(243, 156, 18, 0.9));
         }
 
         p.subtitle {
-            color: #f1c40f; /* Un jaune clair pour le sous-titre */
+            color: #f1c40f;
             font-size: 1.2em;
             margin-top: -15px;
             margin-bottom: 40px;
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 2px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5); /* Ombre pour la lisibilité */
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
 
         /* La grille pour les jeux */
@@ -79,9 +75,9 @@
             margin-bottom: 50px;
         }
 
-        /* Le style d'une vignette (effet verre / glassmorphism) */
+        /* Le style d'une vignette (effet verre) */
         .game-card {
-            background-color: rgba(20, 20, 20, 0.6); /* Fond noir très transparent */
+            background-color: rgba(20, 20, 20, 0.6);
             border-radius: 20px;
             overflow: hidden;
             text-decoration: none;
@@ -90,14 +86,14 @@
             border: 2px solid rgba(255, 255, 255, 0.1);
             display: flex;
             flex-direction: column;
-            backdrop-filter: blur(8px); /* Floute l'arrière-plan animé derrière la carte */
+            backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         .game-card:hover {
             transform: translateY(-10px);
-            border-color: #f39c12; /* Bordure orange au survol */
+            border-color: #f39c12;
             box-shadow: 0 15px 40px rgba(211, 84, 0, 0.6);
         }
 
@@ -144,7 +140,7 @@
             <img src="images/bingoudalo-vignette.png" alt="Vignette Bingoudalo" class="game-thumbnail">
             <div class="game-info">
                 <h2>Bingoudalo</h2>
-                <span>Jeu solo</span>
+                <span>Jeu multijoueur</span>
             </div>
         </a>
 
@@ -152,7 +148,15 @@
             <img src="images/kavale-vignette.png" alt="Vignette Kavale" class="game-thumbnail">
             <div class="game-info">
                 <h2>Kavale</h2>
-                <span>Multijoueur en ligne</span>
+                <span>Arène multijoueur</span>
+            </div>
+        </a>
+
+        <a href="franclick/index.html" class="game-card">
+            <img src="images/franclick-vignette.png" alt="Vignette Franclick" class="game-thumbnail">
+            <div class="game-info">
+                <h2>Franclick</h2>
+                <span>Clicker Solo</span>
             </div>
         </a>
 
