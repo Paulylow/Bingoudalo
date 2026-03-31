@@ -148,7 +148,6 @@
 </head>
 <body>
 
-<!-- JOIN -->
 <div class="screen active" id="screenJoin">
   <div class="logo">BINGOUDALO</div>
   <div class="tagline">La réunion en mode jeu</div>
@@ -160,7 +159,6 @@
   </div>
 </div>
 
-<!-- LOBBY -->
 <div class="screen" id="screenLobby">
   <div class="logo">BINGOUDALO</div>
   <div class="tagline" id="lobbyTagline">En attente des joueurs…</div>
@@ -173,7 +171,6 @@
   <div class="lobby-hint" id="lobbyHint"></div>
 </div>
 
-<!-- GAME -->
 <div class="screen" id="screenGame">
   <div class="game-topbar">
     <div class="player-tag">Joueur : <span id="gamePlayerName"></span></div>
@@ -190,7 +187,6 @@
   <footer>Coche ce que tu entends · Case = 1pt · Ligne/col = +6pt · Grille entière = +20pt</footer>
 </div>
 
-<!-- LEADERBOARD -->
 <div class="screen" id="screenLeaderboard">
   <div class="lb-title">Résultats</div>
   <div class="lb-sub">Partie terminée par le maître du jeu</div>
@@ -198,7 +194,6 @@
   <button class="btn-primary" onclick="resetAll()">🔄 Nouvelle partie</button>
 </div>
 
-<!-- BINGO BANNER -->
 <div class="bingo-banner" id="bingoBanner" onclick="closeBanner()">
   <div class="bingo-text">BINGO!</div>
   <div class="bingo-sub">Clique pour continuer</div>
@@ -206,13 +201,36 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ── STORAGE ──
+const supabaseUrl = 'https://lbkobdklslpbufqkoyda.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxia29iZGtsc2xwYnVmcWtveWRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDgwODUsImV4cCI6MjA5MDUyNDA4NX0.jLN_G8dcAlQWwSAxQTVqICrrlcmhbSfTaYvc15pehXs';
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
 async function sGet(key) {
-  try { const r = await window.storage.get(key, true); return r ? JSON.parse(r.value) : null; } catch { return null; }
+  try {
+    const { data, error } = await supabase
+      .from('game_state')
+      .select('data')
+      .eq('id', key)
+      .single();
+      
+    if (error && error.code !== 'PGRST116') {
+      return null;
+    }
+    return data ? data.data : null;
+  } catch (e) {
+    return null;
+  }
 }
+
 async function sSet(key, val) {
-  try { await window.storage.set(key, JSON.stringify(val), true); } catch {}
+  try {
+    await supabase
+      .from('game_state')
+      .upsert({ id: key, data: val });
+  } catch (e) {}
 }
 
 // ── CONSTANTS ──
