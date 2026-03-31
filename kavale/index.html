@@ -138,10 +138,11 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const GAME_ID = 'kavale_main_lobby';
 
 // --- VARIABLES GLOBALES ---
+// CORRECTION DES CHEMINS D'AVATARS : On pointe vers le dossier bingoudalo
 const AVATARS = [
-  '../avatar/9k.png', '../avatar/bbc.png', '../avatar/christophe.jpg', 
-  '../avatar/coudoux.png', '../avatar/elian.jpg', '../avatar/matheo.jpg', 
-  '../avatar/paulin.jpg', '../avatar/paulo1.jpg', '../avatar/tom.png'
+  '../bingoudalo/avatar/9k.png', '../bingoudalo/avatar/bbc.png', '../bingoudalo/avatar/christophe.jpg', 
+  '../bingoudalo/avatar/coudoux.png', '../bingoudalo/avatar/elian.jpg', '../bingoudalo/avatar/matheo.jpg', 
+  '../bingoudalo/avatar/paulin.jpg', '../bingoudalo/avatar/paulo1.jpg', '../bingoudalo/avatar/tom.png'
 ];
 
 let myPseudo = '';
@@ -149,20 +150,24 @@ let myAvatar = AVATARS[0];
 let myColor = 'cyan'; // 'cyan' (J1) ou 'magenta' (J2)
 let isMaster = false;
 let gameState = 'lobby'; // 'lobby', 'playing', 'ended'
-let realtimeChannel = null; // Pour le jeu en direct
-let dbSyncInterval = null; // Pour le lobby
+let realtimeChannel = null; 
+let dbSyncInterval = null; 
 
 // --- MOTEUR DE JEU KAVALE ---
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const gridSize = 10;
 let gameLoop = null;
-let playersGameData = {}; // Coordonnées et traînées pendant la partie
+let playersGameData = {}; 
+
+// Variables pour la synchro blindée
+let isCountingDown = false;
+let syncSpamInterval = null;
 
 // --- UI : AVATAR & COULEUR ---
 function renderAvatarSelection() {
   document.getElementById('avatarGrid').innerHTML = AVATARS.map(src => 
-    `<img src="${src}" class="avatar-option ${src === myAvatar ? 'selected' : ''}" onclick="selectAvatar('${src}')">`
+    `<img src="${src}" class="avatar-option ${src === myAvatar ? 'selected' : ''}" onclick="selectAvatar('${src}')" onerror="this.src='https://via.placeholder.com/45/333/fff?text=?'">`
   ).join('');
 }
 function selectAvatar(src) { myAvatar = src; renderAvatarSelection(); }
@@ -199,12 +204,10 @@ async function joinLobby() {
 
     let state = await fetchLobbyState();
     
-    // Si pas de salle ou salle vide, on crée et on est maître
     if(!state || !state.players || Object.keys(state.players).length === 0) {
         state = { phase: 'lobby', master: myPseudo, players: {} };
     }
 
-    // Vérifier s'il y a de la place (max 2 joueurs) ou si c'est une reconnexion
     if(Object.keys(state.players).length >= 2 && !state.players[myPseudo]) {
         alert("La salle est pleine (2 joueurs max) !");
         document.getElementById('joinBtn').disabled = false;
@@ -213,21 +216,18 @@ async function joinLobby() {
     }
 
     isMaster = (state.master === myPseudo);
-
-    // Ajouter ou mettre à jour le joueur
     state.players[myPseudo] = { pseudo: myPseudo, avatar: myAvatar, color: myColor };
     
     await updateLobbyState(state);
     
     showScreen('screenLobby');
-    startLobbySync(); // Commencer à écouter la base de données
+    startLobbySync(); 
 }
 
 // --- SYNCHRONISATION LOBBY ---
 function startLobbySync() {
-    updateLobbyUI(null); // Premier affichage manuel
+    updateLobbyUI(null); 
     
-    // Polling toutes les 2 secondes (suffisant pour un lobby)
     if(dbSyncInterval) clearInterval(dbSyncInterval);
     dbSyncInterval = setInterval(async () => {
         const state = await fetchLobbyState();
@@ -236,38 +236,34 @@ function startLobbySync() {
 }
 
 function updateLobbyUI(state) {
-    if(!state) return; // Sécurité
+    if(!state) return;
     
     isMaster = (state.master === myPseudo);
     const playersList = Object.values(state.players);
     
-    // Afficher les joueurs
     document.getElementById('playersList').innerHTML = playersList.map(p => `
         <div class="player-row">
-            <img src="${p.avatar}" class="player-avatar" style="border-color: ${p.color === 'cyan' ? 'var(--cyan)' : 'var(--magenta)'}">
+            <img src="${p.avatar}" class="player-avatar" style="border-color: ${p.color === 'cyan' ? 'var(--cyan)' : 'var(--magenta)'}" onerror="this.src='https://via.placeholder.com/40/333/fff?text=?'">
             <span>${p.pseudo} <span style="font-size:11px; color:${p.color === 'cyan' ? 'var(--cyan)' : 'var(--magenta)'}">(${p.color})</span></span>
             ${state.master === p.pseudo ? '<span class="badge badge-master">👑 Maître</span>' : ''}
         </div>
     `).join('');
 
-    // Si on est dans le lobby
     if(state.phase === 'lobby') {
         const controls = document.getElementById('lobbyControls');
         if(isMaster) {
             controls.innerHTML = `<button class="btn-primary" onclick="launchGameFromLobby()">🏁 Lancer la course</button>`;
             document.getElementById('lobbySubtitle').textContent = `Tu es le maître. Attends un adversaire.`;
-            // Désactiver le bouton s'il n'y a qu'un joueur
             if(playersList.length < 2) controls.querySelector('button').disabled = true;
         } else {
             controls.innerHTML = '';
             document.getElementById('lobbySubtitle').textContent = `Attends que ${state.master} lance la course...`;
         }
     } 
-    // Si le maître a cliqué sur Démarrer
     else if(state.phase === 'playing' && gameState === 'lobby') {
         gameState = 'playing';
-        clearInterval(dbSyncInterval); // On arrête d'écouter la BDD
-        initGameEngine(state.players); // On lance le jeu !
+        clearInterval(dbSyncInterval); 
+        initGameEngine(state.players); 
     }
 }
 
@@ -275,7 +271,7 @@ function updateLobbyUI(state) {
 async function launchGameFromLobby() {
     let state = await fetchLobbyState();
     state.phase = 'playing';
-    await updateLobbyState(state); // Change le statut dans la DB pour avertir l'autre joueur
+    await updateLobbyState(state); 
     
     gameState = 'playing';
     clearInterval(dbSyncInterval);
@@ -289,7 +285,6 @@ async function launchGameFromLobby() {
 function initGameEngine(lobbyPlayers) {
     showScreen('screenGame');
     
-    // 1. Initialiser le HUD et les positions de départ selon les couleurs choisies
     playersGameData = {};
     
     Object.values(lobbyPlayers).forEach(p => {
@@ -306,9 +301,9 @@ function initGameEngine(lobbyPlayers) {
         }
     });
 
-    // 2. Connexion WebSocket (Broadcast) ultra-rapide
     realtimeChannel = sb.channel('kavale_arena');
     
+    // 1. Écouter les mouvements
     realtimeChannel.on('broadcast', { event: 'move' }, (payload) => {
         const data = payload.payload;
         if(data.pseudo !== myPseudo && playersGameData[data.pseudo]) {
@@ -318,22 +313,43 @@ function initGameEngine(lobbyPlayers) {
         }
     });
 
-    realtimeChannel.on('broadcast', { event: 'start' }, () => {
-        startCountdown();
+    // 2. Le Maître écoute les cris "Je suis prêt !" du Joueur 2
+    realtimeChannel.on('broadcast', { event: 'p2_ready' }, () => {
+        if (isMaster && !isCountingDown) {
+            // Le maitre a entendu ! Il prévient tout le monde de démarrer.
+            realtimeChannel.send({ type: 'broadcast', event: 'start_game', payload: {} });
+            startCountdown();
+        }
     });
 
+    // 3. Le Joueur 2 écoute le top départ du Maître
+    realtimeChannel.on('broadcast', { event: 'start_game' }, () => {
+        if (!isMaster && !isCountingDown) {
+            clearInterval(syncSpamInterval); // On peut arrêter de crier
+            startCountdown();
+        }
+    });
+
+    // 4. On se connecte au réseau
     realtimeChannel.subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-            document.getElementById('statusText').textContent = "CONNEXION ÉTABLIE...";
-            // Le non-maître signale qu'il est prêt via WebSocket
-            if(!isMaster) realtimeChannel.send({ type: 'broadcast', event: 'start', payload: {} });
-            // Le maître démarre aussi s'il reçoit ou s'il est seul (pour tester)
-            if(isMaster && Object.keys(lobbyPlayers).length === 1) startCountdown();
+            document.getElementById('statusText').textContent = "SYNCHRONISATION...";
+            
+            if (!isMaster) {
+                // Le joueur 2 spamme "je suis prêt" toutes les 500ms
+                syncSpamInterval = setInterval(() => {
+                    realtimeChannel.send({ type: 'broadcast', event: 'p2_ready', payload: {} });
+                }, 500);
+            } else if (Object.keys(lobbyPlayers).length === 1) {
+                // Si le maître est tout seul (test solo)
+                startCountdown();
+            }
         }
     });
 }
 
 function startCountdown() {
+    isCountingDown = true;
     let count = 3;
     const statusEl = document.getElementById('statusText');
     const interval = setInterval(() => {
@@ -341,9 +357,9 @@ function startCountdown() {
         statusEl.style.color = count > 0 ? "white" : "var(--cyan)";
         if(count === 0) {
             clearInterval(interval);
-            setTimeout(() => statusEl.textContent = "", 1000); // Effacer le GO
+            setTimeout(() => statusEl.textContent = "", 1000); 
             if(gameLoop) clearInterval(gameLoop);
-            gameLoop = setInterval(updatePhysics, 80); // Vitesse du jeu
+            gameLoop = setInterval(updatePhysics, 80); 
         }
         count--;
     }, 1000);
@@ -359,11 +375,9 @@ function updatePhysics() {
         const p = playersGameData[pseudo];
         if (p.dead) return;
 
-        // Historique pour la traînée
         p.trail.push({ x: p.x, y: p.y });
         p.direction = p.nextDir;
 
-        // Mouvement
         if (p.direction === 'up') p.y -= gridSize;
         if (p.direction === 'down') p.y += gridSize;
         if (p.direction === 'left') p.x -= gridSize;
@@ -371,7 +385,6 @@ function updatePhysics() {
 
         checkCollisions(pseudo, pseudos);
 
-        // Rendu Visuel (Neon)
         ctx.fillStyle = p.color;
         ctx.shadowBlur = 10;
         ctx.shadowColor = p.color;
@@ -381,7 +394,7 @@ function updatePhysics() {
         ctx.shadowBlur = 15;
         ctx.shadowColor = 'white';
         ctx.fillRect(p.x, p.y, gridSize, gridSize);
-        ctx.shadowBlur = 0; // Reset
+        ctx.shadowBlur = 0; 
     });
 
     checkWinCondition(pseudos);
@@ -401,7 +414,6 @@ window.addEventListener('keydown', e => {
 
     if (newDir && newDir !== p.nextDir) {
         p.nextDir = newDir;
-        // Envoi INSTANTANÉ via Broadcast
         if(realtimeChannel) {
             realtimeChannel.send({
                 type: 'broadcast',
@@ -416,16 +428,13 @@ window.addEventListener('keydown', e => {
 function checkCollisions(myId, allIds) {
     const p = playersGameData[myId];
     
-    // 1. Murs
     if (p.x < 0 || p.x >= canvas.width || p.y < 0 || p.y >= canvas.height) { p.dead = true; return;}
 
-    // 2. Traînées (La sienne et celle des autres)
     allIds.forEach(otherId => {
         const otherP = playersGameData[otherId];
         for (let i = 0; i < otherP.trail.length; i++) {
             if (p.x === otherP.trail[i].x && p.y === otherP.trail[i].y) p.dead = true;
         }
-        // Choc frontal
         if (myId !== otherId && p.x === otherP.x && p.y === otherP.y) {
             p.dead = true;
             otherP.dead = true;
@@ -455,20 +464,18 @@ async function endGameCleanup() {
     if(realtimeChannel) {
         setTimeout(() => sb.removeChannel(realtimeChannel), 2000);
     }
-    // Le maître réinitialise le lobby en DB après 5 secondes pour rejouer
     if(isMaster) {
         setTimeout(async () => {
              let state = await fetchLobbyState();
              state.phase = 'lobby';
              await updateLobbyState(state);
-             location.reload(); // Recharger la page pour tout le monde (simplifie le reset)
+             location.reload(); 
         }, 5000);
     } else {
         setTimeout(() => location.reload(), 5000);
     }
 }
 
-// Initialisation au chargement
 window.onload = renderAvatarSelection;
 </script>
 </body>
