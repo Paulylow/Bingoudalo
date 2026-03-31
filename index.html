@@ -261,7 +261,34 @@ const WIN_LINES = [
   [0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24],
   [0,6,12,18,24],[4,8,12,16,20]
 ];
-const AVATARS = ['avatar/1.png', 'avatar/2.png', 'avatar/3.png', 'avatar/4.png', 'avatar/5.png', 'avatar/6.png', 'avatar/7.png', 'avatar/8.png'];
+
+// MIEUX : ON UTILISE LES NOMS EXACTS DE TES FICHIERS DANS LE DOSSIER !
+const AVATARS = [
+  'avatar/9k.png', 
+  'avatar/affronte.png', 
+  'avatar/bbc.png', 
+  'avatar/bite_ts.png', 
+  'avatar/christophe.jpg', 
+  'avatar/coudoux.png', 
+  'avatar/dayoub.png', 
+  'avatar/dayoub2.png',
+  'avatar/dayoub3.png',
+  'avatar/elian.jpg',
+  'avatar/elian2.jpg',
+  'avatar/dayoub3.png',
+  'avatar/ellio.jpg',
+  'avatar/epstein.png',
+  'avatar/etienne_dayoub.png',
+  'avatar/etienne.png',
+  'avatar/francky.jpg',
+  'avatar/mathéo.jpg',
+  'avatar/paulin.jpg',
+  'avatar/paulo1.jpg',
+  'avatar/paulo2.jpg',
+  'avatar/ratli.png',
+  'avatar/tom.png',
+  'avatar/wilbaut_suss.png'
+];
 
 let myPseudo='', myAvatar='', myGrid=[], myChecked=new Set(), myGolden=new Set(), myWonLines=new Set();
 let isMaster=false, gamePhase='lobby', bingoShown=false;
@@ -695,6 +722,7 @@ function showLeaderboard(state){
 
 async function resetAll(){
   await setState({phase:'lobby', master:myPseudo, players:{}});
+  // On ne vide pas le localStorage pour relancer automatiquement en tant que maître
   location.reload();
 }
 
