@@ -461,26 +461,26 @@ const MILESTONE = [
    puis remplace icon:'images/monfichier.png'
 ================================================================ */
 const buildings = [
-    /* 1 */ { id:'feuille',   name:'Signe sur la feuille de présence', baseCost:15,          bps:0,       clickBonus:0.1,  icon:'images/feuille.png',    count:0, bg:'linear-gradient(90deg,rgba(10,30,10,.85),rgba(0,0,0,.5))' },
-    /* 2 */ { id:'cafe',      name:'Prends un café MaxiCoffee',         baseCost:100,         bps:1,       clickBonus:0,    icon:'images/cafe.png',       count:0, bg:'linear-gradient(90deg,rgba(40,20,5,.85),rgba(0,0,0,.5))' },
-    /* 3 */ { id:'module',    name:'Choisis ton module polytechnique',   baseCost:1100,        bps:8,       clickBonus:0,    icon:'images/module.png',     count:0, bg:'linear-gradient(90deg,rgba(10,10,40,.85),rgba(0,0,0,.5))' },
-    /* 4 */ { id:'regard',    name:'Affronte mon regard',                baseCost:12000,       bps:47,      clickBonus:0,    icon:'images/regard.png',     count:0, bg:'linear-gradient(90deg,rgba(0,35,40,.85),rgba(0,0,0,.5))' },
-    /* 5 */ { id:'ds',        name:'Conduis la DS autonome',             baseCost:130000,      bps:260,     clickBonus:0,    icon:'images/ds.png',         count:0, bg:'linear-gradient(90deg,rgba(5,25,45,.85),rgba(0,0,0,.5))' },
-    /* 6 */ { id:'smartcity', name:'Balade toi dans la Smart City',      baseCost:1400000,     bps:1400,    clickBonus:0,    icon:'images/smartcity.png',  count:0, bg:'linear-gradient(90deg,rgba(0,40,30,.85),rgba(0,0,0,.5))' },
-    /* 7 */ { id:'rsa',       name:'Démonte le RSA avec Moa',            baseCost:20000000,    bps:7800,    clickBonus:0,    icon:'images/rsa.png',        count:0, bg:'linear-gradient(90deg,rgba(40,0,40,.85),rgba(0,0,0,.5))' },
-    /* 8 */ { id:'shuttle',   name:'Lance le shuttle de Biaou toi-même', baseCost:330000000,   bps:44000,   clickBonus:0,    icon:'images/shuttle.png',    count:0, bg:'linear-gradient(90deg,rgba(5,5,50,.85),rgba(0,0,0,.5))' },
-    /* 9 */ { id:'meta',      name:'Complexifie cette métaheuristique',  baseCost:5100000000,  bps:260000,  clickBonus:0,    icon:'images/meta.png',       count:0, bg:'linear-gradient(90deg,rgba(30,0,50,.85),rgba(0,0,0,.5))' },
-    /*10 */ { id:'jerome',    name:'Jérôme regarde de travers et intimide', baseCost:75000000000, bps:1600000, clickBonus:0, icon:'images/jerome.png',    count:0, bg:'linear-gradient(90deg,rgba(50,10,0,.85),rgba(0,0,0,.5))' },
-    /*11 */ { id:'scapy',     name:'Code un client/serveur Python Scapy', baseCost:1e12,       bps:10000000,clickBonus:0,    icon:'images/scapy.png',      count:0, bg:'linear-gradient(90deg,rgba(0,40,10,.85),rgba(0,0,0,.5))' },
-    /*12 */ { id:'arduino',   name:'Utilise un arduino non fonctionnel', baseCost:1.5e13,      bps:65000000,clickBonus:0,    icon:'images/arduino.png',    count:0, bg:'linear-gradient(90deg,rgba(0,20,40,.85),rgba(0,0,0,.5))' },
-    /*13 */ { id:'android',   name:'Sécurise une application Android',   baseCost:2.1e14,      bps:430000000,clickBonus:0,   icon:'images/android.png',    count:0, bg:'linear-gradient(90deg,rgba(20,40,0,.85),rgba(0,0,0,.5))' },
-    /*14 */ { id:'balaye',    name:"Balaye le drôle de l'INSA",              baseCost:2.9e15,      bps:2900000000,clickBonus:0,  icon:'images/balaye.png',     count:0, bg:'linear-gradient(90deg,rgba(40,30,0,.85),rgba(0,0,0,.5))' },
-    /*15 */ { id:'ebios',     name:'Analyse ton risque avec Ebios RM',   baseCost:4.1e16,      bps:2e10,    clickBonus:0,    icon:'images/ebios.png',      count:0, bg:'linear-gradient(90deg,rgba(30,0,30,.85),rgba(0,0,0,.5))' },
-    /*16 */ { id:'cloud',     name:'Exporte ton plug en cloud',           baseCost:5.5e17,      bps:1.5e11,  clickBonus:0,    icon:'images/cloud.png',      count:0, bg:'linear-gradient(90deg,rgba(0,10,50,.85),rgba(0,0,0,.5))' },
-    /*17 */ { id:'lan',       name:'Scan de LAN (local area network)',    baseCost:7.5e18,      bps:1.1e12,  clickBonus:0,    icon:'images/lan.png',        count:0, bg:'linear-gradient(90deg,rgba(0,35,35,.85),rgba(0,0,0,.5))' },
-    /*18 */ { id:'dayoub',    name:'Dayoub scam une vieille',             baseCost:1e20,        bps:8e12,    clickBonus:0,    icon:'images/dayoub.png',     count:0, bg:'linear-gradient(90deg,rgba(50,5,5,.85),rgba(0,0,0,.5))' },
-    /*19 */ { id:'jury',      name:'Le jury est avec toi (3 mois après)', baseCost:1.5e21,     bps:6e13,    clickBonus:0,    icon:'images/jury.png',       count:0, bg:'linear-gradient(90deg,rgba(40,40,0,.85),rgba(0,0,0,.5))' },
-    /*20 */ { id:'moine',     name:'Week-end avec le moine Costermans',   baseCost:2e22,        bps:5e14,    clickBonus:0,    icon:'images/moine.png',      count:0, bg:'linear-gradient(90deg,rgba(10,40,40,.85),rgba(0,0,0,.5))' },
+    /* 1 */ { id:'feuille',   name:'Signe sur la feuille de présence', baseCost:14,          bps:0,       clickBonus:0.1,  icon:'images/feuille.png',    count:0, bg:'linear-gradient(90deg,rgba(10,30,10,.85),rgba(0,0,0,.5))' },
+    /* 2 */ { id:'cafe',      name:'Prends un café MaxiCoffee',         baseCost:90,         bps:1,       clickBonus:0,    icon:'images/cafe.png',       count:0, bg:'linear-gradient(90deg,rgba(40,20,5,.85),rgba(0,0,0,.5))' },
+    /* 3 */ { id:'module',    name:'Choisis ton module polytechnique',   baseCost:990,        bps:8,       clickBonus:0,    icon:'images/module.png',     count:0, bg:'linear-gradient(90deg,rgba(10,10,40,.85),rgba(0,0,0,.5))' },
+    /* 4 */ { id:'regard',    name:'Affronte mon regard',                baseCost:10800,       bps:47,      clickBonus:0,    icon:'images/regard.png',     count:0, bg:'linear-gradient(90deg,rgba(0,35,40,.85),rgba(0,0,0,.5))' },
+    /* 5 */ { id:'ds',        name:'Conduis la DS autonome',             baseCost:117000,      bps:260,     clickBonus:0,    icon:'images/ds.png',         count:0, bg:'linear-gradient(90deg,rgba(5,25,45,.85),rgba(0,0,0,.5))' },
+    /* 6 */ { id:'smartcity', name:'Balade toi dans la Smart City',      baseCost:1260000,     bps:1400,    clickBonus:0,    icon:'images/smartcity.png',  count:0, bg:'linear-gradient(90deg,rgba(0,40,30,.85),rgba(0,0,0,.5))' },
+    /* 7 */ { id:'rsa',       name:'Démonte le RSA avec Moa',            baseCost:18000000,    bps:7800,    clickBonus:0,    icon:'images/rsa.png',        count:0, bg:'linear-gradient(90deg,rgba(40,0,40,.85),rgba(0,0,0,.5))' },
+    /* 8 */ { id:'shuttle',   name:'Lance le shuttle de Biaou toi-même', baseCost:297000000,   bps:44000,   clickBonus:0,    icon:'images/shuttle.png',    count:0, bg:'linear-gradient(90deg,rgba(5,5,50,.85),rgba(0,0,0,.5))' },
+    /* 9 */ { id:'meta',      name:'Complexifie cette métaheuristique',  baseCost:4590000000,  bps:260000,  clickBonus:0,    icon:'images/meta.png',       count:0, bg:'linear-gradient(90deg,rgba(30,0,50,.85),rgba(0,0,0,.5))' },
+    /*10 */ { id:'jerome',    name:'Jérôme regarde de travers et intimide', baseCost:67500000000, bps:1600000, clickBonus:0, icon:'images/jerome.png',    count:0, bg:'linear-gradient(90deg,rgba(50,10,0,.85),rgba(0,0,0,.5))' },
+    /*11 */ { id:'scapy',     name:'Code un client/serveur Python Scapy', baseCost:900000000000,       bps:10000000,clickBonus:0,    icon:'images/scapy.png',      count:0, bg:'linear-gradient(90deg,rgba(0,40,10,.85),rgba(0,0,0,.5))' },
+    /*12 */ { id:'arduino',   name:'Utilise un arduino non fonctionnel', baseCost:1.35e+13,      bps:65000000,clickBonus:0,    icon:'images/arduino.png',    count:0, bg:'linear-gradient(90deg,rgba(0,20,40,.85),rgba(0,0,0,.5))' },
+    /*13 */ { id:'android',   name:'Sécurise une application Android',   baseCost:1.89e+14,      bps:430000000,clickBonus:0,   icon:'images/android.png',    count:0, bg:'linear-gradient(90deg,rgba(20,40,0,.85),rgba(0,0,0,.5))' },
+    /*14 */ { id:'balaye',    name:"Balaye le drôle de l'INSA",              baseCost:2.61e+15,      bps:2900000000,clickBonus:0,  icon:'images/balaye.png',     count:0, bg:'linear-gradient(90deg,rgba(40,30,0,.85),rgba(0,0,0,.5))' },
+    /*15 */ { id:'ebios',     name:'Analyse ton risque avec Ebios RM',   baseCost:3.69e+16,      bps:2e10,    clickBonus:0,    icon:'images/ebios.png',      count:0, bg:'linear-gradient(90deg,rgba(30,0,30,.85),rgba(0,0,0,.5))' },
+    /*16 */ { id:'cloud',     name:'Exporte ton plug en cloud',           baseCost:4.95e+17,      bps:1.5e11,  clickBonus:0,    icon:'images/cloud.png',      count:0, bg:'linear-gradient(90deg,rgba(0,10,50,.85),rgba(0,0,0,.5))' },
+    /*17 */ { id:'lan',       name:'Scan de LAN (local area network)',    baseCost:6.8e+18,      bps:1.1e12,  clickBonus:0,    icon:'images/lan.png',        count:0, bg:'linear-gradient(90deg,rgba(0,35,35,.85),rgba(0,0,0,.5))' },
+    /*18 */ { id:'dayoub',    name:'Dayoub scam une vieille',             baseCost:9.0e+19,        bps:8e12,    clickBonus:0,    icon:'images/dayoub.png',     count:0, bg:'linear-gradient(90deg,rgba(50,5,5,.85),rgba(0,0,0,.5))' },
+    /*19 */ { id:'jury',      name:'Le jury est avec toi (3 mois après)', baseCost:1.4e+21,     bps:6e13,    clickBonus:0,    icon:'images/jury.png',       count:0, bg:'linear-gradient(90deg,rgba(40,40,0,.85),rgba(0,0,0,.5))' },
+    /*20 */ { id:'moine',     name:'Week-end avec le moine Costermans',   baseCost:1.8e+22,        bps:5e14,    clickBonus:0,    icon:'images/moine.png',      count:0, bg:'linear-gradient(90deg,rgba(10,40,40,.85),rgba(0,0,0,.5))' },
 ];
 
 /* ================================================================
@@ -557,10 +557,27 @@ requestAnimationFrame(raf);
 /* ================================================================
    TIMERS SECONDAIRES 
 ================================================================ */
-setInterval(() => {
-    score += bps / 10;
+/* Farm en arriere-plan : calcul base sur le temps reel ecoule.
+   Fonctionne meme si l'onglet est inactif grace a visibilitychange. */
+let lastTick = performance.now();
+
+function gameTick() {
+    const now = performance.now();
+    const dt = Math.min((now - lastTick) / 1000, 60);
+    lastTick = now;
+    score += bps * dt;
     updateScoreUI(); updateShopColors();
-}, 100);
+}
+
+setInterval(gameTick, 100);
+
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        gameTick();
+    } else {
+        lastTick = performance.now();
+    }
+});
 
 setInterval(() => {
     bonusSecTimer++;
