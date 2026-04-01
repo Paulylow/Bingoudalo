@@ -16,25 +16,16 @@
   }
   body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:32px 16px 48px; position:relative; overflow-x:hidden; }
   body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events:none; z-index:0; opacity:0.4; }
+  
+  /* BOUTON RETOUR AU HUB */
+  .hub-link { position: absolute; top: 20px; left: 20px; color: var(--accent2); text-decoration: none; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: 0.2s; z-index: 50;}
+  .hub-link:hover { color: white; text-shadow: 0 0 10px var(--accent2); }
+
   .screen { display:none; flex-direction:column; align-items:center; width:100%; max-width:720px; position:relative; z-index:1; }
   .screen.active { display:flex; }
   .logo { font-family:'Bebas Neue',sans-serif; font-size:clamp(52px,10vw,88px); letter-spacing:6px; line-height:1; background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 60%,var(--accent3) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; filter:drop-shadow(0 0 40px rgba(255,77,109,0.35)); }
   .tagline { color:var(--muted); font-size:13px; letter-spacing:3px; text-transform:uppercase; margin-top:6px; margin-bottom:32px; }
-  .join-card { background:var(--surface); border:1.5px solid var(--border); border-radius:16px; padding:36px 32px; width:100%; max-width:400px; display:flex; flex-direction:column; gap:16px; }
-  .join-card h2 { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:2px; color:var(--accent2); }
-  .join-card p { font-size:13px; color:var(--muted); line-height:1.5; }
-  input[type="text"] { width:100%; background:var(--bg); border:1.5px solid var(--border); border-radius:8px; padding:14px 16px; font-family:'DM Sans',sans-serif; font-size:15px; color:var(--text); outline:none; transition:border-color 0.2s; }
-  input[type="text"]:focus { border-color:var(--accent2); }
-  input[type="text"]::placeholder { color:var(--muted); }
   
-  /* SÉLECTION D'AVATARS */
-  .avatar-selection { margin-top: 4px; display: flex; flex-direction: column; gap: 10px; }
-  .avatar-selection p { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin: 0; }
-  .avatar-grid { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-start; }
-  .avatar-option { width: 42px; height: 42px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: all 0.2s; object-fit: cover; background: var(--bg); }
-  .avatar-option.selected { border-color: var(--accent2); transform: scale(1.15); box-shadow: 0 0 15px rgba(255,209,102,0.4); z-index: 2; }
-  .avatar-option:hover:not(.selected) { transform: scale(1.1); border-color: var(--muted); }
-
   button { font-family:'DM Sans',sans-serif; font-weight:700; font-size:13px; letter-spacing:1.5px; text-transform:uppercase; border:none; border-radius:8px; cursor:pointer; padding:12px 24px; transition:all 0.18s ease; }
   .btn-primary { background:var(--accent); color:white; box-shadow:0 4px 24px rgba(255,77,109,0.4); }
   .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 32px rgba(255,77,109,0.55); }
@@ -128,10 +119,12 @@
   @keyframes bannerIn{from{opacity:0}to{opacity:1}}
   @keyframes bounce{from{transform:scale(0.3) rotate(-8deg);opacity:0}to{transform:scale(1) rotate(0deg);opacity:1}}
   @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+  
   .bingo-banner { display:none; position:fixed; inset:0; background:rgba(14,14,20,0.85); z-index:100; align-items:center; justify-content:center; flex-direction:column; gap:20px; backdrop-filter:blur(8px); animation:bannerIn 0.4s ease; }
   .bingo-banner.show { display:flex; }
   .bingo-text { font-family:'Bebas Neue',sans-serif; font-size:clamp(72px,18vw,160px); letter-spacing:8px; background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 50%,var(--accent3) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; animation:bounce 0.6s cubic-bezier(0.34,1.56,0.64,1); filter:drop-shadow(0 0 60px rgba(255,77,109,0.6)); }
   .bingo-sub { color:var(--muted); font-size:15px; letter-spacing:2px; text-transform:uppercase; }
+  
   .lb-title { font-family:'Bebas Neue',sans-serif; font-size:clamp(36px,8vw,64px); letter-spacing:4px; background:linear-gradient(135deg,var(--accent2),var(--accent3)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:8px; text-align:center; }
   .lb-sub { color:var(--muted); font-size:12px; letter-spacing:3px; text-transform:uppercase; margin-bottom:28px; text-align:center; }
   .lb-list { width:100%; display:flex; flex-direction:column; gap:10px; margin-bottom:28px; }
@@ -145,29 +138,24 @@
   .lb-score{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;color:var(--accent3)}
   .lb-breakdown{font-size:10px;color:var(--muted);text-align:right;line-height:1.6}
   .lb-row:nth-child(1){animation-delay:.1s}.lb-row:nth-child(2){animation-delay:.2s}.lb-row:nth-child(3){animation-delay:.3s}.lb-row:nth-child(4){animation-delay:.4s}.lb-row:nth-child(5){animation-delay:.5s}
+  
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:12px 20px;font-size:13px;font-weight:500;color:var(--text);z-index:200;transition:transform 0.3s ease;white-space:nowrap}
   .toast.show{transform:translateX(-50%) translateY(0)}.toast.green{border-color:var(--accent3);color:var(--accent3)}
   footer{margin-top:28px;color:var(--muted);font-size:11px;letter-spacing:1px;text-align:center;position:relative;z-index:1}
+
+  .loading-text { font-size: 20px; color: var(--accent2); font-weight: bold; margin-top: 20px; animation: blink 1s infinite alternate; }
+  @keyframes blink { from { opacity: 0.5; } to { opacity: 1; } }
+
 </style>
 </head>
 <body>
 
+<a href="../index.html" class="hub-link">← Retour au Hub</a>
+
 <div class="screen active" id="screenJoin">
   <div class="logo">BINGOUDALO</div>
-  <div class="tagline">La réunion en mode jeu</div>
-  <div class="join-card">
-    <h2>Rejoindre la partie</h2>
-    <p>Le premier arrivé devient <strong style="color:var(--accent2)">maître du jeu</strong> et peut démarrer la partie.</p>
-    
-    <input type="text" id="pseudoInput" placeholder="Ton pseudo..." maxlength="20" />
-    
-    <div class="avatar-selection">
-      <p>Choisis ton avatar :</p>
-      <div class="avatar-grid" id="avatarGrid"></div>
-    </div>
-
-    <button class="btn-primary" id="joinBtn" onclick="joinGame()" style="margin-top: 8px;">Rejoindre →</button>
-  </div>
+  <div class="tagline">Connexion au profil en cours...</div>
+  <div class="loading-text">Veuillez patienter...</div>
 </div>
 
 <div class="screen" id="screenLobby">
@@ -234,7 +222,7 @@
   <div class="lb-title">Résultats</div>
   <div class="lb-sub">Partie terminée par le maître du jeu</div>
   <div class="lb-list" id="lbList"></div>
-  <button class="btn-primary" onclick="resetAll()">🔄 Nouvelle partie</button>
+  <div id="endControls" style="display: flex; justify-content: center; width: 100%;"></div>
 </div>
 
 <div class="bingo-banner" id="bingoBanner" onclick="closeBanner()">
@@ -262,34 +250,6 @@ const WIN_LINES = [
   [0,6,12,18,24],[4,8,12,16,20]
 ];
 
-// MIEUX : ON UTILISE LES NOMS EXACTS DE TES FICHIERS DANS LE DOSSIER !
-const AVATARS = [
-  'avatar/9k.png', 
-  'avatar/affronte.png', 
-  'avatar/bbc.png', 
-  'avatar/bite_ts.png', 
-  'avatar/christophe.jpg', 
-  'avatar/coudoux.png', 
-  'avatar/dayoub.png', 
-  'avatar/dayoub2.png',
-  'avatar/dayoub3.png',
-  'avatar/elian.jpg',
-  'avatar/elian2.jpg',
-  'avatar/dayoub3.png',
-  'avatar/ellio.jpg',
-  'avatar/epstein.png',
-  'avatar/etienne_dayoub.png',
-  'avatar/etienne.jpg',
-  'avatar/francky.jpg',
-  'avatar/matheo.jpg',
-  'avatar/paulin.jpg',
-  'avatar/paulo1.jpg',
-  'avatar/paulo2.jpg',
-  'avatar/ratli.png',
-  'avatar/tom.png',
-  'avatar/wilbaut_suss.png'
-];
-
 let myPseudo='', myAvatar='', myGrid=[], myChecked=new Set(), myGolden=new Set(), myWonLines=new Set();
 let isMaster=false, gamePhase='lobby', bingoShown=false;
 let lastStateStr = '';
@@ -299,20 +259,6 @@ let myLastBingoTime = 0;
 function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function showToast(msg,green=false){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(green?' green':'');setTimeout(()=>t.className='toast',2800);}
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
-
-// ── SÉLECTION AVATAR ──
-function renderAvatarSelection() {
-  const grid = document.getElementById('avatarGrid');
-  if (!myAvatar) myAvatar = AVATARS[0]; // Par défaut
-  grid.innerHTML = AVATARS.map(src => 
-    `<img src="${src}" class="avatar-option ${src === myAvatar ? 'selected' : ''}" onclick="selectAvatar('${src}')" alt="Avatar">`
-  ).join('');
-}
-
-function selectAvatar(src) {
-  myAvatar = src;
-  renderAvatarSelection();
-}
 
 // ── DB ──
 async function getState(){
@@ -373,44 +319,50 @@ function generateGrid() {
   return newGrid;
 }
 
-// ── JOIN ──
-async function joinGame(){
-  const input=document.getElementById('pseudoInput');
-  const pseudo=input.value.trim();
-  if(!pseudo){input.focus();return;}
-  const btn=document.getElementById('joinBtn');
-  btn.disabled=true; btn.textContent='Connexion…';
+// ── JOIN AUTOMATIQUE ──
+window.onload = async () => {
+    myPseudo = localStorage.getItem('cdsi_logged_user');
+    if (!myPseudo) {
+        window.location.href = '../index.html';
+        return;
+    }
 
-  localStorage.setItem('bingoudalo_pseudo', pseudo);
-  localStorage.setItem('bingoudalo_avatar', myAvatar);
-  myPseudo=pseudo;
-  
-  let state=await getState();
+    const { data } = await sb.from('cdsi_users').select('avatar').eq('pseudo', myPseudo).single();
+    if (data && data.avatar) {
+        myAvatar = '../' + data.avatar;
+    } else {
+        myAvatar = 'avatar/paulo1.jpg'; // Secours
+    }
+
+    autoJoinLobby();
+};
+
+async function autoJoinLobby(){
+  let state = await getState();
 
   if(!state || !state.players || Object.keys(state.players).length === 0){
-    state={phase:'lobby', master:pseudo, players:{}};
+    state = {phase:'lobby', master:myPseudo, players:{}, gameEndedSaved: false};
     isMaster=true;
   } else {
     if (!state.players[state.master]) {
-      state.master = pseudo;
+      state.master = myPseudo;
     }
-    isMaster=(state.master===pseudo);
+    isMaster=(state.master===myPseudo);
   }
 
-  if(!state.players[pseudo]){
-    state.players[pseudo]={
-      pseudo, avatar: myAvatar, grid: generateGrid(), checked: [], golden: [], 
+  if(!state.players[myPseudo]){
+    state.players[myPseudo]={
+      pseudo: myPseudo, avatar: myAvatar, grid: generateGrid(), checked: [], golden: [], 
       score: 0, bingo: false, lastBingoTime: 0, joinedAt: Date.now()
     };
   } else {
-    // Si le joueur revient, on met à jour son avatar s'il a changé
-    state.players[pseudo].avatar = myAvatar;
+    state.players[myPseudo].avatar = myAvatar;
   }
 
-  myGrid=state.players[pseudo].grid;
-  myChecked=new Set(state.players[pseudo].checked||[]);
-  myGolden=new Set(state.players[pseudo].golden||[]);
-  myLastBingoTime = state.players[pseudo].lastBingoTime || 0;
+  myGrid=state.players[myPseudo].grid;
+  myChecked=new Set(state.players[myPseudo].checked||[]);
+  myGolden=new Set(state.players[myPseudo].golden||[]);
+  myLastBingoTime = state.players[myPseudo].lastBingoTime || 0;
   
   myWonLines = new Set();
   for(const line of WIN_LINES) {
@@ -421,7 +373,6 @@ async function joinGame(){
   await setState(state);
   startSync();
 
-  // Si on rafraichit la page pendant la partie, on s'y remet directement
   if(state.phase==='game') enterGame();
   else if(state.phase==='prep_gold') enterPrepGold(state.phaseEndTime);
   else if(state.phase==='prep_custom') enterPrepCustom(state.phaseEndTime);
@@ -433,19 +384,32 @@ async function joinGame(){
 function renderLobby(state){
   isMaster=(state.master===myPseudo);
   const players=Object.values(state.players).sort((a,b)=>a.joinedAt-b.joinedAt);
+  let playerCount = players.length;
+
   document.getElementById('playersList').innerHTML=players.map(p=>{
-    const pAvatar = p.avatar || AVATARS[0];
     return `<div class="player-row">
-      <img src="${pAvatar}" class="player-avatar" alt="Avatar">
+      <img src="${p.avatar}" class="player-avatar" alt="Avatar">
       <span>${p.pseudo}${p.pseudo===myPseudo?' <span style="color:var(--muted);font-size:11px">(toi)</span>':''}</span>
       ${p.pseudo===state.master?'<span class="badge badge-master">👑 Maître</span>':'<span class="badge badge-ready">✓ Prêt</span>'}
     </div>`;
   }).join('');
-  document.getElementById('lobbyControls').innerHTML=
-    `<button class="btn-secondary" onclick="randomizeGrid()">🔀 Randomiser ma grille</button>`+
-    (isMaster?`<button class="btn-green" onclick="startGame()">▶ Démarrer la partie</button>`:'');
+  
+  if(isMaster) {
+      if (playerCount >= 2) {
+          document.getElementById('lobbyControls').innerHTML=
+            `<button class="btn-secondary" onclick="randomizeGrid()">🔀 Randomiser ma grille</button>
+             <button class="btn-green" onclick="startGame()">▶ Démarrer la partie</button>`;
+      } else {
+          document.getElementById('lobbyControls').innerHTML=
+            `<button class="btn-secondary" onclick="randomizeGrid()">🔀 Randomiser ma grille</button>
+             <p style="color:var(--accent2); font-size:14px; font-weight:bold; margin-top:10px; width:100%; text-align:center;">Il faut au moins 2 joueurs pour lancer la partie !</p>`;
+      }
+  } else {
+      document.getElementById('lobbyControls').innerHTML = `<button class="btn-secondary" onclick="randomizeGrid()">🔀 Randomiser ma grille</button>`;
+  }
+
   document.getElementById('lobbyHint').textContent=isMaster
-    ?`Tu es maître du jeu · ${players.length} joueur(s) connecté(s)`
+    ?`Tu es maître du jeu · ${playerCount} joueur(s) connecté(s)`
     :`En attente que ${state.master} démarre la partie…`;
     
   const el = document.getElementById('lobbyGridPreview');
@@ -663,7 +627,7 @@ function checkBingo(){
 }
 function closeBanner(){document.getElementById('bingoBanner').classList.remove('show');}
 
-// ── LEADERBOARDS ──
+// ── LEADERBOARDS ET FIN DE PARTIE ──
 let lbTimeout = null;
 
 function renderLiveLeaderboard(state){
@@ -672,7 +636,6 @@ function renderLiveLeaderboard(state){
   let nextClearTime = Infinity;
 
   document.getElementById('liveLeaderboard').innerHTML = players.map(p => {
-    const pAvatar = p.avatar || AVATARS[0];
     const timeSinceBingo = p.lastBingoTime ? (now - p.lastBingoTime) : Infinity;
     const isRecent = timeSinceBingo < 5000;
     
@@ -682,7 +645,7 @@ function renderLiveLeaderboard(state){
 
     return `<div class="live-lb-row ${isRecent ? 'bingo-player' : ''}">
       <div class="name" style="display:flex;align-items:center;">
-        <img src="${pAvatar}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;margin-right:10px;" alt="">
+        <img src="${p.avatar}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;margin-right:10px;" alt="">
         ${p.pseudo}
       </div>
       <div class="score">${p.score} pts</div>
@@ -702,14 +665,14 @@ function showLeaderboard(state){
   const players=Object.values(state.players).sort((a,b)=>b.score-a.score);
   const medals=['gold','silver','bronze'];
   const emoji=['🥇','🥈','🥉'];
+  
   document.getElementById('lbList').innerHTML=players.map((p,idx)=>{
     const checked=(p.checked||[]).length;
     const lines=WIN_LINES.filter(l=>l.every(i=>(p.checked||[]).includes(i))).length;
-    const pAvatar = p.avatar || AVATARS[0];
     return `<div class="lb-row ${idx===0?'first':idx===1?'second':idx===2?'third':''}">
       <div class="lb-rank ${medals[idx]||''}">${emoji[idx]||(idx+1)}</div>
       <div class="lb-name">
-        <img src="${pAvatar}" alt="Avatar">
+        <img src="${p.avatar}" alt="Avatar">
         ${p.pseudo}${p.pseudo===myPseudo?'<span class="you-tag">toi</span>':''}
       </div>
       <div style="text-align:right">
@@ -718,38 +681,37 @@ function showLeaderboard(state){
       </div>
     </div>`;
   }).join('');
+
+  // LA MAGIE DES VICTOIRES EST ICI !
+  if (isMaster) {
+      document.getElementById('endControls').innerHTML = `<button class="btn-primary" onclick="resetAll()">🔄 Nouvelle partie</button>`;
+      
+      if (!state.gameEndedSaved) {
+          state.gameEndedSaved = true;
+          setState(state); // On valide l'enregistrement pour éviter les doublons
+          
+          if (players.length > 0) {
+              let maxScore = players[0].score;
+              let winners = players.filter(p => p.score === maxScore);
+              
+              winners.forEach(async (w) => {
+                  let {data} = await sb.from('cdsi_users').select('bingoudalo_wins').eq('pseudo', w.pseudo).single();
+                  if (data) {
+                      await sb.from('cdsi_users').update({ bingoudalo_wins: (data.bingoudalo_wins || 0) + 1 }).eq('pseudo', w.pseudo);
+                  }
+              });
+          }
+      }
+  } else {
+      document.getElementById('endControls').innerHTML = `<p style="color:var(--muted); font-size:12px;">En attente du maître...</p>`;
+  }
 }
 
 async function resetAll(){
-  await setState({phase:'lobby', master:myPseudo, players:{}});
-  // On ne vide pas le localStorage pour relancer automatiquement en tant que maître
+  await setState({phase:'lobby', master:myPseudo, players:{}, gameEndedSaved: false});
   location.reload();
 }
 
-// ── INIT ET AUTO-CONNEXION CORRIGÉE ──
-window.onload = () => {
-  renderAvatarSelection();
-  
-  const savedPseudo = localStorage.getItem('bingoudalo_pseudo');
-  const savedAvatar = localStorage.getItem('bingoudalo_avatar');
-  
-  if(savedAvatar) {
-    myAvatar = savedAvatar;
-    renderAvatarSelection();
-  }
-  
-  if(savedPseudo) {
-    document.getElementById('pseudoInput').value = savedPseudo;
-    // On ne lance plus joinGame() automatiquement ici.
-    // Ça te laisse l'opportunité de changer ton avatar et de cliquer toi-même sur "Rejoindre" !
-  }
-};
-
-document.getElementById('pseudoInput').addEventListener('keydown',e=>{
-  if(e.key==='Enter' && document.getElementById('screenJoin').classList.contains('active')) {
-    joinGame();
-  }
-});
 </script>
 </body>
 </html>
