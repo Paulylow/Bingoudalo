@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FRANCLICK 🏋️</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── CURSEUR HALTÈRE INCLINÉE ── */
 :root {
@@ -255,7 +256,7 @@ body.bourrine .col-right { border-color:#ff2200; }
 <canvas id="bg-canvas"></canvas>
 <canvas id="fx-canvas"></canvas>
 
-<a id="hub-link" href="https://bingoudalo.vercel.app/index.html">
+<a id="hub-link" href="../index.html">
     <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
         <path d="M9 2L4 7L9 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
@@ -265,20 +266,17 @@ body.bourrine .col-right { border-color:#ff2200; }
 <div id="screen-flash"></div>
 <div id="notif"></div>
 
-<!-- BONUS ORB -->
 <div id="bonus-orb" onclick="activateBonus()">
     <div class="ob-icon">⚡</div>
     <div>BONUS<br>x2 !</div>
 </div>
 
-<!-- FRAUDE ORB -->
 <div id="fraude-orb" onclick="catchFraude()">
     <img src="fraude/Bouzaidi_Mohamed_Amine.webp" alt="La Fraude" style="width:100%;height:100%;object-fit:cover;display:block;">
 </div>
 <div id="fraude-msg">🚨 CLIQUE SUR LA FRAUDE OU PERD 10% !</div>
 <div id="fraude-bar-wrap"><div id="fraude-bar"></div></div>
 
-<!-- POPUP MILLIÈME CLIC -->
 <div id="milestone-popup">
     <h2>🎉 CLIC MILLIÈME !</h2>
     <img id="milestone-img" src="" alt="">
@@ -316,8 +314,16 @@ body.bourrine .col-right { border-color:#ff2200; }
 
 <script>
 /* ================================================================
-   ANTI-TRICHE — uniquement via touche clavier, SANS alert en boucle
-   La sauvegarde est encodée en base64 pour éviter l'édition manuelle
+   CONFIGURATION SUPABASE ET COMPTES
+================================================================ */
+const SUPABASE_URL = 'https://pdybshweyfvxzvngnuxe.supabase.co'; 
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkeWJzaHdleWZ2eHp2bmdudXhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDg2MDAsImV4cCI6MjA5MDUyNDYwMH0.u442X28Mhs-4T-tydabnMm8now8VfAEeNU-Sicuipq4'; 
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let myPseudo = '';
+
+/* ================================================================
+   ANTI-TRICHE
 ================================================================ */
 document.addEventListener('keydown', e => {
     if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C','K'].includes(e.key)) || (e.ctrlKey && e.key === 'U')) {
@@ -330,7 +336,7 @@ const _enc = d => btoa(unescape(encodeURIComponent(JSON.stringify(d))));
 const _dec = s => { try { return JSON.parse(decodeURIComponent(escape(atob(s)))); } catch(e){ return null; } };
 
 /* ================================================================
-   CANVAS — un seul RAF pour tout
+   CANVAS
 ================================================================ */
 const bgC = document.getElementById('bg-canvas');
 const bgX = bgC.getContext('2d');
@@ -348,7 +354,6 @@ function resizeAll() {
 resizeAll();
 window.addEventListener('resize', resizeAll);
 
-/* Fond global — 20 icônes */
 const ICONS = ['🏋️','🐍','📚','💻','🔒','⚡','🏋️‍♂️','📖','🖥️'];
 const bgP = Array.from({length:20}, () => ({
     x: Math.random() * window.innerWidth,
@@ -361,7 +366,6 @@ const bgP = Array.from({length:20}, () => ({
     rv: (Math.random()-.5)*.006
 }));
 
-/* Icônes col gauche — tailles variées, vitesses variées, opacités variées */
 const LEFT_ICONS = ['🏋️','🏋️‍♂️','🐍','⚡','💪','🔥','⚙️','🎯','🏆','💥'];
 const lP = Array.from({length:22}, () => ({
     x: Math.random() * 400,
@@ -372,10 +376,9 @@ const lP = Array.from({length:22}, () => ({
     vy: (Math.random()-.5)*.55,
     ro: Math.random()*Math.PI*2,
     rv: (Math.random()-.5)*.012,
-    op: 0.12 + Math.random()*0.22  /* opacité propre à chaque icône */
+    op: 0.12 + Math.random()*0.22 
 }));
 
-/* Pool FX — 20 slots, 3 points + texte par clic, léger */
 const FXP = Array.from({length:20}, () => ({on:false}));
 let fxIdx = 0;
 
@@ -404,10 +407,6 @@ let fraudeOn=false, fraude_t0=0, fx=0, fy=0, fvx=0, fvy=0;
 const FRAUDE_MS = 10000;
 let fraudeSecTimer=0, fraudeDelay=60+Math.floor(Math.random()*180);
 
-/* ── Pool images millième clic (1 chance / 1000 clics) ───────────────
-   Pour ajouter des images : dépose-les dans franclick/milestone/ sur GitHub
-   et ajoute une ligne { src:'milestone/nomfichier.jpeg', cap:'Légende' }
-──────────────────────────────────────────────────────────────────── */
 const MILESTONE = [
     { src:'milestone/makeitmeme_8JsIM.jpeg', cap:'Suce un peu 💪' },
     { src:'milestone/makeitmeme_E6FMo.jpeg', cap:'Affronte mon regard 👀' },
@@ -416,8 +415,7 @@ const MILESTONE = [
     { src:'milestone/makeitmeme_m3YNx.jpeg', cap:'Gros serpent 🐍' },
     { src:'milestone/makeitmeme_olW8B.jpeg', cap:'Reste digne 🏋️' },
     { src:'milestone/makeitmeme_puOSL.jpeg', cap:'Tu mérites ça 🔥' },
-    { src:'milestone/makeitmeme_wtJQy.jpeg', cap:'Légende vivante 🏆' },
-    /* Pour en ajouter : { src:'milestone/monfichier.jpeg', cap:'Légende' }, */
+    { src:'milestone/makeitmeme_wtJQy.jpeg', cap:'Légende vivante 🏆' }
 ];
 
 const buildings = [
@@ -433,7 +431,6 @@ const buildings = [
 function raf() {
     const now = performance.now();
 
-    /* ── Fond global ── */
     bgX.clearRect(0,0,bgC.width,bgC.height);
     for (const p of bgP) {
         p.x+=p.vx; p.y+=p.vy; p.ro+=p.rv;
@@ -444,7 +441,6 @@ function raf() {
         bgX.fillText(p.ic,0,0); bgX.restore();
     }
 
-    /* ── Canvas gauche — icônes stylées derrière le cercle ── */
     const lw = lC.width, lh = lC.height;
     lX.clearRect(0,0,lw,lh);
     for (const p of lP) {
@@ -459,7 +455,6 @@ function raf() {
         lX.restore();
     }
 
-    /* ── FX particules ── */
     fxX.clearRect(0,0,fxC.width,fxC.height);
     for (const p of FXP) {
         if (!p.on) continue;
@@ -477,7 +472,6 @@ function raf() {
         fxX.restore();
     }
 
-    /* ── Bourrine timer ── */
     if (isBourrine) {
         const el = now - bourrine_t0;
         const pct = Math.max(0,(BOURRINE_MS-el)/BOURRINE_MS*100);
@@ -485,7 +479,6 @@ function raf() {
         if (el >= BOURRINE_MS) deactivateBourrine();
     }
 
-    /* ── Fraude déplacement ── */
     if (fraudeOn) {
         fx+=fvx; fy+=fvy;
         const W=window.innerWidth, H=window.innerHeight;
@@ -493,7 +486,6 @@ function raf() {
         if(fy<80||fy>H-100){fvy*=-1; fy=Math.max(80,Math.min(H-100,fy));}
         const fo = document.getElementById('fraude-orb');
         fo.style.left=fx+'px'; fo.style.top=fy+'px';
-        // Barre timer fraude
         const fe = now - fraude_t0;
         const fp = Math.max(0,(FRAUDE_MS-fe)/FRAUDE_MS*100);
         document.getElementById('fraude-bar').style.width = fp+'%';
@@ -505,10 +497,9 @@ function raf() {
 requestAnimationFrame(raf);
 
 /* ================================================================
-   TIMERS SECONDAIRES (setInterval — uniquement logique lente)
+   TIMERS SECONDAIRES 
 ================================================================ */
 setInterval(() => {
-    // BPS
     score += bps / 10;
     updateScoreUI(); updateShopColors();
 }, 100);
@@ -520,6 +511,7 @@ setInterval(() => {
     if (!fraudeOn && fraudeSecTimer >= fraudeDelay) triggerFraude();
 }, 1000);
 
+// Sauvegarde Locale toutes les 5s
 setInterval(saveGame, 5000);
 
 /* ================================================================
@@ -579,7 +571,6 @@ function renderVisuals() {
     });
 }
 
-/* ── BONUS ── */
 function triggerBonus() {
     bonusOn = true;
     const o = document.getElementById('bonus-orb');
@@ -608,7 +599,6 @@ function scheduleBonus() {
     bonusDelay = 30 + Math.floor(Math.random()*150);
 }
 
-/* ── BOURRINE ── */
 function activateBourrine() {
     isBourrine = true; bourrine_t0 = performance.now();
     clickMult = 2; document.body.classList.add('bourrine');
@@ -622,7 +612,6 @@ function deactivateBourrine() {
     showNotif('😤 Fin du mode BOURRINE... repose-toi !');
 }
 
-/* ── FRAUDE ── */
 function triggerFraude() {
     fraudeOn = true; fraude_t0 = performance.now();
     fx = 150 + Math.random()*(window.innerWidth-300);
@@ -663,7 +652,6 @@ function scheduleFraude() {
     fraudeDelay = 60 + Math.floor(Math.random()*180);
 }
 
-/* ── MILLIÈME CLIC ── */
 function triggerMilestone() {
     if (!MILESTONE.length) return;
     const item = MILESTONE[Math.floor(Math.random()*MILESTONE.length)];
@@ -674,7 +662,6 @@ function closeMilestone() {
     document.getElementById('milestone-popup').style.display = 'none';
 }
 
-/* ── FLASH ÉCRAN ── */
 function flash(col) {
     const f = document.getElementById('screen-flash');
     f.style.background = col; f.style.opacity = '1'; f.style.display = 'block';
@@ -684,7 +671,6 @@ function flash(col) {
     setTimeout(() => { f.style.display='none'; }, 650);
 }
 
-/* ── NOTIF ── */
 let notifTO = null;
 function showNotif(msg) {
     const n = document.getElementById('notif');
@@ -693,10 +679,11 @@ function showNotif(msg) {
     notifTO = setTimeout(() => { n.style.display='none'; }, 3500);
 }
 
-/* ── SAVE / LOAD ── */
+/* ── SAUVEGARDE & SYNCHRONISATION DB ── */
 function saveGame() {
     localStorage.setItem('fc5', _enc({ score, bc:buildings.map(b=>b.count), tc:totalClicks }));
 }
+
 function loadGame() {
     const raw = localStorage.getItem('fc5');
     if (!raw) return;
@@ -707,16 +694,46 @@ function loadGame() {
     if (d.bc) buildings.forEach((b,i) => { b.count = d.bc[i]||0; });
     recalcBPS();
 }
-function resetGame() {
+
+async function syncScoreToDB() {
+    if(!myPseudo) return;
+    try {
+        await sb.from('cdsi_users').update({ franclick_score: score }).eq('pseudo', myPseudo);
+    } catch(e) { console.error("Erreur de synchro score", e); }
+}
+
+async function resetGame() {
     if (confirm("T'es sûr de vouloir tout effacer ? Tu vas retomber à 0 !")) {
-        localStorage.removeItem('fc5'); location.reload();
+        localStorage.removeItem('fc5');
+        score = 0;
+        if(myPseudo) {
+            try {
+                await sb.from('cdsi_users').update({ franclick_score: 0 }).eq('pseudo', myPseudo);
+            } catch(e){}
+        }
+        location.reload();
     }
 }
 
-/* ── INIT ── */
+/* ── INIT SÉCURISÉE ── */
 window.addEventListener('load', () => {
-    resizeAll(); /* s'assure que left-canvas a les bonnes dimensions */
-    loadGame(); renderShop(); renderVisuals(); updateScoreUI();
+    myPseudo = localStorage.getItem('cdsi_logged_user');
+    
+    // Auto-login obligatoire
+    if (!myPseudo || myPseudo === 'null' || myPseudo === 'undefined') {
+        window.location.href = '../index.html'; 
+        return;
+    }
+
+    resizeAll(); 
+    loadGame(); 
+    renderShop(); 
+    renderVisuals(); 
+    updateScoreUI();
+
+    // Synchro avec Supabase 2 secondes après chargement, puis toutes les 5 minutes (300000ms)
+    setTimeout(syncScoreToDB, 2000);
+    setInterval(syncScoreToDB, 5 * 60 * 1000);
 });
 </script>
 </body>
