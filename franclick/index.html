@@ -3,343 +3,636 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FRANCLICK 🖱️</title>
+<title>FRANCLICK 🏋️</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;700&display=swap" rel="stylesheet">
 <style>
-    :root {
-        --bg: #0b0c10; --surface: #14141e; --border: #1f2833;
-        --cyan: #00FFFF; --magenta: #FF00FF; --yellow: #FFFF00;
-        --text: #c5c6c7;
-    }
+:root {
+    --bg: #0b0c10; --surface: #14141e; --border: #1f2833;
+    --cyan: #00FFFF; --magenta: #FF00FF; --yellow: #FFFF00;
+    --text: #c5c6c7;
+}
 
-    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-    
-    body {
-        background-color: var(--bg); color: var(--text);
-        font-family: 'DM Sans', sans-serif; height: 100vh;
-        display: flex; flex-direction: column; overflow: hidden;
-    }
+/* ─── CURSEUR HALTÈRE — appliqué sur * pour ne jamais disparaître ─── */
+* {
+    box-sizing: border-box; margin: 0; padding: 0; user-select: none;
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Crect x='15' y='2' width='6' height='9' rx='2' fill='%2300FFFF' stroke='%23fff' stroke-width='1'/%3E%3Crect x='15' y='25' width='6' height='9' rx='2' fill='%2300FFFF' stroke='%23fff' stroke-width='1'/%3E%3Crect x='15.5' y='11' width='5' height='14' rx='1.5' fill='%23888'/%3E%3Crect x='2' y='6' width='13' height='6' rx='2' fill='%2300FFFF' stroke='%23fff' stroke-width='1'/%3E%3Crect x='21' y='6' width='13' height='6' rx='2' fill='%2300FFFF' stroke='%23fff' stroke-width='1'/%3E%3Crect x='2' y='24' width='13' height='6' rx='2' fill='%2300FFFF' stroke='%23fff' stroke-width='1'/%3E%3Crect x='21' y='24' width='13' height='6' rx='2' fill='%2300FFFF' stroke='%23fff' stroke-width='1'/%3E%3C/svg%3E") 18 18, crosshair !important;
+}
+body.bourrine * {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Crect x='15' y='2' width='6' height='9' rx='2' fill='%23ff2200' stroke='%23fff' stroke-width='1'/%3E%3Crect x='15' y='25' width='6' height='9' rx='2' fill='%23ff2200' stroke='%23fff' stroke-width='1'/%3E%3Crect x='15.5' y='11' width='5' height='14' rx='1.5' fill='%23ff8888'/%3E%3Crect x='2' y='6' width='13' height='6' rx='2' fill='%23ff2200' stroke='%23fff' stroke-width='1'/%3E%3Crect x='21' y='6' width='13' height='6' rx='2' fill='%23ff2200' stroke='%23fff' stroke-width='1'/%3E%3Crect x='2' y='24' width='13' height='6' rx='2' fill='%23ff2200' stroke='%23fff' stroke-width='1'/%3E%3Crect x='21' y='24' width='13' height='6' rx='2' fill='%23ff2200' stroke='%23fff' stroke-width='1'/%3E%3C/svg%3E") 18 18, crosshair !important;
+}
 
-    /* HEADER */
-    header {
-        text-align: center; padding: 15px; background: rgba(0,0,0,0.5);
-        border-bottom: 2px solid var(--border);
-    }
-    h1 {
-        font-family: 'Bebas Neue'; font-size: 40px; letter-spacing: 4px;
-        background: linear-gradient(90deg, var(--cyan), var(--magenta));
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
+body {
+    background-color: var(--bg); color: var(--text);
+    font-family: 'DM Sans', sans-serif; height: 100vh;
+    display: flex; flex-direction: column; overflow: hidden;
+    transition: background-color 0.5s;
+}
+body.bourrine { background-color: #180000; }
 
-    /* LAYOUT 3 COLONNES */
-    .game-container { display: flex; flex: 1; overflow: hidden; }
+/* ─── CANVAS ─── */
+#bg-canvas {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    pointer-events:none; z-index:0; opacity:0.13;
+}
+#fx-canvas {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    pointer-events:none; z-index:500;
+}
 
-    /* COLONNE GAUCHE : LE CLIC */
-    .col-left {
-        width: 30%; border-right: 2px solid var(--border);
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        background: radial-gradient(circle at center, #1a1a2e 0%, #0b0c10 100%);
-    }
+/* ─── HEADER ─── */
+header {
+    text-align:center; padding:12px; background:rgba(0,0,0,0.7);
+    border-bottom:2px solid var(--border); position:relative; z-index:10;
+    transition: background 0.4s, border-color 0.4s;
+}
+body.bourrine header { background:rgba(90,0,0,0.85); border-color:#ff2200; }
+h1 {
+    font-family:'Bebas Neue'; font-size:40px; letter-spacing:4px;
+    background:linear-gradient(90deg,var(--cyan),var(--magenta));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+body.bourrine h1 {
+    background:linear-gradient(90deg,#ff2200,#ff9900);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    animation:hShake 0.08s infinite;
+}
+@keyframes hShake{0%,100%{letter-spacing:4px}50%{letter-spacing:7px}}
 
-    .score-container { text-align: center; margin-bottom: 40px; }
-    .score-number { font-family: 'Bebas Neue'; font-size: 60px; color: white; text-shadow: 0 0 20px var(--cyan); }
-    .score-bps { font-size: 16px; color: var(--cyan); font-weight: bold; }
+/* ─── BANNIÈRE BOURRINE ─── */
+#bourrine-banner {
+    display:none; text-align:center; padding:7px;
+    background:linear-gradient(90deg,#ff2200,#ff8800,#ff2200);
+    background-size:200%; animation:bScroll 1s linear infinite;
+    font-family:'Bebas Neue'; font-size:20px; letter-spacing:3px; color:#fff;
+    position:relative; z-index:10;
+}
+body.bourrine #bourrine-banner { display:block; }
+@keyframes bScroll{0%{background-position:0%}100%{background-position:200%}}
 
-    /* LE FRANCKY (REMIS EN JPG) */
-    .francky-btn {
-        width: 250px; height: 250px; border-radius: 50%;
-        background-image: url('../bingoudalo/avatar/francky.jpg'); 
-        background-size: cover; background-position: center;
-        border: 4px solid var(--cyan);
-        box-shadow: 0 0 50px rgba(0, 255, 255, 0.4), inset 0 0 20px rgba(0,0,0,0.8);
-        cursor: pointer; transition: transform 0.05s ease;
-    }
-    .francky-btn:active { transform: scale(0.95); box-shadow: 0 0 80px rgba(0, 255, 255, 0.8); }
+/* ─── BONUS ORB ─── */
+#bonus-orb {
+    position:fixed; z-index:600; width:78px; height:78px; border-radius:50%;
+    background:radial-gradient(circle at 35% 35%,#fff9aa,#ffcc00 50%,#ff8800);
+    border:3px solid #fff;
+    display:none; align-items:center; justify-content:center; flex-direction:column;
+    font-size:10px; font-weight:bold; color:#000; text-align:center; line-height:1.3;
+    animation:orbPulse 0.7s ease-in-out infinite alternate, orbBob 2.5s ease-in-out infinite;
+    filter:drop-shadow(0 0 14px #ffcc00);
+}
+#bonus-orb .ob-icon { font-size:26px; }
+@keyframes orbPulse{0%{filter:drop-shadow(0 0 8px #ffcc00)}100%{filter:drop-shadow(0 0 28px #ffff88)}}
+@keyframes orbBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
 
-    /* COLONNE MILIEU : LE VISUEL */
-    .col-center {
-        width: 45%; padding: 20px; overflow-y: auto;
-        display: flex; flex-direction: column; gap: 15px;
-    }
-    .visual-row {
-        /* On retire le background par défaut pour laisser le JS faire la magie */
-        border: 1px solid var(--border);
-        border-radius: 10px; padding: 10px; min-height: 80px;
-        display: flex; flex-wrap: wrap; gap: 8px; align-items: center; align-content: flex-start;
-        background-size: cover;
-        background-position: center;
-        box-shadow: inset 0 0 20px rgba(0,0,0,0.8); /* Petite ombre interne pour faire style "boîte" */
-    }
-    
-    /* Le conteneur d'une image sur l'étagère */
-    .visual-item {
-        width: 45px; height: 45px; border-radius: 5px; background: #000;
-        display: flex; align-items: center; justify-content: center;
-        box-shadow: 0 0 10px rgba(0,0,0,0.8); overflow: hidden;
-        border: 1px solid #444;
-    }
+/* ─── LAYOUT ─── */
+.game-container { display:flex; flex:1; overflow:hidden; position:relative; z-index:1; }
 
-    /* COLONNE DROITE : LA BOUTIQUE */
-    .col-right {
-        width: 25%; border-left: 2px solid var(--border);
-        background: var(--surface); overflow-y: auto; padding: 20px;
-    }
-    .shop-title {
-        font-family: 'Bebas Neue'; font-size: 28px; text-align: center;
-        margin-bottom: 20px; color: var(--magenta); border-bottom: 2px solid; padding-bottom: 10px;
-    }
+/* ─── COL GAUCHE ─── */
+.col-left {
+    width:30%; border-right:2px solid var(--border);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    position:relative; overflow:hidden; background:transparent;
+    transition:border-color 0.4s;
+}
+body.bourrine .col-left { border-color:#ff2200; }
 
-    .shop-item {
-        background: rgba(0,0,0,0.4); border: 2px solid var(--border);
-        border-radius: 10px; padding: 15px; margin-bottom: 15px;
-        cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center;
-    }
-    .shop-item:hover { border-color: var(--magenta); background: rgba(255,0,255,0.1); }
-    .shop-item.disabled { opacity: 0.5; filter: grayscale(1); cursor: not-allowed; }
-    .shop-item.disabled:hover { border-color: var(--border); background: rgba(0,0,0,0.4); }
+/* Canvas dédié à la colonne gauche */
+#left-canvas {
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    pointer-events:none; z-index:0; opacity:0.18;
+}
 
-    .item-info h3 { font-size: 16px; color: white; margin-bottom: 5px; display: flex; align-items: center; }
-    .item-info p { font-size: 12px; color: #888; margin-left: 35px;}
-    .item-cost { font-weight: bold; color: var(--magenta); font-size: 16px; margin-left: 35px; margin-top: 5px;}
-    .item-count { font-family: 'Bebas Neue'; font-size: 30px; color: #555; }
+/* ─── SCORE ─── */
+.score-container { text-align:center; margin-bottom:26px; position:relative; z-index:2; }
+.score-number {
+    font-family:'Bebas Neue'; font-size:64px; color:#fff;
+    text-shadow:0 0 22px var(--cyan); transition:text-shadow 0.3s,color 0.3s;
+}
+body.bourrine .score-number { text-shadow:0 0 22px #ff2200; color:#ffaa88; }
+.score-bps { font-size:15px; color:var(--cyan); font-weight:bold; transition:color 0.3s; }
+body.bourrine .score-bps { color:#ff5500; }
+#multiplier-badge {
+    display:none; background:#cc1100; color:#fff;
+    font-family:'Bebas Neue'; font-size:20px; letter-spacing:2px;
+    padding:3px 14px; border-radius:20px; margin-top:8px;
+    animation:badgePop 0.3s ease;
+}
+body.bourrine #multiplier-badge { display:inline-block; }
+@keyframes badgePop{0%{transform:scale(0.4)}100%{transform:scale(1)}}
 
-    /* CSS POUR LES IMAGES DE TES POTES */
-    .upgrade-icon {
-        width: 30px; height: 30px; object-fit: cover; border-radius: 4px; 
-        margin-right: 8px; border: 1px solid #555;
-    }
-    .visual-item .upgrade-icon {
-        width: 100%; height: 100%; margin: 0; border: none; border-radius: 0;
-    }
+/* Timer bourrine — piloté par rAF, pas de CSS transition */
+#bourrine-timer {
+    display:none; width:200px; height:8px;
+    background:#330000; border-radius:4px; overflow:hidden; margin-top:10px;
+}
+body.bourrine #bourrine-timer { display:block; }
+#bourrine-timer-bar {
+    height:100%; width:100%;
+    background:linear-gradient(90deg,#ff2200,#ff9900);
+    border-radius:4px;
+}
 
-    /* BOUTON RESET */
-    .reset-btn {
-        margin-top: 30px; width: 100%; padding: 10px; background: transparent;
-        border: 1px solid red; color: red; border-radius: 5px; cursor: pointer;
-        font-family: 'DM Sans'; font-weight: bold; text-transform: uppercase;
-    }
-    .reset-btn:hover { background: red; color: white; }
+/* ─── WRAPPER FRANCKY ─── */
+.francky-wrapper {
+    position:relative; display:flex; align-items:center; justify-content:center; z-index:2;
+}
+.ring {
+    position:absolute; border-radius:50%; border:2px solid var(--cyan);
+    opacity:0; animation:rPulse 2.2s ease-out infinite; pointer-events:none;
+}
+.ring:nth-child(1){width:255px;height:255px;animation-delay:0s}
+.ring:nth-child(2){width:300px;height:300px;animation-delay:0.65s}
+.ring:nth-child(3){width:345px;height:345px;animation-delay:1.3s}
+body.bourrine .ring { border-color:#ff3300; }
+@keyframes rPulse{0%{opacity:0.85;transform:scale(0.82)}100%{opacity:0;transform:scale(1.08)}}
 
+/* Orbes ambiants orbitant */
+.orb-ambient {
+    position:absolute; border-radius:50%; pointer-events:none;
+    animation:orbAmb linear infinite;
+}
+@keyframes orbAmb{
+    0%{transform:rotate(0deg) translateX(130px) rotate(0deg)}
+    100%{transform:rotate(360deg) translateX(130px) rotate(-360deg)}
+}
+
+/* Bouton Francky */
+.francky-btn {
+    width:210px; height:210px; border-radius:50%;
+    border:4px solid var(--cyan);
+    box-shadow:0 0 55px rgba(0,255,255,0.35), inset 0 0 25px rgba(0,0,0,0.7);
+    transition:transform 0.07s ease, border-color 0.4s, box-shadow 0.4s;
+    position:relative; z-index:2; overflow:hidden; background:#0a0f12;
+    display:flex; align-items:center; justify-content:center;
+}
+.francky-btn img {
+    width:100%; height:100%; object-fit:cover; border-radius:50%;
+    display:block; pointer-events:none;
+}
+.francky-btn:hover {
+    box-shadow:0 0 85px rgba(0,255,255,0.65), inset 0 0 25px rgba(0,0,0,0.7);
+    transform:scale(1.04);
+}
+.francky-btn:active { transform:scale(0.90) rotate(-3deg) !important; }
+body.bourrine .francky-btn {
+    border-color:#ff3300;
+    box-shadow:0 0 65px rgba(255,50,0,0.65), inset 0 0 25px rgba(0,0,0,0.7);
+    animation:btnBourrine 0.1s infinite;
+}
+@keyframes btnBourrine{
+    0%{transform:translate(0,0)rotate(0deg)}
+    25%{transform:translate(-2px,1px)rotate(-1deg)}
+    50%{transform:translate(2px,-1px)rotate(1deg)}
+    75%{transform:translate(-1px,2px)rotate(-0.5deg)}
+    100%{transform:translate(1px,-2px)rotate(0.5deg)}
+}
+
+/* ─── COL MILIEU ─── */
+.col-center { width:45%; padding:20px; overflow-y:auto; display:flex; flex-direction:column; gap:15px; }
+.visual-row {
+    border:1px solid var(--border); border-radius:10px; padding:10px;
+    min-height:80px; display:flex; flex-wrap:wrap; gap:8px;
+    align-items:center; align-content:flex-start;
+    box-shadow:inset 0 0 20px rgba(0,0,0,0.8);
+}
+.visual-item {
+    width:48px; height:48px; border-radius:6px; background:#000;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 0 8px rgba(0,0,0,0.8); overflow:hidden; border:1px solid #444;
+    animation:itemPop 0.3s ease;
+}
+.visual-item img { width:100%; height:100%; object-fit:cover; border-radius:4px; }
+@keyframes itemPop{0%{transform:scale(0)rotate(-25deg);opacity:0}60%{transform:scale(1.15)rotate(3deg)}100%{transform:scale(1)rotate(0);opacity:1}}
+
+/* ─── COL DROITE ─── */
+.col-right {
+    width:25%; border-left:2px solid var(--border);
+    background:var(--surface); overflow-y:auto; padding:20px;
+    transition:border-color 0.4s;
+}
+body.bourrine .col-right { border-color:#ff2200; }
+.shop-title {
+    font-family:'Bebas Neue'; font-size:28px; text-align:center;
+    margin-bottom:20px; color:var(--magenta); border-bottom:2px solid; padding-bottom:10px;
+}
+.shop-item {
+    background:rgba(0,0,0,0.4); border:2px solid var(--border);
+    border-radius:10px; padding:14px; margin-bottom:14px;
+    transition:0.2s; display:flex; justify-content:space-between; align-items:center;
+}
+.shop-item:not(.disabled):hover { border-color:var(--magenta); background:rgba(255,0,255,0.1); }
+.shop-item.disabled { opacity:0.45; filter:grayscale(1); }
+.item-info h3 { font-size:15px; color:#fff; margin-bottom:5px; display:flex; align-items:center; gap:6px; }
+.item-info p { font-size:12px; color:#888; margin-left:36px; }
+.item-cost { font-weight:bold; color:var(--magenta); font-size:15px; margin-left:36px; margin-top:4px; }
+.item-count { font-family:'Bebas Neue'; font-size:30px; color:#555; }
+.shop-icon { width:28px; height:28px; object-fit:cover; border-radius:4px; border:1px solid #555; flex-shrink:0; }
+
+.reset-btn {
+    margin-top:28px; width:100%; padding:10px; background:transparent;
+    border:1px solid red; color:red; border-radius:5px;
+    font-family:'DM Sans'; font-weight:bold; text-transform:uppercase;
+}
+.reset-btn:hover { background:red; color:white; }
+
+/* ─── FLASH ÉCRAN ─── */
+#bourrine-flash {
+    position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(255,20,0,0.5); z-index:800; pointer-events:none; display:none;
+}
+@keyframes flashOut{0%{opacity:1}100%{opacity:0}}
+
+/* ─── NOTIFICATION ─── */
+#notif {
+    position:fixed; top:74px; left:50%; transform:translateX(-50%);
+    background:rgba(0,0,0,0.92); border:2px solid var(--yellow);
+    color:var(--yellow); font-family:'Bebas Neue'; font-size:20px;
+    letter-spacing:2px; padding:9px 28px; border-radius:10px;
+    z-index:700; display:none; white-space:nowrap;
+    animation:notifPop 0.35s ease;
+}
+@keyframes notifPop{0%{transform:translateX(-50%)scale(0.5);opacity:0}100%{transform:translateX(-50%)scale(1);opacity:1}}
+
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 </style>
 </head>
 <body>
 
-    <header>
-        <h1>FRANCLICK</h1>
-    </header>
+<canvas id="bg-canvas"></canvas>
+<canvas id="fx-canvas"></canvas>
+<div id="bourrine-flash"></div>
+<div id="notif"></div>
 
-    <div class="game-container">
-        
-        <div class="col-left">
-            <div class="score-container">
-                <div class="score-number" id="scoreDisplay">0</div>
-                <div class="score-bps" id="bpsDisplay">0 pts / sec</div>
-            </div>
-            <div class="francky-btn" id="franckyBtn" onclick="clickFrancky()"></div>
+<div id="bonus-orb" onclick="activateBonus()">
+    <div class="ob-icon">⚡</div>
+    <div>BONUS<br>x2 !</div>
+</div>
+
+<header><h1>FRANCLICK</h1></header>
+<div id="bourrine-banner">🔥 MODE BOURRINE FRANCKY ! CLIQUE COMME UN MALADE ! 🔥</div>
+
+<div class="game-container">
+
+    <div class="col-left" id="colLeft">
+        <canvas id="left-canvas"></canvas>
+
+        <div class="score-container">
+            <div class="score-number" id="scoreDisplay">0</div>
+            <div class="score-bps" id="bpsDisplay">0 pts / sec</div>
+            <div id="multiplier-badge">x2 POINTS !</div>
+            <div id="bourrine-timer"><div id="bourrine-timer-bar"></div></div>
         </div>
 
-        <div class="col-center" id="visualCenter">
+        <div class="francky-wrapper" id="franckyWrapper">
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="orb-ambient" id="oa1" style="width:10px;height:10px;background:#00ffff88;animation-duration:4s;"></div>
+            <div class="orb-ambient" id="oa2" style="width:7px;height:7px;background:#ff00ff88;animation-duration:6s;animation-delay:-2s;"></div>
+            <div class="orb-ambient" id="oa3" style="width:5px;height:5px;background:#ffff0088;animation-duration:3.5s;animation-delay:-1s;"></div>
+            <div class="francky-btn" id="franckyBtn" onclick="clickFrancky(event)">
+                <img src="../bingoudalo/avatar/francky.jpg" alt="Francky"
+                     onerror="this.replaceWith(Object.assign(document.createElement('div'),{textContent:'💪',style:'font-size:80px;display:flex;align-items:center;justify-content:center;width:100%;height:100%'}))">
             </div>
-
-        <div class="col-right">
-            <div class="shop-title">MARCHÉ NOIR</div>
-            <div id="shopContainer">
-                </div>
-            <button class="reset-btn" onclick="resetGame()">Effacer la sauvegarde</button>
         </div>
-
     </div>
 
+    <div class="col-center" id="visualCenter"></div>
+
+    <div class="col-right">
+        <div class="shop-title">MARCHÉ NOIR</div>
+        <div id="shopContainer"></div>
+        <button class="reset-btn" onclick="resetGame()">Effacer la sauvegarde</button>
+    </div>
+</div>
+
 <script>
-    // --- VARIABLES GLOBALES ---
-    let score = 0;
-    let scorePerSecond = 0;
+/* ================================================================
+   CANVAS GLOBAL — icônes flottantes en fond
+================================================================ */
+const bgCanvas = document.getElementById('bg-canvas');
+const bgCtx = bgCanvas.getContext('2d');
+function resizeBg(){ bgCanvas.width=window.innerWidth; bgCanvas.height=window.innerHeight; }
+resizeBg();
+window.addEventListener('resize', resizeBg);
 
-    // --- LA BOUTIQUE ---
-    // TOUTES LES IMAGES SONT REMISES EN .jpg !
-    // J'ai ajouté une propriété 'bg' pour personnaliser le fond de la rangée au milieu.
-    let buildings = [
-        { 
-            id: 'tom', 
-            name: 'Suce un peu', 
-            baseCost: 15, 
-            bps: 1, 
-            icon: '<img src="../bingoudalo/avatar/tom.png" class="upgrade-icon">', 
-            count: 0,
-            bg: 'linear-gradient(90deg, rgba(20, 10, 40, 0.8), rgba(0, 0, 0, 0.5))' // Dégradé violet sombre
-        },
-        { 
-            id: 'affronte', 
-            name: 'Affronte mon regard', 
-            baseCost: 100, 
-            bps: 5, 
-            icon: '<img src="../bingoudalo/avatar/affronte.png" class="upgrade-icon">', 
-            count: 0,
-            bg: 'linear-gradient(90deg, rgba(0, 40, 40, 0.8), rgba(0, 0, 0, 0.5))' // Dégradé cyan sombre
-        },
-        { 
-            id: 'epstein', 
-            name: "De l'argent contre votre fils", 
-            baseCost: 1100, 
-            bps: 50, 
-            icon: '<img src="../bingoudalo/avatar/epstein.png" class="upgrade-icon">', 
-            count: 0,
-            bg: 'linear-gradient(90deg, rgba(50, 0, 0, 0.8), rgba(0, 0, 0, 0.5))' // Dégradé rouge sombre
-        },
-        { 
-            id: 'complexe', 
-            name: 'Complexe cette bite', 
-            baseCost: 12000, 
-            bps: 400, 
-            icon: '<img src="../bingoudalo/avatar/wilbaut_suss.png" class="upgrade-icon">', 
-            count: 0,
-            /* Si tu veux mettre une image de fond au lieu d'une couleur, utilise cette syntaxe : */
-            /* bg: 'url("../images/ton-image-de-fond.jpg")' */
-            bg: 'linear-gradient(90deg, rgba(50, 50, 0, 0.8), rgba(0, 0, 0, 0.5))' // Dégradé jaune sombre
-        }
-    ];
+const BG_ICONS = ['🏋️','🐍','🏋️‍♂️','📚','💻','🔒','⚡','🏋️‍♀️','🐍','📖','🖥️','🔐'];
+const bgParts = Array.from({length:35},()=>({
+    x:Math.random()*window.innerWidth, y:Math.random()*window.innerHeight,
+    icon:BG_ICONS[Math.floor(Math.random()*BG_ICONS.length)],
+    size:14+Math.random()*22, vx:(Math.random()-0.5)*0.35, vy:(Math.random()-0.5)*0.35,
+    rot:Math.random()*Math.PI*2, rv:(Math.random()-0.5)*0.008
+}));
 
-    // --- INITIALISATION ---
-    function initGame() {
-        loadGame();
-        renderShop();
-        renderVisuals();
-        updateScoreUI();
-        
-        setInterval(gameLoop, 100);
-        setInterval(saveGame, 5000);
-    }
+let isBourrine = false;
+function drawBg(){
+    bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
+    bgParts.forEach(p=>{
+        p.x+=p.vx; p.y+=p.vy; p.rot+=p.rv;
+        if(p.x<-50) p.x=bgCanvas.width+50;
+        if(p.x>bgCanvas.width+50) p.x=-50;
+        if(p.y<-50) p.y=bgCanvas.height+50;
+        if(p.y>bgCanvas.height+50) p.y=-50;
+        bgCtx.save();
+        bgCtx.translate(p.x,p.y); bgCtx.rotate(p.rot);
+        bgCtx.font=p.size+'px serif'; bgCtx.textAlign='center'; bgCtx.textBaseline='middle';
+        if(isBourrine){ bgCtx.shadowColor='#ff3300'; bgCtx.shadowBlur=10; }
+        else{ bgCtx.shadowBlur=0; }
+        bgCtx.fillText(p.icon,0,0);
+        bgCtx.restore();
+    });
+    requestAnimationFrame(drawBg);
+}
+drawBg();
 
-    // --- MÉCANIQUES DE JEU ---
-    function clickFrancky() {
-        score += 1; 
-        updateScoreUI();
-        updateShopColors();
-    }
+/* ================================================================
+   CANVAS LEFT — mêmes icônes dans la colonne gauche (derrière le cercle)
+================================================================ */
+const lCanvas = document.getElementById('left-canvas');
+const lCtx = lCanvas.getContext('2d');
+const leftParts = Array.from({length:20},()=>({
+    x:Math.random()*400, y:Math.random()*600,
+    icon:BG_ICONS[Math.floor(Math.random()*BG_ICONS.length)],
+    size:12+Math.random()*18, vx:(Math.random()-0.5)*0.5, vy:(Math.random()-0.5)*0.5,
+    rot:Math.random()*Math.PI*2, rv:(Math.random()-0.5)*0.012
+}));
+function resizeLeft(){
+    const col=document.getElementById('colLeft');
+    lCanvas.width=col.offsetWidth; lCanvas.height=col.offsetHeight;
+}
+function drawLeft(){
+    const w=lCanvas.width, h=lCanvas.height;
+    lCtx.clearRect(0,0,w,h);
+    leftParts.forEach(p=>{
+        p.x+=p.vx; p.y+=p.vy; p.rot+=p.rv;
+        if(p.x<-40) p.x=w+40; if(p.x>w+40) p.x=-40;
+        if(p.y<-40) p.y=h+40; if(p.y>h+40) p.y=-40;
+        lCtx.save();
+        lCtx.translate(p.x,p.y); lCtx.rotate(p.rot);
+        lCtx.font=p.size+'px serif'; lCtx.textAlign='center'; lCtx.textBaseline='middle';
+        lCtx.fillText(p.icon,0,0);
+        lCtx.restore();
+    });
+    requestAnimationFrame(drawLeft);
+}
 
-    function gameLoop() {
-        score += scorePerSecond / 10;
-        updateScoreUI();
-        updateShopColors();
-    }
+/* ================================================================
+   CANVAS FX — particules de clic (en coordonnées absolues)
+================================================================ */
+const fxCanvas = document.getElementById('fx-canvas');
+const fxCtx = fxCanvas.getContext('2d');
+function resizeFx(){ fxCanvas.width=window.innerWidth; fxCanvas.height=window.innerHeight; }
+resizeFx();
+window.addEventListener('resize', resizeFx);
 
-    function buyBuilding(index) {
-        let b = buildings[index];
-        let cost = getCost(b);
+const fxParts = [];
 
-        if (score >= cost) {
-            score -= cost;
-            b.count += 1;
-            
-            recalculateBPS();
-            renderShop(); 
-            renderVisuals(); 
-            updateScoreUI();
-            saveGame();
-        }
-    }
-
-    // --- CALCULS ---
-    function getCost(building) {
-        return Math.floor(building.baseCost * Math.pow(1.15, building.count));
-    }
-
-    function recalculateBPS() {
-        scorePerSecond = 0;
-        buildings.forEach(b => {
-            scorePerSecond += b.count * b.bps;
+function spawnFxParticles(cx, cy){
+    const cols = isBourrine
+        ? ['#ff2200','#ff8800','#ffdd00','#ff4444']
+        : ['#00FFFF','#FF00FF','#FFFF00','#ffffff'];
+    const n = isBourrine ? 24 : 16;
+    for(let i=0;i<n;i++){
+        const a=Math.random()*Math.PI*2;
+        const sp=2+Math.random()*6;
+        fxParts.push({
+            x:cx, y:cy, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-1.5,
+            life:1, decay:0.024+Math.random()*0.018,
+            r:3+Math.random()*5, color:cols[Math.floor(Math.random()*cols.length)],
+            star:Math.random()<0.3, text:null
         });
     }
+    // Texte flottant
+    fxParts.push({
+        x:cx, y:cy-20, vx:(Math.random()-0.5)*1.5, vy:-3,
+        life:1, decay:0.02, r:0,
+        color:isBourrine?'#ff9900':'#00ffff',
+        star:false, text:`+${clickMultiplier}`,
+        fontSize:18+clickMultiplier*3
+    });
+}
 
-    // --- GESTION DE L'INTERFACE (UI) ---
-    function updateScoreUI() {
-        document.getElementById('scoreDisplay').innerText = Math.floor(score);
-        document.getElementById('bpsDisplay').innerText = scorePerSecond + " pts / sec";
+function drawStar(ctx,cx,cy,r,color){
+    ctx.fillStyle=color; ctx.shadowColor=color; ctx.shadowBlur=8;
+    ctx.beginPath();
+    for(let k=0;k<10;k++){
+        const a=Math.PI*k/5-Math.PI/2;
+        const rad=k%2===0?r:r*0.4;
+        k===0?ctx.moveTo(cx+rad*Math.cos(a),cy+rad*Math.sin(a))
+             :ctx.lineTo(cx+rad*Math.cos(a),cy+rad*Math.sin(a));
     }
+    ctx.closePath(); ctx.fill();
+}
 
-    function updateShopColors() {
-        buildings.forEach((b, index) => {
-            let el = document.getElementById('shop-item-' + index);
-            if (el) {
-                if (score >= getCost(b)) {
-                    el.classList.remove('disabled');
-                } else {
-                    el.classList.add('disabled');
-                }
+function drawFx(){
+    fxCtx.clearRect(0,0,fxCanvas.width,fxCanvas.height);
+    for(let i=fxParts.length-1;i>=0;i--){
+        const p=fxParts[i];
+        p.x+=p.vx; p.y+=p.vy; p.vy+=0.13; p.life-=p.decay;
+        if(p.life<=0){ fxParts.splice(i,1); continue; }
+        fxCtx.save();
+        fxCtx.globalAlpha=Math.max(0,p.life);
+        if(p.text){
+            fxCtx.font=`bold ${p.fontSize}px 'Bebas Neue',sans-serif`;
+            fxCtx.fillStyle=p.color; fxCtx.shadowColor=p.color; fxCtx.shadowBlur=12;
+            fxCtx.textAlign='center'; fxCtx.fillText(p.text,p.x,p.y);
+        } else if(p.star){
+            drawStar(fxCtx,p.x,p.y,p.r,p.color);
+        } else {
+            fxCtx.fillStyle=p.color; fxCtx.shadowColor=p.color; fxCtx.shadowBlur=8;
+            fxCtx.beginPath(); fxCtx.arc(p.x,p.y,p.r,0,Math.PI*2); fxCtx.fill();
+        }
+        fxCtx.restore();
+    }
+    requestAnimationFrame(drawFx);
+}
+drawFx();
+
+/* ================================================================
+   JEU
+================================================================ */
+let score=0, scorePerSecond=0, clickMultiplier=1;
+let bonusUsed=false, bonusScheduled=false, timeOnPage=0;
+let bonusDelay=Math.floor(Math.random()*120)+60;
+
+let bourrineModeActive=false;
+let bourrine_start=0;
+const BOURRINE_DURATION=30000; // 30 secondes en ms
+
+const buildings=[
+    {id:'tom',      name:'Suce un peu',                 baseCost:15,    bps:1,   icon:'../bingoudalo/avatar/tom.png',           count:0, bg:'linear-gradient(90deg,rgba(20,10,40,.8),rgba(0,0,0,.5))'},
+    {id:'affronte', name:'Affronte mon regard',          baseCost:100,   bps:5,   icon:'../bingoudalo/avatar/affronte.png',      count:0, bg:'linear-gradient(90deg,rgba(0,40,40,.8),rgba(0,0,0,.5))'},
+    {id:'epstein',  name:"De l'argent contre votre fils",baseCost:1100,  bps:50,  icon:'../bingoudalo/avatar/epstein.png',       count:0, bg:'linear-gradient(90deg,rgba(50,0,0,.8),rgba(0,0,0,.5))'},
+    {id:'complexe', name:'Complexe cette bite',          baseCost:12000, bps:400, icon:'../bingoudalo/avatar/wilbaut_suss.png',  count:0, bg:'linear-gradient(90deg,rgba(50,50,0,.8),rgba(0,0,0,.5))'}
+];
+
+function initGame(){
+    loadGame(); renderShop(); renderVisuals(); updateScoreUI();
+    setInterval(gameLoop, 100);
+    setInterval(saveGame, 5000);
+    setInterval(()=>{
+        timeOnPage++;
+        if(!bonusUsed&&!bonusScheduled&&timeOnPage>=bonusDelay){
+            bonusScheduled=true; showBonusOrb();
+        }
+    },1000);
+    requestAnimationFrame(bourrineTick);
+}
+
+/* Boucle jeu */
+function gameLoop(){
+    score+=scorePerSecond/10;
+    updateScoreUI(); updateShopColors();
+}
+
+/* Timer bourrine piloté par rAF — indépendant des clics et du DOM */
+function bourrineTick(){
+    if(bourrineModeActive){
+        const elapsed=performance.now()-bourrine_start;
+        const pct=Math.max(0,(BOURRINE_DURATION-elapsed)/BOURRINE_DURATION*100);
+        document.getElementById('bourrine-timer-bar').style.width=pct+'%';
+        if(elapsed>=BOURRINE_DURATION) deactivateBourrine();
+    }
+    requestAnimationFrame(bourrineTick);
+}
+
+/* Clic */
+function clickFrancky(event){
+    score+=clickMultiplier;
+    updateScoreUI(); updateShopColors();
+    spawnFxParticles(event.clientX, event.clientY);
+}
+
+/* Achat */
+function buyBuilding(index){
+    const b=buildings[index], cost=getCost(b);
+    if(score>=cost){
+        score-=cost; b.count++;
+        recalculateBPS(); renderShop(); renderVisuals(); updateScoreUI(); saveGame();
+    }
+}
+
+function getCost(b){ return Math.floor(b.baseCost*Math.pow(1.15,b.count)); }
+function recalculateBPS(){ scorePerSecond=0; buildings.forEach(b=>{ scorePerSecond+=b.count*b.bps; }); }
+function updateScoreUI(){
+    document.getElementById('scoreDisplay').textContent=Math.floor(score).toLocaleString('fr-FR');
+    document.getElementById('bpsDisplay').textContent=scorePerSecond+' pts / sec';
+}
+function updateShopColors(){
+    buildings.forEach((b,i)=>{
+        const el=document.getElementById('shop-item-'+i);
+        if(el) el.classList.toggle('disabled',score<getCost(b));
+    });
+}
+
+function renderShop(){
+    const c=document.getElementById('shopContainer');
+    c.innerHTML='';
+    buildings.forEach((b,i)=>{
+        const cost=getCost(b), dis=score>=cost?'':'disabled';
+        c.innerHTML+=`
+        <div class="shop-item ${dis}" id="shop-item-${i}" onclick="buyBuilding(${i})">
+            <div class="item-info">
+                <h3>
+                    <img src="${b.icon}" class="shop-icon"
+                         onerror="this.style.display='none'" alt="">
+                    ${b.name}
+                </h3>
+                <p>Génère ${b.bps} pts/s</p>
+                <div class="item-cost">${cost.toLocaleString('fr-FR')} pts</div>
+            </div>
+            <div class="item-count">${b.count}</div>
+        </div>`;
+    });
+}
+
+function renderVisuals(){
+    const vc=document.getElementById('visualCenter');
+    vc.innerHTML='';
+    buildings.forEach(b=>{
+        if(b.count>0){
+            let html=`<div class="visual-row" style="background:${b.bg};">`;
+            for(let i=0;i<b.count;i++){
+                html+=`<div class="visual-item"><img src="${b.icon}" alt="" onerror="this.style.display='none'"></div>`;
             }
-        });
-    }
-
-    function renderShop() {
-        const shopContainer = document.getElementById('shopContainer');
-        shopContainer.innerHTML = '';
-
-        buildings.forEach((b, index) => {
-            let currentCost = getCost(b);
-            let disabledClass = score >= currentCost ? '' : 'disabled';
-
-            shopContainer.innerHTML += `
-                <div class="shop-item ${disabledClass}" id="shop-item-${index}" onclick="buyBuilding(${index})">
-                    <div class="item-info">
-                        <h3>${b.icon} ${b.name}</h3>
-                        <p>Génère ${b.bps} pts/s</p>
-                        <div class="item-cost">${currentCost} pts</div>
-                    </div>
-                    <div class="item-count">${b.count}</div>
-                </div>
-            `;
-        });
-    }
-
-    function renderVisuals() {
-        const visualCenter = document.getElementById('visualCenter');
-        visualCenter.innerHTML = '';
-
-        buildings.forEach(b => {
-            if (b.count > 0) {
-                // MAGIE ICI : On applique le style 'bg' directement à la rangée !
-                let rowHtml = `<div class="visual-row" style="background: ${b.bg};">`;
-                for(let i = 0; i < b.count; i++) {
-                    rowHtml += `<div class="visual-item">${b.icon}</div>`;
-                }
-                rowHtml += `</div>`;
-                visualCenter.innerHTML += rowHtml;
-            }
-        });
-    }
-
-    // --- SAUVEGARDE (LocalStorage) ---
-    function saveGame() {
-        let saveData = {
-            score: score,
-            buildings: buildings.map(b => b.count)
-        };
-        localStorage.setItem('franclickSave', JSON.stringify(saveData));
-    }
-
-    function loadGame() {
-        let saveFile = localStorage.getItem('franclickSave');
-        if (saveFile) {
-            let saveData = JSON.parse(saveFile);
-            score = saveData.score;
-            if(saveData.buildings) {
-                buildings.forEach((b, index) => {
-                    b.count = saveData.buildings[index] || 0;
-                });
-            }
-            recalculateBPS();
+            html+='</div>';
+            vc.innerHTML+=html;
         }
+    });
+}
+
+/* Bonus orb */
+function showBonusOrb(){
+    const orb=document.getElementById('bonus-orb');
+    const m=90;
+    orb.style.left=(m+Math.random()*(window.innerWidth-m*2))+'px';
+    orb.style.top=(m+Math.random()*(window.innerHeight-m*2))+'px';
+    orb.style.display='flex';
+    showNotif('⚡ UN BONUS EST APPARU ! CLIQUE VITE !');
+    setTimeout(()=>{ if(!bonusUsed){ orb.style.display='none'; showNotif('💨 Le bonus a disparu... raté !'); } },20000);
+}
+function activateBonus(){
+    if(bonusUsed) return;
+    bonusUsed=true;
+    document.getElementById('bonus-orb').style.display='none';
+    activateBourrine();
+}
+
+/* Mode bourrine */
+function activateBourrine(){
+    bourrineModeActive=true;
+    bourrine_start=performance.now();
+    clickMultiplier=2; isBourrine=true;
+    document.body.classList.add('bourrine');
+    bgCanvas.style.opacity='0.22'; lCanvas.style.opacity='0.26';
+    const fl=document.getElementById('bourrine-flash');
+    fl.style.display='block'; fl.style.animation='flashOut 0.65s ease-out forwards';
+    setTimeout(()=>{ fl.style.display='none'; fl.style.animation=''; },700);
+    showNotif('🔥 BOURRINE FRANCKY ! x2 PENDANT 30 SEC ! 🔥');
+    ['oa1','oa2','oa3'].forEach(id=>{ const e=document.getElementById(id); if(e) e.style.background='#ff330099'; });
+}
+function deactivateBourrine(){
+    bourrineModeActive=false; clickMultiplier=1; isBourrine=false;
+    document.body.classList.remove('bourrine');
+    bgCanvas.style.opacity='0.13'; lCanvas.style.opacity='0.18';
+    document.getElementById('bourrine-timer-bar').style.width='100%';
+    showNotif('😤 Fin du mode BOURRINE... repose-toi !');
+    const oc=[['oa1','#00ffff88'],['oa2','#ff00ff88'],['oa3','#ffff0088']];
+    oc.forEach(([id,col])=>{ const e=document.getElementById(id); if(e) e.style.background=col; });
+}
+
+/* Notif */
+let notifTO=null;
+function showNotif(msg){
+    const n=document.getElementById('notif');
+    n.textContent=msg; n.style.display='block';
+    n.style.animation='none'; void n.offsetWidth; n.style.animation='notifPop 0.35s ease';
+    if(notifTO) clearTimeout(notifTO);
+    notifTO=setTimeout(()=>{ n.style.display='none'; },3500);
+}
+
+/* Save/Load */
+function saveGame(){
+    localStorage.setItem('franclickSave',JSON.stringify({score,buildings:buildings.map(b=>b.count),bonusUsed}));
+}
+function loadGame(){
+    const f=localStorage.getItem('franclickSave');
+    if(f){
+        const d=JSON.parse(f);
+        score=d.score||0; bonusUsed=d.bonusUsed||false;
+        if(d.buildings) buildings.forEach((b,i)=>{ b.count=d.buildings[i]||0; });
+        recalculateBPS();
     }
-
-    function resetGame() {
-        if(confirm("T'es sûr de vouloir tout effacer ? Tu vas retomber à 0 !")) {
-            localStorage.removeItem('franclickSave');
-            location.reload(); 
-        }
+}
+function resetGame(){
+    if(confirm("T'es sûr de vouloir tout effacer ? Tu vas retomber à 0 !")){
+        localStorage.removeItem('franclickSave'); location.reload();
     }
+}
 
-    window.onload = initGame;
-
+window.addEventListener('load',()=>{ resizeLeft(); drawLeft(); initGame(); });
+window.addEventListener('resize', resizeLeft);
 </script>
 </body>
 </html>
