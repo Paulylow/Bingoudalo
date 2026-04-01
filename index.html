@@ -7,7 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --cyan: #00FFFF; --magenta: #FF00FF; --yellow: #f1c40f; --text: #ffffff; }
+        /* COULEUR UNIQUE POUR LA COHÉRENCE : ORANGE/JAUNE */
+        :root { --orange: #f39c12; --yellow: #f1c40f; --text: #ffffff; }
+        
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         
         body { 
@@ -29,37 +31,40 @@
             border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 40px; width: 100%; max-width: 400px;
             box-shadow: 0 20px 50px rgba(0,0,0,0.8); text-align: center;
         }
-        .auth-logo { font-family: 'Bebas Neue'; font-size: 50px; color: var(--yellow); margin-bottom: 20px; text-shadow: 0 0 15px rgba(241, 196, 15, 0.5); }
+        /* Remplacement du texte par une image */
+        .auth-logo-img { max-width: 250px; margin-bottom: 25px; filter: drop-shadow(0 0 15px rgba(243, 156, 18, 0.7)); }
+        
         .auth-input { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 15px; color: white; margin-bottom: 15px; font-size: 16px; outline: none; transition: 0.3s; text-align: center;}
-        .auth-input:focus { border-color: var(--cyan); box-shadow: 0 0 15px rgba(0,255,255,0.3); }
+        .auth-input:focus { border-color: var(--orange); box-shadow: 0 0 15px rgba(243, 156, 18, 0.3); }
+        
         .auth-btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; cursor: pointer; transition: 0.2s; font-size: 16px; margin-bottom: 10px; }
         
-        .btn-cyan { background: var(--cyan); color: black; box-shadow: 0 0 15px rgba(0,255,255,0.4); }
-        .btn-cyan:hover { transform: translateY(-2px); box-shadow: 0 0 25px rgba(0,255,255,0.6); }
-        .btn-magenta { background: transparent; border: 2px solid var(--magenta); color: var(--magenta); }
-        .btn-magenta:hover { background: var(--magenta); color: white; box-shadow: 0 0 20px rgba(255,0,255,0.5); }
-        .btn-yellow { background: var(--yellow); color: black; box-shadow: 0 0 15px rgba(241, 196, 15, 0.4); }
-        .btn-yellow:hover { transform: translateY(-2px); box-shadow: 0 0 25px rgba(241, 196, 15, 0.6); }
+        /* BOUTONS UNIQUEMENT ORANGE */
+        .btn-solid { background: var(--orange); color: black; box-shadow: 0 5px 15px rgba(243, 156, 18, 0.3); }
+        .btn-solid:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(243, 156, 18, 0.6); }
+        
+        .btn-outline { background: transparent; border: 2px solid var(--orange); color: var(--orange); }
+        .btn-outline:hover { background: var(--orange); color: white; box-shadow: 0 0 20px rgba(243, 156, 18, 0.5); }
         
         .error-msg { color: #ff4444; font-size: 14px; margin-bottom: 15px; min-height: 20px; font-weight: bold; }
 
-        /* PROFIL FLOTTANT */
+        /* PROFIL FLOTTANT (ORANGE) */
         #floatingProfile {
             display: none; position: absolute; top: 30px; right: 40px; width: 70px; height: 70px;
-            border-radius: 50%; border: 3px solid var(--yellow); cursor: pointer;
-            box-shadow: 0 0 20px rgba(241, 196, 15, 0.5); transition: 0.3s; z-index: 50;
+            border-radius: 50%; border: 3px solid var(--orange); cursor: pointer;
+            box-shadow: 0 0 20px rgba(243, 156, 18, 0.5); transition: 0.3s; z-index: 50;
         }
-        #floatingProfile:hover { transform: scale(1.1); box-shadow: 0 0 30px rgba(241, 196, 15, 0.8); }
+        #floatingProfile:hover { transform: scale(1.1); box-shadow: 0 0 30px rgba(243, 156, 18, 0.8); }
         #floatingProfile img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 
-        /* APP VIEW - LAYOUT PRINCIPAL */
+        /* APP VIEW */
         .main-container { display: flex; width: 100%; max-width: 1400px; margin: 0 auto; padding: 20px; flex-direction: column; align-items: center; }
         .main-logo { max-width: 400px; margin-bottom: 50px; margin-top: 30px; filter: drop-shadow(0 0 20px rgba(243, 156, 18, 0.8)); }
         
         .games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; width: 100%; max-width: 1200px; margin-bottom: 50px; }
         .game-card { background: rgba(20, 20, 20, 0.6); border-radius: 15px; overflow: hidden; text-decoration: none; color: white; border: 2px solid rgba(255, 255, 255, 0.1); transition: 0.3s; backdrop-filter: blur(5px); }
-        .game-card:hover { transform: translateY(-10px); border-color: var(--yellow); box-shadow: 0 15px 30px rgba(241, 196, 15, 0.4); }
-        .game-thumbnail { width: 100%; height: 180px; object-fit: cover; border-bottom: 2px solid rgba(243, 156, 18, 0.5); }
+        .game-card:hover { transform: translateY(-10px); border-color: var(--yellow); box-shadow: 0 15px 30px rgba(243, 156, 18, 0.5); }
+        .game-thumbnail { width: 100%; height: 180px; object-fit: cover; border-bottom: 2px solid rgba(243, 156, 18, 0.6); }
         .game-info { padding: 15px; text-align: center; }
         .game-info h2 { margin: 0 0 5px 0; font-family: 'Bebas Neue'; font-size: 28px; color: var(--yellow); letter-spacing: 1px;}
         .game-info span { font-size: 13px; color: #aaa; }
@@ -67,24 +72,23 @@
         /* MODAL PROFIL */
         #profileModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .modal-content { 
-            background: rgba(20, 20, 30, 0.9); border: 2px solid var(--yellow); border-radius: 20px; padding: 30px; 
-            width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 0 50px rgba(241, 196, 15, 0.3);
+            background: rgba(20, 20, 30, 0.9); border: 2px solid var(--orange); border-radius: 20px; padding: 30px; 
+            width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 0 50px rgba(243, 156, 18, 0.3);
             position: relative;
         }
         .close-btn { position: absolute; top: 15px; right: 20px; font-size: 30px; cursor: pointer; color: #aaa; transition: 0.2s; }
         .close-btn:hover { color: red; }
 
         .modal-header { display: flex; flex-direction: column; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; margin-bottom: 20px; }
-        .modal-avatar { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--cyan); object-fit: cover; margin-bottom: 10px;}
-        .modal-pseudo { font-family: 'Bebas Neue'; font-size: 40px; color: white; letter-spacing: 2px; }
+        .modal-avatar { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--orange); object-fit: cover; margin-bottom: 10px;}
+        .modal-pseudo { font-family: 'Bebas Neue'; font-size: 40px; color: white; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
 
-        /* DEUX COLONNES DANS LE MODAL */
         .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         @media (max-width: 600px) { .modal-grid { grid-template-columns: 1fr; } }
 
-        /* STATS */
+        /* STATS (ORANGE) */
         .stats-section { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); }
-        .stats-section h3 { font-family: 'Bebas Neue'; color: var(--cyan); margin-bottom: 15px; font-size: 24px; letter-spacing: 1px; text-align: center;}
+        .stats-section h3 { font-family: 'Bebas Neue'; color: var(--orange); margin-bottom: 15px; font-size: 24px; letter-spacing: 1px; text-align: center; text-shadow: 0 0 10px rgba(243, 156, 18, 0.5);}
         .stat-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding: 8px 0; }
         .stat-row:last-child { border-bottom: none; }
         .stat-label { font-size: 13px; color: #bbb; text-transform: uppercase; }
@@ -92,19 +96,19 @@
 
         /* EDITION PROFIL */
         .edit-section { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); }
-        .edit-section h3 { font-family: 'Bebas Neue'; color: var(--magenta); margin-bottom: 15px; font-size: 24px; letter-spacing: 1px; text-align: center;}
+        .edit-section h3 { font-family: 'Bebas Neue'; color: var(--yellow); margin-bottom: 15px; font-size: 24px; letter-spacing: 1px; text-align: center; text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);}
         .edit-input { width: 100%; background: #000; border: 1px solid #333; border-radius: 5px; padding: 10px; color: white; margin-bottom: 10px; font-size: 14px; text-align: center; }
-        .edit-input:focus { border-color: var(--yellow); outline: none; }
+        .edit-input:focus { border-color: var(--yellow); outline: none; box-shadow: 0 0 10px rgba(241, 196, 15, 0.2); }
 
         /* GRILLE AVATARS */
         .avatar-picker { margin-top: 20px; text-align: center; }
-        .avatar-grid-container { display: none; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 10px; margin-top: 15px; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px;}
+        .avatar-grid-container { display: none; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 10px; margin-top: 15px; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);}
         .avatar-option { width: 60px; height: 60px; border-radius: 50%; cursor: pointer; object-fit: cover; border: 2px solid transparent; transition: 0.2s; }
-        .avatar-option:hover { transform: scale(1.1); border-color: var(--cyan); }
+        .avatar-option:hover { transform: scale(1.1); border-color: var(--orange); }
         .avatar-option.selected { border-color: var(--yellow); box-shadow: 0 0 15px var(--yellow); }
 
-        .logout-btn { margin-top: 20px; width: 100%; padding: 12px; background: rgba(255,0,0,0.1); border: 1px solid red; color: red; border-radius: 5px; cursor: pointer; text-transform: uppercase; font-weight: bold; transition: 0.2s; }
-        .logout-btn:hover { background: red; color: white; box-shadow: 0 0 15px rgba(255,0,0,0.5);}
+        .logout-btn { margin-top: 20px; width: 100%; padding: 12px; background: rgba(255,0,0,0.05); border: 1px solid #ff4444; color: #ff4444; border-radius: 5px; cursor: pointer; text-transform: uppercase; font-weight: bold; transition: 0.2s; }
+        .logout-btn:hover { background: #ff4444; color: white; box-shadow: 0 0 15px rgba(255,68,68,0.5);}
 
     </style>
 </head>
@@ -116,7 +120,8 @@
 
     <div id="authView" class="screen active">
         <div class="auth-card">
-            <div class="auth-logo">CDSI GAMES</div>
+            <img src="images/cdsi-games-logo.png" alt="CDSI GAMES" class="auth-logo-img">
+            
             <p style="color: #aaa; margin-bottom: 20px; font-size: 14px;">Connecte-toi pour sauvegarder tes stats</p>
             
             <div id="errorMsg" class="error-msg"></div>
@@ -124,8 +129,8 @@
             <input type="text" id="pseudoInput" class="auth-input" placeholder="Pseudo" maxlength="15">
             <input type="password" id="passwordInput" class="auth-input" placeholder="Mot de passe">
             
-            <button class="auth-btn btn-cyan" onclick="login()">Se Connecter</button>
-            <button class="auth-btn btn-magenta" onclick="register()">Créer un compte</button>
+            <button class="auth-btn btn-solid" onclick="login()">Se Connecter</button>
+            <button class="auth-btn btn-outline" onclick="register()">Créer un compte</button>
         </div>
     </div>
 
@@ -171,19 +176,19 @@
                     <div class="stat-row"><span class="stat-label">Kavale</span><span class="stat-value" id="statKavale">0</span></div>
                     <div class="stat-row"><span class="stat-label">Bingoudalo</span><span class="stat-value" id="statBingo">0</span></div>
                     <div class="stat-row"><span class="stat-label">Wanted</span><span class="stat-value" id="statWanted">0</span></div>
-                    <div class="stat-row"><span class="stat-label">Franclick</span><span class="stat-value" id="statFranclick" style="color:var(--cyan);">0</span></div>
+                    <div class="stat-row"><span class="stat-label">Franclick</span><span class="stat-value" id="statFranclick" style="color:var(--yellow);">0</span></div>
                 </div>
 
                 <div class="edit-section">
                     <h3>Modifier Profil</h3>
                     <input type="text" id="editPseudo" class="edit-input" placeholder="Nouveau Pseudo">
                     <input type="password" id="editPassword" class="edit-input" placeholder="Nouveau Mot de passe">
-                    <button class="auth-btn btn-yellow" style="font-size: 13px; padding: 10px;" onclick="saveProfileChanges()">Enregistrer</button>
+                    <button class="auth-btn btn-solid" style="font-size: 13px; padding: 10px;" onclick="saveProfileChanges()">Enregistrer</button>
                 </div>
             </div>
 
             <div class="avatar-picker">
-                <button class="auth-btn btn-cyan" style="font-size: 13px; padding: 10px; width: auto;" onclick="toggleAvatarGrid()">Changer d'avatar de profil</button>
+                <button class="auth-btn btn-outline" style="font-size: 13px; padding: 10px; width: auto;" onclick="toggleAvatarGrid()">Changer d'avatar de profil</button>
                 <div class="avatar-grid-container" id="avatarGridContainer">
                     </div>
             </div>
@@ -221,7 +226,7 @@
             showView('authView');
         }
         
-        // Générer la grille d'avatars (les `onerror` cacheront ceux qui n'existent pas vraiment)
+        // Générer la grille d'avatars
         document.getElementById('avatarGridContainer').innerHTML = AVATARS.map(src => 
             `<img src="${src}" class="avatar-option" onclick="selectTempAvatar('${src}', this)" onerror="this.style.display='none'">`
         ).join('');
@@ -261,8 +266,9 @@
         const { data: existing } = await sb.from('cdsi_users').select('pseudo').eq('pseudo', pseudo).maybeSingle();
         if(existing) return showError("Ce pseudo est déjà pris !");
 
+        // Avatar par défaut "safe"
         const newUser = {
-            pseudo: pseudo, password: pwd, avatar: 'bingoudalo/avatar/paulo1.jpg', // Avatar par défaut safe
+            pseudo: pseudo, password: pwd, avatar: 'bingoudalo/avatar/paulo1.jpg', 
             kavale_wins: 0, bingoudalo_wins: 0, wanted_wins: 0, franclick_score: 0
         };
 
@@ -341,7 +347,7 @@
 
     function selectTempAvatar(src, imgElement) {
         tempSelectedAvatar = src;
-        // Gérer visuel de sélection
+        // Gérer visuel de sélection (orange)
         document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected'));
         imgElement.classList.add('selected');
     }
