@@ -222,8 +222,7 @@ let isEndingRound = false;
 
 // Variables Moteur de Jeu
 const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-// OPTIMISATION: Désactiver le lissage pour gagner des FPS sur Mac
+const ctx = canvas.getContext('2d', { alpha: false }); // Optimisation Mac
 ctx.imageSmoothingEnabled = false; 
 
 let heads = [];
@@ -433,7 +432,7 @@ async function resetGame() {
 }
 
 // ==========================================
-// MOTEUR DU JEU OPTIMISÉ (CANVAS)
+// MOTEUR DU JEU OPTIMISÉ EXTRÊME (CANVAS)
 // ==========================================
 function startVisualTimer() {
     const timerEl = document.getElementById('timerDisplay');
@@ -445,6 +444,21 @@ function startVisualTimer() {
         else timerEl.classList.remove('hurry');
         if(remaining <= 0) clearInterval(visualTimerInterval);
     }, 100);
+}
+
+// OPTIMISATION : Fonction pour pré-calculer et stocker les images dans des mini-canvases !
+function createPreRenderedSprite(img, size) {
+    let offscreen = document.createElement('canvas');
+    offscreen.width = size;
+    offscreen.height = size;
+    let offCtx = offscreen.getContext('2d');
+    if(img.complete && img.naturalHeight !== 0) {
+        offCtx.drawImage(img, 0, 0, size, size);
+    } else {
+        offCtx.fillStyle = 'rgba(255,255,255,0.2)';
+        offCtx.fillRect(0,0,size,size);
+    }
+    return offscreen;
 }
 
 function initGameEngine(round) {
@@ -460,22 +474,30 @@ function initGameEngine(round) {
     
     for(let i=0; i<numDistractors; i++) {
         let dImg = distractorImgs[Math.floor(Math.random() * distractorImgs.length)];
+        let exactSize = (targetSize + (Math.random() * 20 - 10)) | 0;
+        
+        // On génère le Sprite mis en cache (énorme gain de perf)
+        let sprite = createPreRenderedSprite(dImg, exactSize);
+
         heads.push({
-            img: dImg,
-            x: Math.random() * (canvas.width - targetSize),
-            y: Math.random() * (canvas.height - targetSize),
-            size: targetSize + (Math.random() * 20 - 10), 
+            sprite: sprite, // On stocke le mini-canvas pré-rendu
+            x: Math.random() * (canvas.width - exactSize),
+            y: Math.random() * (canvas.height - exactSize),
+            size: exactSize,
             vx: (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 2 + speedMult),
             vy: (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 2 + speedMult),
             isTarget: false
         });
     }
 
+    let exactTargetSize = targetSize | 0;
+    let targetSprite = createPreRenderedSprite(targetImg, exactTargetSize);
+
     heads.splice(Math.floor(heads.length / 2), 0, {
-        img: targetImg,
-        x: Math.random() * (canvas.width - targetSize),
-        y: Math.random() * (canvas.height - targetSize),
-        size: targetSize,
+        sprite: targetSprite,
+        x: Math.random() * (canvas.width - exactTargetSize),
+        y: Math.random() * (canvas.height - exactTargetSize),
+        size: exactTargetSize,
         vx: (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 2 + speedMult),
         vy: (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 2 + speedMult),
         isTarget: true
@@ -488,24 +510,22 @@ function initGameEngine(round) {
 function gameLoop() {
     if(currentPhase !== 'playing' || hasFound) return;
     
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Remplissage uni beaucoup plus rapide que clearRect avec transparence
+    ctx.fillStyle = '#0b0c10';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // OPTIMISATION : Plus aucun shadowBlur ici ! C'est ce qui faisait lagger ton Mac.
-    heads.forEach(h => {
+    // Boucle for classique (plus rapide que forEach)
+    for (let i = 0; i < heads.length; i++) {
+        let h = heads[i];
         h.x += h.vx;
         h.y += h.vy;
         
         if(h.x <= 0 || h.x + h.size >= canvas.width) h.vx *= -1;
         if(h.y <= 0 || h.y + h.size >= canvas.height) h.vy *= -1;
 
-        // OPTIMISATION : l'opérateur "| 0" force les nombres entiers pour accélérer le rendu (Sub-pixel prevention)
-        if(h.img.complete) {
-            ctx.drawImage(h.img, h.x | 0, h.y | 0, h.size | 0, h.size | 0);
-        } else {
-            ctx.fillStyle = h.isTarget ? 'rgba(255,0,0,0.5)' : 'rgba(255,255,255,0.1)';
-            ctx.fillRect(h.x | 0, h.y | 0, h.size | 0, h.size | 0);
-        }
-    });
+        // Le GPU dessine directement le mini-canvas pré-rendu (VITESSE MAXIMUM)
+        ctx.drawImage(h.sprite, h.x | 0, h.y | 0);
+    }
 
     animFrame = requestAnimationFrame(gameLoop);
 }
