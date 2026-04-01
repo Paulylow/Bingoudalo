@@ -69,6 +69,7 @@
   <div class="tagline">3 manches gagnantes - Jusqu'à 4 joueurs</div>
   <div class="join-card" style="background: transparent; border: none; box-shadow: none;">
     <div id="loadingProfile" class="loading-text">Connexion au profil en cours...</div>
+    <div id="errorDisplay" style="color: red; text-align: center; display: none; margin-top: 10px;"></div>
   </div>
 </div>
 
@@ -112,7 +113,7 @@ const GAME_ID = 'kavale_main_lobby';
 // --- VARIABLES GLOBALES ---
 let myPseudo = '';
 let myAvatar = '';
-let myColorCode = '#00FFFF'; // Couleur par défaut
+let myColorCode = '#00FFFF'; 
 let isMaster = false;
 let gameState = 'lobby'; 
 let realtimeChannel = null; 
@@ -135,91 +136,100 @@ function showScreen(id){
   document.getElementById(id).classList.add('active');
 }
 
-// --- INITIALISATION & AUTO-CONNEXION ---
+// --- INITIALISATION & AUTO-CONNEXION ULTRA SÉCURISÉE ---
 window.onload = async () => {
-    myPseudo = localStorage.getItem('cdsi_logged_user');
-    
-    if (!myPseudo) {
-        window.location.href = '../index.html'; 
-        return;
-    }
+    try {
+        myPseudo = localStorage.getItem('cdsi_logged_user');
+        
+        if (!myPseudo || myPseudo === 'null' || myPseudo === 'undefined') {
+            window.location.href = '../index.html'; 
+            return;
+        }
 
-    // Récupérer l'avatar depuis la DB
-    const { data, error } = await sb.from('cdsi_users').select('avatar').eq('pseudo', myPseudo).single();
-    if (data && data.avatar) {
-        myAvatar = '../' + data.avatar; 
-    } else {
-        myAvatar = '../bingoudalo/avatar/paulo1.jpg'; // Secours
-    }
+        // Récupération sécurisée de l'avatar
+        const { data, error } = await sb.from('cdsi_users').select('avatar').eq('pseudo', myPseudo).maybeSingle();
+        
+        if (data && data.avatar) {
+            myAvatar = '../' + data.avatar; 
+        } else {
+            myAvatar = '../bingoudalo/avatar/paulo1.jpg'; // Secours
+        }
 
-    autoJoinLobby();
+        await autoJoinLobby();
+        
+    } catch (err) {
+        console.error(err);
+        document.getElementById('loadingProfile').style.display = 'none';
+        const errDiv = document.getElementById('errorDisplay');
+        errDiv.style.display = 'block';
+        errDiv.innerHTML = `Erreur locale détectée.<br><br><button class='btn-primary' onclick='location.reload()'>Rafraîchir</button>`;
+    }
 };
 
 // --- BASE DE DONNÉES (LOBBY) ---
 async function fetchLobbyState() {
     try {
-        const {data} = await sb.from('bingo_state').select('data').eq('id', GAME_ID).maybeSingle();
+        const {data, error} = await sb.from('bingo_state').select('data').eq('id', GAME_ID).maybeSingle();
+        if (error) throw error;
         return data?.data || null;
-    } catch(e) { return null; }
+    } catch(e) { 
+        console.error("Erreur fetch state:", e);
+        return null; 
+    }
 }
 async function updateLobbyState(newState) {
     try {
         await sb.from('bingo_state').upsert({ id: GAME_ID, data: newState, updated_at: new Date().toISOString() }, { onConflict: 'id' });
-    } catch(e) {}
+    } catch(e) {
+        console.error("Erreur update state:", e);
+    }
 }
 
 // --- REJOINDRE LE LOBBY AUTOMATIQUEMENT ---
 async function autoJoinLobby() {
-    try {
-        let state = await fetchLobbyState();
-        
-        if(!state || !state.players || Object.keys(state.players).length === 0) {
-            state = { phase: 'lobby', master: myPseudo, players: {}, gameEndedSaved: false };
-        } else {
-            if (!state.players[state.master]) {
-                state.master = myPseudo; // Si le master a buggé
-            }
+    let state = await fetchLobbyState();
+    
+    if(!state || !state.players || Object.keys(state.players).length === 0) {
+        state = { phase: 'lobby', master: myPseudo, players: {}, gameEndedSaved: false };
+    } else {
+        if (!state.players[state.master]) {
+            state.master = myPseudo; // Reprise du lead si le master a buggé/quitté
         }
-
-        if(Object.keys(state.players).length >= 4 && !state.players[myPseudo]) {
-            alert("La salle est pleine (4 joueurs max) !");
-            window.location.href = '../index.html';
-            return;
-        }
-
-        isMaster = (state.master === myPseudo);
-        
-        // ATTRIBUTION INTELLIGENTE DE COULEUR
-        if(!state.players[myPseudo]) {
-            const NEON_COLORS = ['#00FFFF', '#FF00FF', '#FFFF00', '#00FF00'];
-            let usedColors = Object.values(state.players).map(p => p.colorCode);
-            let availableColors = NEON_COLORS.filter(c => !usedColors.includes(c));
-            
-            // Prendre une couleur libre s'il en reste, sinon au hasard
-            if (availableColors.length > 0) {
-                myColorCode = availableColors[Math.floor(Math.random() * availableColors.length)];
-            } else {
-                myColorCode = NEON_COLORS[Math.floor(Math.random() * NEON_COLORS.length)];
-            }
-
-            state.players[myPseudo] = { pseudo: myPseudo, avatar: myAvatar, colorCode: myColorCode, score: 0 };
-        } else {
-            state.players[myPseudo].avatar = myAvatar; 
-            myColorCode = state.players[myPseudo].colorCode; // On récupère sa couleur déjà assignée
-        }
-        
-        await updateLobbyState(state);
-        showScreen('screenLobby');
-        startLobbySync(); 
-    } catch (error) {
-        alert("Erreur de connexion au serveur. Retour au Hub.");
-        window.location.href = '../index.html';
     }
+
+    if(Object.keys(state.players).length >= 4 && !state.players[myPseudo]) {
+        alert("La salle est pleine (4 joueurs max) !");
+        window.location.href = '../index.html';
+        return;
+    }
+
+    isMaster = (state.master === myPseudo);
+    
+    // ATTRIBUTION INTELLIGENTE DE COULEUR
+    if(!state.players[myPseudo]) {
+        const NEON_COLORS = ['#00FFFF', '#FF00FF', '#FFFF00', '#00FF00'];
+        let usedColors = Object.values(state.players).map(p => p.colorCode);
+        let availableColors = NEON_COLORS.filter(c => !usedColors.includes(c));
+        
+        if (availableColors.length > 0) {
+            myColorCode = availableColors[Math.floor(Math.random() * availableColors.length)];
+        } else {
+            myColorCode = NEON_COLORS[Math.floor(Math.random() * NEON_COLORS.length)];
+        }
+
+        state.players[myPseudo] = { pseudo: myPseudo, avatar: myAvatar, colorCode: myColorCode, score: 0 };
+    } else {
+        state.players[myPseudo].avatar = myAvatar; 
+        myColorCode = state.players[myPseudo].colorCode;
+    }
+    
+    await updateLobbyState(state);
+    showScreen('screenLobby');
+    startLobbySync(); 
 }
 
 // --- SYNCHRONISATION LOBBY ---
 function startLobbySync() {
-    updateLobbyUI(null); 
     if(dbSyncInterval) clearInterval(dbSyncInterval);
     dbSyncInterval = setInterval(async () => {
         const state = await fetchLobbyState();
@@ -228,7 +238,7 @@ function startLobbySync() {
 }
 
 function updateLobbyUI(state) {
-    if(!state) return;
+    if(!state || !state.players) return;
     
     isMaster = (state.master === myPseudo);
     const playersList = Object.values(state.players);
@@ -244,7 +254,6 @@ function updateLobbyUI(state) {
     if(state.phase === 'lobby') {
         const controls = document.getElementById('lobbyControls');
         if(isMaster) {
-            // VÉRIFICATION : Au moins 2 joueurs requis pour Kavale !
             if (playersList.length >= 2) {
                 controls.innerHTML = `<button class="btn-primary" onclick="launchGameFromLobby()">🏁 Démarrer la partie</button>`;
                 document.getElementById('lobbySubtitle').textContent = `Tu es le maître. Lance la partie quand tout le monde est là.`;
@@ -303,7 +312,7 @@ function initGameEngine(lobbyPlayers) {
         
         header.innerHTML += `
             <div class="player-hud" id="hud-${pseudo}" style="color: ${p.colorCode};">
-                <img src="${p.avatar}" style="border-color: ${p.colorCode}">
+                <img src="${p.avatar}" style="border-color: ${p.colorCode}" onerror="this.src='https://via.placeholder.com/35/333/fff?text=?'">
                 <span>${pseudo} : <span class="score-hud" id="score-${pseudo}">0</span>/3</span>
             </div>
         `;
@@ -529,7 +538,7 @@ async function triggerVictoryScreen(winnerPseudo) {
 
     showScreen('screenVictory');
 
-    // SEUL LE MAÎTRE SAUVEGARDE LA VICTOIRE POUR ÉVITER LES DOUBLONS
+    // SEUL LE MAÎTRE SAUVEGARDE LA VICTOIRE
     if(isMaster) {
         let state = await fetchLobbyState();
         if (state && !state.gameEndedSaved) {
@@ -549,7 +558,6 @@ async function triggerVictoryScreen(winnerPseudo) {
     }
 }
 
-// --- Sécurité si on ferme l'onglet pendant le lobby ---
 window.addEventListener("beforeunload", async (e) => {
     if (gameState === 'lobby' && isMaster) {
         await sb.from('bingo_state').delete().eq('id', GAME_ID);
