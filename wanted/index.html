@@ -198,7 +198,7 @@ let visualTimerInterval = null;
 let isEndingRound = false;
 
 const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d', { alpha: false }); // Optimisation Mac
+const ctx = canvas.getContext('2d', { alpha: false });
 ctx.imageSmoothingEnabled = false; 
 
 let heads = [];
@@ -207,26 +207,21 @@ let hasFound = false;
 
 // --- INITIALISATION & AUTO-CONNEXION ---
 window.onload = async () => {
-    // 1. Vérifier si on a un compte actif
     myPseudo = localStorage.getItem('cdsi_logged_user');
     
     if (!myPseudo) {
-        // Redirection vers le Hub si on n'est pas connecté
         window.location.href = '../index.html'; 
         return;
     }
 
-    // 2. Récupérer l'avatar depuis la vraie base de données des comptes
     const { data, error } = await sb.from('cdsi_users').select('avatar').eq('pseudo', myPseudo).single();
     
     if (data && data.avatar) {
-        // On s'assure d'avoir le bon chemin relatif (vu qu'on est dans le dossier 'wanted')
         myAvatar = '../' + data.avatar; 
     } else {
-        myAvatar = '../bingoudalo/avatar/paulo1.jpg'; // Avatar de secours
+        myAvatar = '../bingoudalo/avatar/paulo1.jpg';
     }
 
-    // 3. Rejoindre automatiquement la salle d'attente Supabase du jeu
     autoJoinLobby();
 };
 
@@ -254,7 +249,8 @@ async function autoJoinLobby() {
     try {
         let state = await fetchState();
         if(!state || !state.players || typeof state.players !== 'object') {
-            state = { phase: 'lobby', master: myPseudo, round: 1, players: {}, roundWinners: [], roundEndTime: 0, gameEndedSaved: false };
+            // J'ai enlevé gameEndedSaved, on n'en a plus besoin avec la nouvelle méthode
+            state = { phase: 'lobby', master: myPseudo, round: 1, players: {}, roundWinners: [], roundEndTime: 0 };
         }
 
         isMaster = (state.master === myPseudo);
@@ -304,7 +300,6 @@ function updateUI(state) {
 
         const ctrl = document.getElementById('lobbyControls');
         if(isMaster) {
-            // VERIFICATION : Au moins 2 joueurs requis !
             if (playerCount >= 2) {
                 ctrl.innerHTML = `<button class="btn-primary" onclick="startRound()">Démarrer Manche ${state.round}</button>`;
             } else {
@@ -373,28 +368,9 @@ function updateUI(state) {
 
         const ctrl = document.getElementById('scoreControls');
         if(isMaster) {
+            // On a supprimé la gestion de sauvegarde d'ici
             if(state.round > 5) {
                 ctrl.innerHTML = `<button class="btn-magenta" onclick="resetGame()">Nouvelle Partie</button>`;
-                
-                // SAUVEGARDE DES VICTOIRES (EXÉCUTÉ 1 SEULE FOIS PAR LE MAITRE)
-                if (!state.gameEndedSaved) {
-                    state.gameEndedSaved = true;
-                    updateState(state); // On valide l'enregistrement pour éviter les doublons
-
-                    // Trouver le ou les premiers (égalité possible)
-                    let maxScore = sortedPlayers[0].score;
-                    let winners = sortedPlayers.filter(p => p.score === maxScore);
-                    
-                    winners.forEach(w => {
-                        // Récupérer les stats actuelles et faire +1
-                        sb.from('cdsi_users').select('wanted_wins').eq('pseudo', w.pseudo).single().then(({data}) => {
-                            if(data) {
-                                sb.from('cdsi_users').update({ wanted_wins: (data.wanted_wins || 0) + 1 }).eq('pseudo', w.pseudo).then();
-                            }
-                        });
-                    });
-                }
-
             } else {
                 ctrl.innerHTML = `<button class="btn-primary" onclick="returnToLobby()">Manche Suivante</button>`;
             }
@@ -413,11 +389,31 @@ async function startRound() {
     await updateState(state);
 }
 
+// C'EST ICI QUE LA MAGIE OPÈRE MAINTENANT
 async function endRoundCompute(state) {
     state.phase = 'round_end';
+    
+    // Distribution des points
     if(state.roundWinners[0]) state.players[state.roundWinners[0]].score += 3;
     if(state.roundWinners[1]) state.players[state.roundWinners[1]].score += 2;
     if(state.roundWinners[2]) state.players[state.roundWinners[2]].score += 1;
+    
+    // SI C'EST LA FIN DE LA 5ÈME MANCHE, ON SAUVEGARDE LA VICTOIRE DIRECTEMENT EN DB !
+    if (state.round === 5) {
+        let sortedPlayers = Object.values(state.players).sort((a,b) => b.score - a.score);
+        if (sortedPlayers.length > 0) {
+            let maxScore = sortedPlayers[0].score;
+            let winners = sortedPlayers.filter(p => p.score === maxScore);
+            
+            for (let w of winners) {
+                let {data} = await sb.from('cdsi_users').select('wanted_wins').eq('pseudo', w.pseudo).single();
+                if (data) {
+                    await sb.from('cdsi_users').update({ wanted_wins: (data.wanted_wins || 0) + 1 }).eq('pseudo', w.pseudo);
+                }
+            }
+        }
+    }
+
     state.round++;
     await updateState(state);
 }
