@@ -16,7 +16,6 @@
   
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
   
-  /* LE FOND ANIMÉ JOYEUX */
   body { 
     background: linear-gradient(-45deg, #2b0b12, #7a1b1b, #c0392b, #d35400);
     background-size: 400% 400%;
@@ -40,14 +39,12 @@
   .hub-link { position: absolute; top: 20px; left: 20px; color: var(--yellow); text-decoration: none; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: 0.2s; text-shadow: 0 0 10px rgba(0,0,0,0.5);}
   .hub-link:hover { color: white; transform: scale(1.05); }
   
-  /* CORRECTION ICI : max-width retiré pour laisser le jeu respirer ! */
   .screen { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 1800px; }
   .screen.active { display: flex; animation: fadeIn 0.3s; }
   @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
   .logo { font-family: 'Bebas Neue'; font-size: 70px; letter-spacing: 5px; color: var(--yellow); text-shadow: 0 5px 15px rgba(0,0,0,0.6); margin-bottom: 20px; text-align: center; line-height: 1;}
   
-  /* CARTES EFFET VERRE */
   .card { 
     background: rgba(20, 20, 20, 0.6); 
     backdrop-filter: blur(10px); 
@@ -64,7 +61,6 @@
   input[type="text"] { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 12px; font-size: 16px; color: white; outline: none; margin-bottom: 15px; text-align: center; transition: 0.3s;}
   input[type="text"]:focus { border-color: var(--cyan); box-shadow: 0 0 15px rgba(0,255,255,0.3); background: rgba(0,0,0,0.8);}
   
-  /* SÉLECTION AVATAR */
   .avatar-selection { margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
   .avatar-selection p { font-size: 13px; color: var(--yellow); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
   .avatar-grid { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
@@ -92,14 +88,10 @@
       transform: scale(1.02);
   }
 
-  /* GAME LAYOUT (ZONE ÉLARGIE POUR LE GRAND PLATEAU) */
   .game-wrapper { display: flex; gap: 20px; width: 100%; max-width: 1500px; align-items: flex-start; justify-content: center; flex-wrap: nowrap;}
-  
   .game-main { flex: 1; min-width: 600px; display: flex; flex-direction: column; align-items: center;}
-  
   .game-sidebar { width: 320px; flex-shrink: 0; background: rgba(20,20,30,0.6); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
 
-  /* GAME CANVAS GÉANT */
   #gameContainer { position: relative; width: 100%; }
   canvas { background: #0b0c10; border: 4px solid rgba(255,255,255,0.2); border-radius: 10px; width: 100%; height: auto; aspect-ratio: 3 / 2; cursor: crosshair; box-shadow: 0 15px 40px rgba(0,0,0,0.8); display: block; }
   
@@ -116,7 +108,6 @@
   .timer-box.hurry { color: #ff3333; text-shadow: 0 0 25px #ff3333; animation: pulse 0.5s infinite alternate;}
   @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.15); } }
 
-  /* Responsive pour petits écrans */
   @media (max-width: 1000px) {
     .game-wrapper { flex-wrap: wrap; }
     .game-sidebar { width: 100%; }
@@ -232,11 +223,14 @@ let isEndingRound = false;
 // Variables Moteur de Jeu
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+// OPTIMISATION: Désactiver le lissage pour gagner des FPS sur Mac
+ctx.imageSmoothingEnabled = false; 
+
 let heads = [];
 let animFrame;
 let hasFound = false;
 
-// --- INITIALISATION AVATARS ET SAUVEGARDE LOCALE ---
+// --- INITIALISATION ---
 function renderAvatarSelection() {
   document.getElementById('avatarGrid').innerHTML = AVATARS.map(src => 
     `<img src="${src}" class="avatar-option ${src === myAvatar ? 'selected' : ''}" onclick="selectAvatar('${src}')" onerror="this.src='https://via.placeholder.com/45/333/fff?text=?'">`
@@ -248,20 +242,17 @@ function selectAvatar(src) { myAvatar = src; renderAvatarSelection(); }
 window.onload = () => {
     const savedPseudo = localStorage.getItem('wanted_pseudo');
     const savedAvatar = localStorage.getItem('wanted_avatar');
-    
     if (savedAvatar) myAvatar = savedAvatar;
     if (savedPseudo) document.getElementById('pseudoInput').value = savedPseudo;
-    
     renderAvatarSelection();
 };
 
-// --- NAVIGATION ---
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
-// --- BASE DE DONNÉES SÉCURISÉE ---
+// --- BASE DE DONNÉES ---
 async function fetchState() {
     try {
         const {data, error} = await sb.from('bingo_state').select('data').eq('id', GAME_ID).maybeSingle();
@@ -276,7 +267,6 @@ async function updateState(newState) {
     } catch (e) {}
 }
 
-// --- REJOINDRE LE LOBBY ---
 async function joinLobby() {
     myPseudo = document.getElementById('pseudoInput').value.trim();
     if(!myPseudo) return alert("Choisis un pseudo !");
@@ -290,13 +280,11 @@ async function joinLobby() {
         localStorage.setItem('wanted_avatar', myAvatar);
 
         let state = await fetchState();
-        
         if(!state || !state.players || typeof state.players !== 'object') {
             state = { phase: 'lobby', master: myPseudo, round: 1, players: {}, roundWinners: [], roundEndTime: 0 };
         }
 
         isMaster = (state.master === myPseudo);
-        
         if(!state.players[myPseudo]) {
             state.players[myPseudo] = { pseudo: myPseudo, avatar: myAvatar, score: 0 };
         } else {
@@ -306,7 +294,6 @@ async function joinLobby() {
         await updateState(state);
         showScreen('screenLobby');
         startSync();
-        
     } catch (error) {
         alert("Une erreur est survenue pendant la connexion. Réessaie !");
         joinBtn.disabled = false;
@@ -323,12 +310,11 @@ function startSync() {
     }, 1000); 
 }
 
-// --- MISE À JOUR INTERFACE GLOBALE ---
 function updateUI(state) {
     if(!state || !state.players) return;
     isMaster = (state.master === myPseudo);
 
-    // --- LOBBY ---
+    // LOBBY
     if(state.phase === 'lobby' && currentPhase !== 'lobby') {
         currentPhase = 'lobby'; showScreen('screenLobby');
     }
@@ -351,7 +337,7 @@ function updateUI(state) {
         }
     }
 
-    // --- EN JEU ---
+    // EN JEU
     if(state.phase === 'playing') {
         if(currentPhase !== 'playing') {
             currentPhase = 'playing';
@@ -389,7 +375,7 @@ function updateUI(state) {
         }
     }
 
-    // --- RÉSULTATS MANCHE ---
+    // RÉSULTATS
     if(state.phase === 'round_end' && currentPhase !== 'round_end') {
         currentPhase = 'round_end';
         if(visualTimerInterval) clearInterval(visualTimerInterval);
@@ -428,11 +414,9 @@ async function startRound() {
 
 async function endRoundCompute(state) {
     state.phase = 'round_end';
-    
     if(state.roundWinners[0]) state.players[state.roundWinners[0]].score += 3;
     if(state.roundWinners[1]) state.players[state.roundWinners[1]].score += 2;
     if(state.roundWinners[2]) state.players[state.roundWinners[2]].score += 1;
-    
     state.round++;
     await updateState(state);
 }
@@ -449,20 +433,16 @@ async function resetGame() {
 }
 
 // ==========================================
-// MOTEUR DU JEU (CANVAS & TIMER)
+// MOTEUR DU JEU OPTIMISÉ (CANVAS)
 // ==========================================
-
 function startVisualTimer() {
     const timerEl = document.getElementById('timerDisplay');
     if(visualTimerInterval) clearInterval(visualTimerInterval);
-    
     visualTimerInterval = setInterval(() => {
         let remaining = Math.max(0, Math.ceil((roundEndTime - Date.now()) / 1000));
         timerEl.innerText = remaining + 's';
-        
         if (remaining <= 5 && remaining > 0) timerEl.classList.add('hurry');
         else timerEl.classList.remove('hurry');
-
         if(remaining <= 0) clearInterval(visualTimerInterval);
     }, 100);
 }
@@ -472,7 +452,6 @@ function initGameEngine(round) {
     document.getElementById('foundOverlay').style.display = 'none';
     hasFound = false;
 
-    // TAILLES DE VISAGES ENCORE PLUS GROSSES
     let targetSize = 120 - (round * 8); 
     let speedMult = 2 + (round * 0.5); 
     let numDistractors = 40 * round;   
@@ -481,7 +460,6 @@ function initGameEngine(round) {
     
     for(let i=0; i<numDistractors; i++) {
         let dImg = distractorImgs[Math.floor(Math.random() * distractorImgs.length)];
-        
         heads.push({
             img: dImg,
             x: Math.random() * (canvas.width - targetSize),
@@ -512,6 +490,7 @@ function gameLoop() {
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // OPTIMISATION : Plus aucun shadowBlur ici ! C'est ce qui faisait lagger ton Mac.
     heads.forEach(h => {
         h.x += h.vx;
         h.y += h.vy;
@@ -519,20 +498,19 @@ function gameLoop() {
         if(h.x <= 0 || h.x + h.size >= canvas.width) h.vx *= -1;
         if(h.y <= 0 || h.y + h.size >= canvas.height) h.vy *= -1;
 
-        ctx.shadowBlur = 10; ctx.shadowColor = 'rgba(0,0,0,0.8)';
+        // OPTIMISATION : l'opérateur "| 0" force les nombres entiers pour accélérer le rendu (Sub-pixel prevention)
         if(h.img.complete) {
-            ctx.drawImage(h.img, h.x, h.y, h.size, h.size);
+            ctx.drawImage(h.img, h.x | 0, h.y | 0, h.size | 0, h.size | 0);
         } else {
             ctx.fillStyle = h.isTarget ? 'rgba(255,0,0,0.5)' : 'rgba(255,255,255,0.1)';
-            ctx.fillRect(h.x, h.y, h.size, h.size);
+            ctx.fillRect(h.x | 0, h.y | 0, h.size | 0, h.size | 0);
         }
-        ctx.shadowBlur = 0;
     });
 
     animFrame = requestAnimationFrame(gameLoop);
 }
 
-// --- GESTION DES CLICS SUR LE CANVAS ---
+// --- GESTION DES CLICS ---
 canvas.addEventListener('mousedown', async (e) => {
     if(hasFound || currentPhase !== 'playing' || Date.now() > roundEndTime) return;
 
@@ -569,7 +547,6 @@ canvas.addEventListener('mousedown', async (e) => {
     }
 });
 
-// Sécurité
 window.addEventListener("beforeunload", async () => {
     if (currentPhase === 'lobby' && isMaster) await sb.from('bingo_state').delete().eq('id', GAME_ID);
 });
