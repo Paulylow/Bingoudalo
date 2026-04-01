@@ -8,75 +8,113 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
-    --bg: #0b0c10; --surface: #14141e; --border: #1f2833;
-    --cyan: #00FFFF; --magenta: #FF00FF; --yellow: #f1c40f;
-    --text: #c5c6c7;
+    --cyan: #00FFFF; 
+    --magenta: #FF00FF; 
+    --yellow: #f1c40f;
+    --text: #ffffff;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; overflow-x: hidden;}
   
-  .hub-link { position: absolute; top: 20px; left: 20px; color: var(--cyan); text-decoration: none; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: 0.2s;}
-  .hub-link:hover { text-shadow: 0 0 10px var(--cyan); }
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+  
+  /* LE FOND ANIMÉ JOYEUX (Comme sur la Master Page) */
+  body { 
+    background: linear-gradient(-45deg, #2b0b12, #7a1b1b, #c0392b, #d35400);
+    background-size: 400% 400%;
+    animation: fondChaud 15s ease infinite;
+    color: var(--text); 
+    font-family: 'DM Sans', sans-serif; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    min-height: 100vh; 
+    padding: 20px; 
+    overflow-x: hidden;
+  }
+
+  @keyframes fondChaud {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  
+  .hub-link { position: absolute; top: 20px; left: 20px; color: var(--yellow); text-decoration: none; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: 0.2s; text-shadow: 0 0 10px rgba(0,0,0,0.5);}
+  .hub-link:hover { color: white; transform: scale(1.05); }
   
   .screen { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 800px; }
   .screen.active { display: flex; animation: fadeIn 0.3s; }
   @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
-  .logo { font-family: 'Bebas Neue'; font-size: 70px; letter-spacing: 5px; color: var(--yellow); text-shadow: 0 0 20px rgba(241, 196, 15, 0.5); margin-bottom: 20px; text-align: center; line-height: 1;}
+  .logo { font-family: 'Bebas Neue'; font-size: 70px; letter-spacing: 5px; color: var(--yellow); text-shadow: 0 5px 15px rgba(0,0,0,0.6); margin-bottom: 20px; text-align: center; line-height: 1;}
   
-  .card { background: rgba(20,20,30,0.9); border: 2px solid var(--border); border-radius: 15px; padding: 30px; width: 100%; max-width: 500px; box-shadow: 0 0 30px rgba(0,0,0,0.8); text-align: center; }
-  input[type="text"] { width: 100%; background: #000; border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-size: 16px; color: white; outline: none; margin-bottom: 15px; text-align: center;}
-  input[type="text"]:focus { border-color: var(--cyan); box-shadow: 0 0 10px rgba(0,255,255,0.2); }
+  /* CARTES EFFET VERRE (Glassmorphism) */
+  .card { 
+    background: rgba(20, 20, 20, 0.6); 
+    backdrop-filter: blur(10px); 
+    -webkit-backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.1); 
+    border-radius: 15px; 
+    padding: 30px; 
+    width: 100%; 
+    max-width: 500px; 
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5); 
+    text-align: center; 
+  }
+
+  input[type="text"] { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 12px; font-size: 16px; color: white; outline: none; margin-bottom: 15px; text-align: center; transition: 0.3s;}
+  input[type="text"]:focus { border-color: var(--cyan); box-shadow: 0 0 15px rgba(0,255,255,0.3); background: rgba(0,0,0,0.8);}
   
   /* SÉLECTION AVATAR */
   .avatar-selection { margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
-  .avatar-selection p { font-size: 12px; color: var(--cyan); text-transform: uppercase; letter-spacing: 1px; margin: 0; }
+  .avatar-selection p { font-size: 13px; color: var(--yellow); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
   .avatar-grid { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
-  .avatar-option { width: 45px; height: 45px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: 0.2s; object-fit: cover; background: #000; }
-  .avatar-option.selected { border-color: var(--cyan); transform: scale(1.15); box-shadow: 0 0 15px rgba(0,255,255,0.5); z-index: 2; }
+  .avatar-option { width: 45px; height: 45px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: 0.2s; object-fit: cover; background: #000; box-shadow: 0 5px 10px rgba(0,0,0,0.5);}
+  .avatar-option.selected { border-color: var(--cyan); transform: scale(1.15); box-shadow: 0 0 20px rgba(0,255,255,0.6); z-index: 2; }
 
-  button { font-family: 'DM Sans'; font-weight: bold; text-transform: uppercase; border: none; border-radius: 8px; cursor: pointer; padding: 12px 24px; transition: 0.2s; width: 100%; margin-top: 10px; font-size: 14px; }
-  .btn-primary { background: var(--cyan); color: #000; box-shadow: 0 0 15px rgba(0,255,255,0.4); }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 25px rgba(0,255,255,0.7); }
-  .btn-magenta { background: var(--magenta); color: #fff; box-shadow: 0 0 15px rgba(255,0,255,0.4); }
-  .btn-magenta:hover { transform: translateY(-2px); box-shadow: 0 0 25px rgba(255,0,255,0.7); }
+  button { font-family: 'DM Sans'; font-weight: bold; text-transform: uppercase; border: none; border-radius: 8px; cursor: pointer; padding: 14px 24px; transition: 0.2s; width: 100%; margin-top: 10px; font-size: 15px; }
+  .btn-primary { background: var(--cyan); color: #000; box-shadow: 0 5px 15px rgba(0,255,255,0.3); }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,255,255,0.6); }
+  .btn-magenta { background: var(--magenta); color: #fff; box-shadow: 0 5px 15px rgba(255,0,255,0.3); }
+  .btn-magenta:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255,0,255,0.6); }
   button:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
   
-  .player-list { margin-top: 10px; width: 100%; text-align: left; display: flex; flex-direction: column; gap: 5px;}
-  .player-row { display: flex; align-items: center; justify-content: space-between; padding: 10px; border: 1px solid #333; border-radius: 8px; font-weight: bold; background: rgba(0,0,0,0.5); transition: 0.3s;}
-  .player-row-info { display: flex; align-items: center; gap: 10px; }
-  .player-row img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1px solid #555; }
-  .badge { background: rgba(0,255,255,0.2); color: var(--cyan); padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+  .player-list { margin-top: 10px; width: 100%; text-align: left; display: flex; flex-direction: column; gap: 8px;}
+  .player-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 15px; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; font-weight: bold; background: rgba(0,0,0,0.4); transition: 0.3s;}
+  .player-row-info { display: flex; align-items: center; gap: 12px; }
+  .player-row img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid #555; }
+  .badge { background: rgba(0,255,255,0.2); color: var(--cyan); padding: 3px 8px; border-radius: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;}
 
   /* EFFET ILLUMINATION QUAND TROUVÉ */
   .found-glow { 
-      background: rgba(241, 196, 15, 0.1) !important; 
+      background: rgba(241, 196, 15, 0.2) !important; 
       border-color: var(--yellow) !important; 
       color: var(--yellow); 
-      box-shadow: 0 0 15px rgba(241, 196, 15, 0.4); 
+      box-shadow: 0 0 20px rgba(241, 196, 15, 0.5); 
+      transform: scale(1.02);
   }
 
   /* GAME LAYOUT (2 COLONNES) */
-  .game-wrapper { display: flex; gap: 20px; width: 100%; max-width: 1000px; align-items: flex-start; justify-content: center; flex-wrap: wrap;}
+  .game-wrapper { display: flex; gap: 20px; width: 100%; max-width: 1100px; align-items: flex-start; justify-content: center; flex-wrap: wrap;}
   .game-main { flex: 1; min-width: 300px; max-width: 800px; display: flex; flex-direction: column; align-items: center;}
-  .game-sidebar { width: 300px; background: rgba(20,20,30,0.9); border: 2px solid var(--border); border-radius: 15px; padding: 20px; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
+  
+  /* SIDEBAR EFFET VERRE */
+  .game-sidebar { width: 300px; background: rgba(20,20,30,0.6); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
 
   /* GAME CANVAS & OVERLAYS */
   #gameContainer { position: relative; width: 100%; }
-  canvas { background: #111; border: 4px solid var(--border); border-radius: 10px; width: 100%; cursor: crosshair; box-shadow: 0 0 40px rgba(0,0,0,0.8); display: block; }
-  .overlay { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); border-radius: 10px; z-index: 10; backdrop-filter: blur(5px); }
-  .overlay h2 { font-family: 'Bebas Neue'; font-size: 60px; letter-spacing: 2px; }
-  #foundOverlay h2 { color: var(--cyan); text-shadow: 0 0 20px var(--cyan); }
+  canvas { background: #0b0c10; border: 4px solid rgba(255,255,255,0.2); border-radius: 10px; width: 100%; cursor: crosshair; box-shadow: 0 15px 40px rgba(0,0,0,0.6); display: block; }
+  .overlay { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); border-radius: 10px; z-index: 10; backdrop-filter: blur(8px); }
+  .overlay h2 { font-family: 'Bebas Neue'; font-size: 70px; letter-spacing: 2px; }
+  #foundOverlay h2 { color: var(--cyan); text-shadow: 0 0 30px var(--cyan); }
 
-  .game-header { display: flex; justify-content: space-between; width: 100%; margin-bottom: 15px; align-items: center; background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 10px; border: 1px solid #333;}
+  .game-header { display: flex; justify-content: space-between; width: 100%; margin-bottom: 15px; align-items: center; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); padding: 10px 20px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 20px rgba(0,0,0,0.3);}
   .target-box { display: flex; align-items: center; gap: 15px;}
-  .target-box img { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 2px solid var(--yellow); box-shadow: 0 0 15px rgba(241, 196, 15, 0.5); }
-  .round-info { font-family: 'Bebas Neue'; font-size: 35px; color: white; line-height: 1;}
+  .target-box img { width: 55px; height: 55px; object-fit: cover; border-radius: 8px; border: 2px solid var(--yellow); box-shadow: 0 0 20px rgba(241, 196, 15, 0.6); }
+  .round-info { font-family: 'Bebas Neue'; font-size: 35px; color: white; line-height: 1; text-shadow: 0 2px 5px rgba(0,0,0,0.8);}
   
   /* LE TIMER */
   .timer-box { font-family: 'Bebas Neue'; font-size: 45px; color: var(--magenta); text-shadow: 0 0 15px var(--magenta); min-width: 60px; text-align: center;}
-  .timer-box.hurry { color: red; text-shadow: 0 0 20px red; animation: pulse 0.5s infinite alternate;}
-  @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
+  .timer-box.hurry { color: #ff3333; text-shadow: 0 0 25px #ff3333; animation: pulse 0.5s infinite alternate;}
+  @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.15); } }
 
 </style>
 </head>
@@ -85,7 +123,7 @@
 <a href="../index.html" class="hub-link">← Retour au Hub</a>
 
 <div class="screen active" id="screenJoin">
-  <div class="logo">WANTED<br><span style="color:var(--cyan); font-size:40px;">DAYOUB</span></div>
+  <div class="logo">WANTED<br><span style="color:var(--cyan); font-size:45px;">DAYOUB</span></div>
   <div class="card">
     <input type="text" id="pseudoInput" placeholder="Ton pseudo..." maxlength="15" />
     
@@ -101,9 +139,9 @@
 <div class="screen" id="screenLobby">
   <div class="logo">LOBBY</div>
   <div class="card">
-    <h3 style="margin-bottom: 10px; color: var(--cyan); text-align: left;">Joueurs connectés</h3>
+    <h3 style="margin-bottom: 15px; color: var(--yellow); text-align: left; font-family: 'Bebas Neue'; font-size: 24px; letter-spacing: 1px;">Joueurs connectés</h3>
     <div class="player-list" id="playersList"></div>
-    <div id="lobbyControls" style="margin-top: 20px;"></div>
+    <div id="lobbyControls" style="margin-top: 25px;"></div>
   </div>
 </div>
 
@@ -114,7 +152,7 @@
             <div class="target-box">
               <img src="../bingoudalo/avatar/dayoub.jpg" alt="Cible">
               <div>
-                  <div style="font-size: 12px; font-weight: bold; color: var(--yellow); letter-spacing: 1px;">CIBLE</div>
+                  <div style="font-size: 13px; font-weight: bold; color: var(--yellow); letter-spacing: 2px;">CIBLE</div>
                   <div class="round-info" id="roundDisplay">MANCHE 1/5</div>
               </div>
             </div>
@@ -126,13 +164,13 @@
             
             <div class="overlay" id="foundOverlay">
               <h2>TROUVÉ !</h2>
-              <p id="foundPositionText">En attente des autres joueurs...</p>
+              <p id="foundPositionText" style="font-size: 18px; color: white;">En attente des autres joueurs...</p>
             </div>
           </div>
       </div>
 
       <div class="game-sidebar">
-          <h3 style="color: var(--cyan); font-family: 'Bebas Neue'; font-size: 24px; letter-spacing: 2px; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 5px;">CLASSEMENT EN DIRECT</h3>
+          <h3 style="color: var(--cyan); font-family: 'Bebas Neue'; font-size: 28px; letter-spacing: 2px; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px; text-align: center;">CLASSEMENT EN DIRECT</h3>
           <div class="player-list" id="liveLeaderboard"></div>
       </div>
   </div>
@@ -142,7 +180,7 @@
   <div class="logo" id="scoreTitle">RÉSULTATS</div>
   <div class="card">
     <div class="player-list" id="scoreList"></div>
-    <div id="scoreControls" style="margin-top: 20px;"></div>
+    <div id="scoreControls" style="margin-top: 25px;"></div>
   </div>
 </div>
 
@@ -162,11 +200,14 @@ const AVATARS = [
 ];
 
 const targetImg = new Image(); targetImg.src = '../bingoudalo/avatar/dayoub.jpg';
+
+// J'AI CORRIGÉ LES EXTENSIONS ICI AU CAS OÙ (.png pour Elian, Ellio, Paulin selon tes uploads)
 const distractorSrcs = [
     '../bingoudalo/avatar/ellio.png',
     '../bingoudalo/avatar/paulin.png',
-    '../bingoudalo/avatar/elian.jpg' // Corrigé l'extension d'Elian au cas où
+    '../bingoudalo/avatar/elian.png'
 ];
+
 const distractorImgs = distractorSrcs.map(src => {
     let img = new Image(); img.src = src; return img;
 });
@@ -190,14 +231,25 @@ let heads = [];
 let animFrame;
 let hasFound = false;
 
-// --- INITIALISATION AVATARS ---
+// --- INITIALISATION AVATARS ET SAUVEGARDE LOCALE ---
 function renderAvatarSelection() {
   document.getElementById('avatarGrid').innerHTML = AVATARS.map(src => 
     `<img src="${src}" class="avatar-option ${src === myAvatar ? 'selected' : ''}" onclick="selectAvatar('${src}')" onerror="this.src='https://via.placeholder.com/45/333/fff?text=?'">`
   ).join('');
 }
+
 function selectAvatar(src) { myAvatar = src; renderAvatarSelection(); }
-window.onload = renderAvatarSelection;
+
+window.onload = () => {
+    // Récupérer le pseudo et avatar si on a déjà joué
+    const savedPseudo = localStorage.getItem('wanted_pseudo');
+    const savedAvatar = localStorage.getItem('wanted_avatar');
+    
+    if (savedAvatar) myAvatar = savedAvatar;
+    if (savedPseudo) document.getElementById('pseudoInput').value = savedPseudo;
+    
+    renderAvatarSelection();
+};
 
 // --- NAVIGATION ---
 function showScreen(id){
@@ -205,48 +257,81 @@ function showScreen(id){
   document.getElementById(id).classList.add('active');
 }
 
-// --- BASE DE DONNÉES ---
+// --- BASE DE DONNÉES SÉCURISÉE ---
 async function fetchState() {
-    const {data} = await sb.from('bingo_state').select('data').eq('id', GAME_ID).maybeSingle();
-    return data?.data || null;
-}
-async function updateState(newState) {
-    await sb.from('bingo_state').upsert({ id: GAME_ID, data: newState, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+    try {
+        const {data, error} = await sb.from('bingo_state').select('data').eq('id', GAME_ID).maybeSingle();
+        if (error) { console.error("Erreur de lecture DB:", error); return null; }
+        return data?.data || null;
+    } catch (e) {
+        console.error("Crash fetchState:", e);
+        return null;
+    }
 }
 
-// --- REJOINDRE LE LOBBY ---
+async function updateState(newState) {
+    try {
+        await sb.from('bingo_state').upsert({ id: GAME_ID, data: newState, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+    } catch (e) {
+        console.error("Erreur d'écriture DB:", e);
+    }
+}
+
+// --- REJOINDRE LE LOBBY (AVEC GESTION D'ERREUR) ---
 async function joinLobby() {
     myPseudo = document.getElementById('pseudoInput').value.trim();
     if(!myPseudo) return alert("Choisis un pseudo !");
     
-    document.getElementById('joinBtn').disabled = true;
+    const joinBtn = document.getElementById('joinBtn');
+    joinBtn.disabled = true;
+    joinBtn.innerText = "Connexion en cours...";
 
-    let state = await fetchState();
-    if(!state || !state.players || Object.keys(state.players).length === 0) {
-        state = { phase: 'lobby', master: myPseudo, round: 1, players: {}, roundWinners: [], roundEndTime: 0 };
+    try {
+        // On sauvegarde localement
+        localStorage.setItem('wanted_pseudo', myPseudo);
+        localStorage.setItem('wanted_avatar', myAvatar);
+
+        let state = await fetchState();
+        
+        // Si le lobby n'existe pas ou est corrompu, on le recrée
+        if(!state || !state.players || typeof state.players !== 'object') {
+            state = { phase: 'lobby', master: myPseudo, round: 1, players: {}, roundWinners: [], roundEndTime: 0 };
+        }
+
+        isMaster = (state.master === myPseudo);
+        
+        // On enregistre/met à jour le joueur
+        if(!state.players[myPseudo]) {
+            state.players[myPseudo] = { pseudo: myPseudo, avatar: myAvatar, score: 0 };
+        } else {
+            state.players[myPseudo].avatar = myAvatar; // Mise à jour de l'avatar au cas où
+        }
+        
+        await updateState(state);
+        showScreen('screenLobby');
+        startSync();
+        
+    } catch (error) {
+        console.error("Échec de la connexion :", error);
+        alert("Une erreur est survenue pendant la connexion. Réessaie !");
+        joinBtn.disabled = false;
+        joinBtn.innerText = "Rejoindre la traque";
     }
-
-    isMaster = (state.master === myPseudo);
-    // On enregistre aussi l'avatar choisi !
-    state.players[myPseudo] = { pseudo: myPseudo, avatar: myAvatar, score: 0 };
-    
-    await updateState(state);
-    showScreen('screenLobby');
-    startSync();
 }
 
+// Polling toutes les secondes
 function startSync() {
     updateUI(null);
     if(dbSyncInterval) clearInterval(dbSyncInterval);
     dbSyncInterval = setInterval(async () => {
         const state = await fetchState();
         if(state) updateUI(state);
-    }, 1500);
+    }, 1000); 
 }
 
 // --- MISE À JOUR INTERFACE GLOBALE ---
 function updateUI(state) {
-    if(!state) return;
+    if(!state || !state.players) return;
     isMaster = (state.master === myPseudo);
 
     // --- LOBBY ---
@@ -257,8 +342,8 @@ function updateUI(state) {
         document.getElementById('playersList').innerHTML = Object.values(state.players).map(p => `
             <div class="player-row">
                 <div class="player-row-info">
-                    <img src="${p.avatar}" onerror="this.src='https://via.placeholder.com/30'">
-                    <span>${p.pseudo} ${p.score > 0 ? `(${p.score} pts)` : ''}</span>
+                    <img src="${p.avatar}" onerror="this.src='https://via.placeholder.com/35/333/fff?text=?'">
+                    <span>${p.pseudo} ${p.score > 0 ? `<span style="color:var(--yellow)">(${p.score} pts)</span>` : ''}</span>
                 </div>
                 ${state.master === p.pseudo ? '<span class="badge">Maître</span>' : ''}
             </div>
@@ -266,10 +351,9 @@ function updateUI(state) {
 
         const ctrl = document.getElementById('lobbyControls');
         if(isMaster) {
-            // Un seul joueur = on peut tester quand même
             ctrl.innerHTML = `<button class="btn-primary" onclick="startRound()">Démarrer Manche ${state.round}</button>`;
         } else {
-            ctrl.innerHTML = `<p style="color:var(--cyan); font-size:12px;">En attente du maître...</p>`;
+            ctrl.innerHTML = `<p style="color:var(--cyan); font-size:14px;">En attente que le maître démarre...</p>`;
         }
     }
 
@@ -292,15 +376,15 @@ function updateUI(state) {
             return `
             <div class="player-row ${glowClass}">
                 <div class="player-row-info">
-                    <img src="${p.avatar}" onerror="this.src='https://via.placeholder.com/30'">
+                    <img src="${p.avatar}" onerror="this.src='https://via.placeholder.com/35/333/fff?text=?'">
                     <span>${p.pseudo}</span>
                 </div>
-                <span style="font-size: 12px; font-weight: normal;">${statusText}</span>
+                <span style="font-size: 14px; font-weight: normal;">${statusText}</span>
             </div>`;
         }).join('');
     }
 
-    // VÉRIFICATION FIN DE MANCHE (Soit tout le monde a trouvé, soit le temps est écoulé)
+    // VÉRIFICATION FIN DE MANCHE
     if(state.phase === 'playing' && isMaster && !isEndingRound) {
         let allFound = state.roundWinners.length === Object.keys(state.players).length;
         let timeUp = Date.now() > state.roundEndTime;
@@ -320,12 +404,12 @@ function updateUI(state) {
         
         let sortedPlayers = Object.values(state.players).sort((a,b) => b.score - a.score);
         document.getElementById('scoreList').innerHTML = sortedPlayers.map((p, i) => `
-            <div class="player-row" style="${i===0 ? 'border-color:var(--yellow); color:var(--yellow);' : ''}">
+            <div class="player-row" style="${i===0 ? 'border-color:var(--yellow); box-shadow: 0 0 15px rgba(241, 196, 15, 0.3); background: rgba(241, 196, 15, 0.1);' : ''}">
                 <div class="player-row-info">
-                    <img src="${p.avatar}" onerror="this.src='https://via.placeholder.com/30'">
-                    <span>${i+1}. ${p.pseudo}</span>
+                    <img src="${p.avatar}" onerror="this.src='https://via.placeholder.com/35/333/fff?text=?'">
+                    <span style="${i===0 ? 'color:var(--yellow); font-size:18px;' : ''}">${i+1}. ${p.pseudo}</span>
                 </div>
-                <span style="font-size:18px; font-family:'Bebas Neue';">${p.score} pts</span>
+                <span style="font-size:22px; font-family:'Bebas Neue'; ${i===0 ? 'color:var(--yellow);' : ''}">${p.score} pts</span>
             </div>
         `).join('');
 
@@ -334,7 +418,7 @@ function updateUI(state) {
             if(state.round > 5) ctrl.innerHTML = `<button class="btn-magenta" onclick="resetGame()">Nouvelle Partie</button>`;
             else ctrl.innerHTML = `<button class="btn-primary" onclick="returnToLobby()">Manche Suivante</button>`;
         } else {
-            ctrl.innerHTML = `<p style="color:#888; font-size:12px;">En attente du maître...</p>`;
+            ctrl.innerHTML = `<p style="color:#bbb; font-size:14px;">En attente du maître...</p>`;
         }
     }
 }
@@ -344,7 +428,8 @@ async function startRound() {
     let state = await fetchState();
     state.phase = 'playing';
     state.roundWinners = []; 
-    state.roundEndTime = Date.now() + 30000; // + 30 secondes
+    // On ajoute + 32 secondes pour compenser le temps de chargement réseau
+    state.roundEndTime = Date.now() + 32000; 
     await updateState(state);
 }
 
@@ -382,7 +467,7 @@ function startVisualTimer() {
         let remaining = Math.max(0, Math.ceil((roundEndTime - Date.now()) / 1000));
         timerEl.innerText = remaining + 's';
         
-        if (remaining <= 5) timerEl.classList.add('hurry');
+        if (remaining <= 5 && remaining > 0) timerEl.classList.add('hurry');
         else timerEl.classList.remove('hurry');
 
         if(remaining <= 0) clearInterval(visualTimerInterval);
@@ -402,8 +487,11 @@ function initGameEngine(round) {
     heads = [];
     
     for(let i=0; i<numDistractors; i++) {
+        // On s'assure que l'image du distracteur est bien chargée pour éviter un crash canvas
+        let dImg = distractorImgs[Math.floor(Math.random() * distractorImgs.length)];
+        
         heads.push({
-            img: distractorImgs[Math.floor(Math.random() * distractorImgs.length)],
+            img: dImg,
             x: Math.random() * (canvas.width - targetSize),
             y: Math.random() * (canvas.height - targetSize),
             size: targetSize + (Math.random() * 20 - 10), 
@@ -439,8 +527,15 @@ function gameLoop() {
         if(h.x <= 0 || h.x + h.size >= canvas.width) h.vx *= -1;
         if(h.y <= 0 || h.y + h.size >= canvas.height) h.vy *= -1;
 
-        ctx.shadowBlur = 5; ctx.shadowColor = 'rgba(0,0,0,0.5)';
-        ctx.drawImage(h.img, h.x, h.y, h.size, h.size);
+        ctx.shadowBlur = 10; ctx.shadowColor = 'rgba(0,0,0,0.8)';
+        // On ne dessine l'image que si elle est chargée pour ne pas faire bugger le jeu
+        if(h.img.complete) {
+            ctx.drawImage(h.img, h.x, h.y, h.size, h.size);
+        } else {
+            // Placeholder si l'image n'est pas encore chargée
+            ctx.fillStyle = h.isTarget ? 'red' : '#333';
+            ctx.fillRect(h.x, h.y, h.size, h.size);
+        }
         ctx.shadowBlur = 0;
     });
 
@@ -469,13 +564,11 @@ canvas.addEventListener('mousedown', async (e) => {
     }
 
     if (clickedHead && clickedHead.isTarget) {
-        // GAGNÉ !
         hasFound = true;
         document.getElementById('foundOverlay').style.display = 'flex';
         
         let state = await fetchState();
-        // Sécurité pour ne s'inscrire qu'une seule fois
-        if(!state.roundWinners.includes(myPseudo)) {
+        if(state && !state.roundWinners.includes(myPseudo)) {
             state.roundWinners.push(myPseudo);
             
             let position = state.roundWinners.length;
@@ -485,7 +578,7 @@ canvas.addEventListener('mousedown', async (e) => {
             await updateState(state);
         }
     }
-    // Note : Plus de pénalité si c'est la mauvaise tête !
+    // Plus aucune pénalité si on clique à côté !
 });
 
 // Sécurité
