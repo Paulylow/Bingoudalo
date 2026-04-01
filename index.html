@@ -195,7 +195,7 @@
                 <div class="edit-section">
                     <h3>Modifier Profil</h3>
                     <input type="text" id="editPseudo" class="edit-input" placeholder="Nouveau Pseudo">
-                    <input type="password" id="editPassword" class="edit-input" placeholder="Nouveau Mot de passe">
+                    <input type="password" id="editPassword" class="edit-input" placeholder="Nouveau Mot de passe (optionnel)">
                     <button class="auth-btn btn-solid" style="font-size: 13px; padding: 10px;" onclick="saveProfileChanges()">Enregistrer</button>
                 </div>
             </div>
@@ -257,6 +257,14 @@
         'bingoudalo/avatar/affronte.jpg', 'bingoudalo/avatar/dayoub.jpg', 'bingoudalo/avatar/dayoub.png'
     ];
 
+    // --- FONCTION DE HASHAGE (SHA-256) ---
+    async function hashPassword(password) {
+        const msgBuffer = new TextEncoder().encode(password);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
     // --- INITIALISATION ---
     window.onload = () => {
         const savedPseudo = localStorage.getItem('cdsi_logged_user');
@@ -287,10 +295,15 @@
         const pwd = document.getElementById('passwordInput').value;
         if(!pseudo || !pwd) return showError("Remplis tous les champs.");
 
+        // On hash le mot de passe avant de le comparer
+        const hashedPwd = await hashPassword(pwd);
+
         const { data, error } = await sb.from('cdsi_users').select('*').eq('pseudo', pseudo).single();
         
         if(error || !data) return showError("Ce pseudo n'existe pas.");
-        if(data.password !== pwd) return showError("Mot de passe incorrect.");
+        
+        // Comparaison avec le hash en base de données
+        if(data.password !== hashedPwd) return showError("Mot de passe incorrect.");
 
         localStorage.setItem('cdsi_logged_user', pseudo);
         currentUser = data;
@@ -305,8 +318,13 @@
         const { data: existing } = await sb.from('cdsi_users').select('pseudo').eq('pseudo', pseudo).maybeSingle();
         if(existing) return showError("Ce pseudo est déjà pris !");
 
+        // On hash le mot de passe avant la création
+        const hashedPwd = await hashPassword(pwd);
+
         const newUser = {
-            pseudo: pseudo, password: pwd, avatar: 'bingoudalo/avatar/paulo1.jpg', 
+            pseudo: pseudo, 
+            password: hashedPwd, // Enregistrement sécurisé
+            avatar: 'bingoudalo/avatar/paulo1.jpg', 
             kavale_wins: 0, bingoudalo_wins: 0, wanted_wins: 0, franclick_score: 0
         };
 
@@ -319,7 +337,6 @@
     }
 
     function onLoginSuccess() {
-        // Afficher le conteneur des deux boutons flottants
         document.getElementById('floatingControls').style.display = 'flex';
         updateDashboardUI();
         showView('appView');
@@ -330,7 +347,6 @@
         currentUser = null;
         document.getElementById('pseudoInput').value = '';
         document.getElementById('passwordInput').value = '';
-        // Cacher les boutons flottants
         document.getElementById('floatingControls').style.display = 'none';
         closeProfileModal();
         closeLeaderboardModal();
@@ -358,7 +374,9 @@
         document.getElementById('modalPseudo').innerText = currentUser.pseudo;
         
         document.getElementById('editPseudo').value = currentUser.pseudo;
-        document.getElementById('editPassword').value = currentUser.password;
+        // On vide le mot de passe par sécurité
+        document.getElementById('editPassword').value = '';
+        document.getElementById('editPassword').placeholder = "Nouveau Mot de passe (optionnel)";
         tempSelectedAvatar = currentUser.avatar;
 
         document.getElementById('statKavale').innerText = currentUser.kavale_wins;
@@ -390,23 +408,31 @@
 
     async function saveProfileChanges() {
         let newPseudo = document.getElementById('editPseudo').value.trim();
-        let newPass = document.getElementById('editPassword').value;
+        let newPassInput = document.getElementById('editPassword').value;
 
-        if(!newPseudo || !newPass) return alert("Les champs ne peuvent pas être vides.");
+        if(!newPseudo) return alert("Le pseudo ne peut pas être vide.");
 
         if(newPseudo !== currentUser.pseudo) {
              const { data: existing } = await sb.from('cdsi_users').select('pseudo').eq('pseudo', newPseudo).maybeSingle();
              if(existing) return alert("Ce pseudo est déjà pris par quelqu'un d'autre !");
         }
 
-        const { error } = await sb.from('cdsi_users').update({
-             pseudo: newPseudo, password: newPass, avatar: tempSelectedAvatar
-        }).eq('pseudo', currentUser.pseudo);
+        let updateData = {
+             pseudo: newPseudo, 
+             avatar: tempSelectedAvatar
+        };
+
+        // Si l'utilisateur change son mot de passe, on le hash avant de l'envoyer
+        if(newPassInput) {
+            updateData.password = await hashPassword(newPassInput);
+        }
+
+        const { error } = await sb.from('cdsi_users').update(updateData).eq('pseudo', currentUser.pseudo);
 
         if(error) return alert("Erreur lors de la sauvegarde.");
 
         currentUser.pseudo = newPseudo;
-        currentUser.password = newPass;
+        if(newPassInput) currentUser.password = updateData.password;
         currentUser.avatar = tempSelectedAvatar;
         localStorage.setItem('cdsi_logged_user', newPseudo);
 
@@ -429,7 +455,6 @@
         const { data, error } = await sb.from('cdsi_users').select('*');
         if (error || !data) return;
 
-        // Remplir chaque catégorie avec le top 5
         document.getElementById('lb-bingo').innerHTML = renderLbList(data, 'bingoudalo_wins', 'victoires');
         document.getElementById('lb-kavale').innerHTML = renderLbList(data, 'kavale_wins', 'victoires');
         document.getElementById('lb-wanted').innerHTML = renderLbList(data, 'wanted_wins', 'victoires');
@@ -437,10 +462,7 @@
     }
 
     function renderLbList(users, field, suffix) {
-        // Trier par ordre décroissant
         let sorted = [...users].sort((a, b) => (b[field] || 0) - (a[field] || 0));
-        
-        // Garder uniquement ceux qui ont un score > 0, puis prendre les 5 premiers
         sorted = sorted.filter(u => (u[field] || 0) > 0).slice(0, 5);
 
         if (sorted.length === 0) {
