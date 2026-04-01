@@ -189,6 +189,7 @@ body.bourrine .francky-btn { border-color:#ff3300; box-shadow:0 0 55px rgba(255,
 #milestone-popup h2 { font-family:'Bebas Neue'; font-size:24px; color:#FF00FF; letter-spacing:2px; margin-bottom:10px; }
 #milestone-popup img { width:380px; height:380px; object-fit:cover; border-radius:10px; border:2px solid #FF00FF; margin:0 auto 14px; display:block; }
 #milestone-popup p { font-size:13px; color:#aaa; margin-bottom:14px; }
+#milestone-desc { font-size:12px; color:#888; margin:-4px 0 14px; }
 #milestone-close { background:#FF00FF; color:#fff; border:none; border-radius:6px; font-family:'Bebas Neue'; font-size:18px; letter-spacing:1px; padding:6px 22px; }
 
 /* ── COL DROITE ── */
@@ -314,6 +315,7 @@ body.bourrine .col-right { border-color:#ff2200; }
 
 <div id="milestone-popup">
     <h2>🎉 CLIC MILLIÈME !</h2>
+    <p id="milestone-desc">1 chance sur 1 000 de cliquer et faire apparaître un mème !</p>
     <img id="milestone-img" src="" alt="">
     <button id="milestone-close" onclick="closeMilestone()">OK STYLÉ</button>
 </div>
@@ -557,13 +559,13 @@ requestAnimationFrame(raf);
 /* ================================================================
    TIMERS SECONDAIRES 
 ================================================================ */
-/* Farm en arriere-plan : calcul base sur le temps reel ecoule.
-   Fonctionne meme si l'onglet est inactif grace a visibilitychange. */
+/* Farm en arrière-plan : timestamp pour calculer le vrai temps écoulé,
+   même quand l'onglet est throttlé par Chrome. Sans limite de temps. */
 let lastTick = performance.now();
 
 function gameTick() {
     const now = performance.now();
-    const dt = Math.min((now - lastTick) / 1000, 60);
+    const dt = (now - lastTick) / 1000; // secondes réelles écoulées
     lastTick = now;
     score += bps * dt;
     updateScoreUI(); updateShopColors();
@@ -571,11 +573,12 @@ function gameTick() {
 
 setInterval(gameTick, 100);
 
+// Quand on revient sur l'onglet : rattraper tout le temps absent sans limite
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
-        gameTick();
+        gameTick(); // applique d'un coup tout le temps passé hors onglet
     } else {
-        lastTick = performance.now();
+        lastTick = performance.now(); // on note l'heure de départ
     }
 });
 
