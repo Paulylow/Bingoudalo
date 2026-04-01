@@ -94,6 +94,7 @@
 </div>
 
 <script>
+// --- CONFIGURATION SUPABASE ---
 const SUPABASE_URL = 'https://pdybshweyfvxzvngnuxe.supabase.co'; 
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkeWJzaHdleWZ2eHp2bmdudXhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDg2MDAsImV4cCI6MjA5MDUyNDYwMH0.u442X28Mhs-4T-tydabnMm8now8VfAEeNU-Sicuipq4'; 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -113,64 +114,105 @@ const gridSize = 10;
 let gameLoop = null;
 let playersGameData = {}; 
 let orderedPlayerNames = [];
-let isCountingDown = false;
-let isRoundEnding = false;
 
+// Fonction pour afficher les erreurs critiques
+function showLoadingError(message) {
+    const loader = document.getElementById('loadingProfile');
+    loader.style.animation = 'none';
+    loader.style.color = '#ff4444';
+    loader.innerHTML = `ERREUR : ${message}<br><br><button class="btn-primary" style="width: 100%;" onclick="window.location.href='../index.html'">RETOUR AU HUB</button>`;
+}
+
+// --- CHARGEMENT ---
 window.onload = async () => {
-    myPseudo = localStorage.getItem('cdsi_logged_user');
-    
-    // SÉCURITÉ : Si pas de pseudo, on renvoie au Hub pour se connecter
-    if (!myPseudo || myPseudo === 'null') {
-        window.location.href = '../index.html'; 
-        return;
-    }
+    try {
+        myPseudo = localStorage.getItem('cdsi_logged_user');
+        
+        if (!myPseudo || myPseudo === 'null' || myPseudo.trim() === '') {
+            window.location.href = '../index.html'; 
+            return;
+        }
 
-    const { data, error } = await sb.from('cdsi_users').select('avatar').eq('pseudo', myPseudo).maybeSingle();
-    
-    if (data && data.avatar) {
-        myAvatar = '../' + data.avatar; 
-    } else {
-        myAvatar = '../bingoudalo/avatar/paulo1.jpg';
-    }
+        // On interroge Supabase avec gestion d'erreur stricte
+        const { data, error } = await sb.from('cdsi_users').select('avatar').eq('pseudo', myPseudo).maybeSingle();
+        
+        if (error) throw new Error("Impossible de lire la base de données.");
 
-    autoJoinLobby();
+        if (data && data.avatar) {
+            myAvatar = data.avatar.startsWith('../') ? data.avatar : '../' + data.avatar; 
+        } else {
+            myAvatar = '../bingoudalo/avatar/paulo1.jpg';
+        }
+
+        await autoJoinLobby();
+
+    } catch (e) {
+        console.error("Crash initialisation:", e);
+        showLoadingError(e.message);
+    }
 };
 
 async function fetchLobbyState() {
-    const {data} = await sb.from('bingo_state').select('data').eq('id', GAME_ID).maybeSingle();
+    const {data, error} = await sb.from('bingo_state').select('data').eq('id', GAME_ID).maybeSingle();
+    if (error) throw new Error("Erreur serveur lors de la récupération du Lobby.");
     return data?.data || null;
 }
 
 async function updateLobbyState(newState) {
-    await sb.from('bingo_state').upsert({ id: GAME_ID, data: newState, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+    const {error} = await sb.from('bingo_state').upsert({ id: GAME_ID, data: newState, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+    if (error) throw new Error("Erreur serveur lors de la sauvegarde du Lobby.");
 }
 
 async function autoJoinLobby() {
-    let state = await fetchLobbyState();
-    if(!state || !state.players) state = { phase: 'lobby', master: myPseudo, players: {}, gameEndedSaved: false };
+    try {
+        let state = await fetchLobbyState();
+        
+        if(!state || !state.players) {
+            state = { phase: 'lobby', master: myPseudo, players: {}, gameEndedSaved: false };
+        } else {
+            // Reprendre le lead si le maitre a crashé/quitté
+            if (!state.players[state.master] && Object.keys(state.players).length > 0) {
+                state.master = Object.keys(state.players)[0];
+            } else if (!state.master) {
+                state.master = myPseudo;
+            }
+        }
 
-    if(Object.keys(state.players).length >= 4 && !state.players[myPseudo]) {
-        alert("Salle pleine !");
-        window.location.href = '../index.html';
-        return;
-    }
+        if(Object.keys(state.players).length >= 4 && !state.players[myPseudo]) {
+            alert("L'arène est pleine !");
+            window.location.href = '../index.html';
+            return;
+        }
 
-    if(!state.players[myPseudo]) {
-        const colors = ['#00FFFF', '#FF00FF', '#FFFF00', '#00FF00'];
-        myColorCode = colors[Object.keys(state.players).length] || '#FFFFFF';
-        state.players[myPseudo] = { pseudo: myPseudo, avatar: myAvatar, colorCode: myColorCode, score: 0 };
-    } else {
-        myColorCode = state.players[myPseudo].colorCode;
+        if(!state.players[myPseudo]) {
+            const colors = ['#00FFFF', '#FF00FF', '#FFFF00', '#00FF00'];
+            let usedColors = Object.values(state.players).map(p => p.colorCode);
+            let avail = colors.filter(c => !usedColors.includes(c));
+            myColorCode = avail.length > 0 ? avail[0] : colors[Math.floor(Math.random() * colors.length)];
+            
+            state.players[myPseudo] = { pseudo: myPseudo, avatar: myAvatar, colorCode: myColorCode, score: 0 };
+        } else {
+            state.players[myPseudo].avatar = myAvatar; 
+            myColorCode = state.players[myPseudo].colorCode;
+        }
+        
+        await updateLobbyState(state);
+        
+        document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+        document.getElementById('screenLobby').classList.add('active');
+        
+        dbSyncInterval = setInterval(async () => {
+            try {
+                const s = await fetchLobbyState();
+                if(s) updateLobbyUI(s);
+            } catch(err) {
+                console.error("Sync error:", err);
+            }
+        }, 1500);
+
+    } catch (e) {
+        showLoadingError(e.message);
     }
-    
-    await updateLobbyState(state);
-    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-    document.getElementById('screenLobby').classList.add('active');
-    
-    dbSyncInterval = setInterval(async () => {
-        const s = await fetchLobbyState();
-        if(s) updateLobbyUI(s);
-    }, 1500);
 }
 
 function updateLobbyUI(state) {
@@ -184,7 +226,7 @@ function updateLobbyUI(state) {
     `).join('');
 
     if(state.phase === 'lobby' && isMaster) {
-        document.getElementById('lobbyControls').innerHTML = `<button class="btn-primary" onclick="startGame()">LANCER</button>`;
+        document.getElementById('lobbyControls').innerHTML = `<button class="btn-primary" onclick="startGame()">LANCER L'ARÈNE</button>`;
     } else if(state.phase === 'playing' && gameState === 'lobby') {
         gameState = 'playing';
         clearInterval(dbSyncInterval);
@@ -193,107 +235,8 @@ function updateLobbyUI(state) {
 }
 
 async function startGame() {
-    let state = await fetchLobbyState();
-    state.phase = 'playing';
-    await updateLobbyState(state);
-}
-
-function initGameEngine(lobbyPlayers) {
-    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-    document.getElementById('screenGame').classList.add('active');
-    orderedPlayerNames = Object.keys(lobbyPlayers);
-    
-    const header = document.getElementById('gameHeader');
-    header.innerHTML = '';
-    orderedPlayerNames.forEach(pseudo => {
-        const p = lobbyPlayers[pseudo];
-        playersGameData[pseudo] = { color: p.colorCode, avatar: p.avatar, score: 0, dead: false, x: 0, y: 0, nextDir: 'right', trail: [] };
-        header.innerHTML += `<div class="player-hud" id="hud-${pseudo}" style="color:${p.colorCode}"><img src="${p.avatar}"><span>${pseudo}: <span id="score-${pseudo}">0</span></span></div>`;
-    });
-
-    resetPositions();
-    realtimeChannel = sb.channel('kavale_arena').on('broadcast', {event:'move'}, (p)=>{
-        if(p.payload.pseudo !== myPseudo && playersGameData[p.payload.pseudo]) {
-            playersGameData[p.payload.pseudo].nextDir = p.payload.direction;
-        }
-    }).on('broadcast', {event:'start'}, ()=>startCountdown()).subscribe();
-
-    if(isMaster) setTimeout(()=>realtimeChannel.send({type:'broadcast', event:'start'}), 1000);
-}
-
-function resetPositions() {
-    const size = canvas.width;
-    const spawns = [{x:50, y:size/2, d:'right'}, {x:size-50, y:size/2, d:'left'}, {x:size/2, y:50, d:'down'}, {x:size/2, y:size-50, d:'up'}];
-    orderedPlayerNames.forEach((n, i) => {
-        playersGameData[n].x = spawns[i].x; playersGameData[n].y = spawns[i].y;
-        playersGameData[n].nextDir = spawns[i].d; playersGameData[n].direction = spawns[i].d;
-        playersGameData[n].trail = []; playersGameData[n].dead = false;
-        document.getElementById(`hud-${n}`).style.opacity = '1';
-    });
-}
-
-function startCountdown() {
-    let c = 3;
-    const t = document.getElementById('statusText');
-    const i = setInterval(() => {
-        t.textContent = c > 0 ? c : "GO !";
-        if(c-- < 0) { clearInterval(i); gameLoop = setInterval(update, 80); }
-    }, 1000);
-}
-
-function update() {
-    ctx.clearRect(0,0,600,600);
-    orderedPlayerNames.forEach(n => {
-        const p = playersGameData[n];
-        if(p.dead) return;
-        p.trail.push({x:p.x, y:p.y});
-        p.direction = p.nextDir;
-        if(p.direction==='up') p.y-=10; if(p.direction==='down') p.y+=10;
-        if(p.direction==='left') p.x-=10; if(p.direction==='right') p.x+=10;
-
-        if(p.x<0 || p.x>=600 || p.y<0 || p.y>=600) p.dead = true;
-        orderedPlayerNames.forEach(o => {
-            playersGameData[o].trail.forEach(t => { if(p.x===t.x && p.y===t.y) p.dead=true; });
-        });
-
-        if(p.dead) document.getElementById(`hud-${n}`).style.opacity = '0.3';
-        ctx.fillStyle = p.color; p.trail.forEach(t=>ctx.fillRect(t.x, t.y, 10, 10));
-        ctx.fillStyle = 'white'; ctx.fillRect(p.x, p.y, 10, 10);
-    });
-
-    const alive = orderedPlayerNames.filter(n=>!playersGameData[n].dead);
-    if(alive.length <= 1) {
-        clearInterval(gameLoop);
-        if(alive.length===1) {
-            playersGameData[alive[0]].score++;
-            document.getElementById(`score-${alive[0]}`).textContent = playersGameData[alive[0]].score;
-            if(playersGameData[alive[0]].score >= 3) finish(alive[0]); else setTimeout(()=>resetPositions() || startCountdown(), 2000);
-        } else setTimeout(()=>resetPositions() || startCountdown(), 2000);
-    }
-}
-
-async function finish(w) {
-    document.getElementById('victoryName').textContent = w;
-    document.getElementById('victoryAvatar').src = playersGameData[w].avatar;
-    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-    document.getElementById('screenVictory').classList.add('active');
-    if(isMaster) {
-        const {data} = await sb.from('cdsi_users').select('kavale_wins').eq('pseudo', w).single();
-        await sb.from('cdsi_users').update({ kavale_wins: (data?.kavale_wins || 0) + 1 }).eq('pseudo', w);
-        await sb.from('bingo_state').delete().eq('id', GAME_ID);
-    }
-}
-
-window.addEventListener('keydown', e => {
-    const p = playersGameData[myPseudo];
-    if(!p || p.dead) return;
-    let d = null;
-    if(e.code==='ArrowUp' && p.direction!=='down') d='up';
-    if(e.code==='ArrowDown' && p.direction!=='up') d='down';
-    if(e.code==='ArrowLeft' && p.direction!=='right') d='left';
-    if(e.code==='ArrowRight' && p.direction!=='left') d='right';
-    if(d) { p.nextDir = d; realtimeChannel.send({type:'broadcast', event:'move', payload:{pseudo:myPseudo, direction:d}}); }
-});
-</script>
-</body>
-</html>
+    try {
+        let state = await fetchLobbyState();
+        state.phase = 'playing';
+        await updateLobbyState(state);
+    } catch(e) {
