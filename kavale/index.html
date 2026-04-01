@@ -14,8 +14,6 @@
     --text: #c5c6c7; --muted: #66fcf1;
   }
   body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:32px 16px; position:relative; overflow-x:hidden; }
-  
-  /* Quadrillage Cyberpunk original */
   body::before { content:''; position:fixed; inset:0; background-image: linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px); background-size: 30px 30px; pointer-events:none; z-index:0; }
   
   .hub-link { position: absolute; top: 20px; left: 20px; color: var(--muted); text-decoration: none; font-weight: bold; z-index: 10; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s;}
@@ -23,7 +21,6 @@
 
   .screen { display:none; flex-direction:column; align-items:center; width:100%; max-width:800px; position:relative; z-index:1; }
   .screen.active { display:flex; }
-  
   .logo { font-family:'Bebas Neue',sans-serif; font-size:clamp(52px,10vw,88px); letter-spacing:8px; line-height:1; background:linear-gradient(135deg,var(--cyan) 0%,var(--magenta) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; filter:drop-shadow(0 0 20px rgba(0,255,255,0.4)); font-style: italic; }
   .tagline { color:var(--muted); font-size:14px; letter-spacing:4px; text-transform:uppercase; margin-top:6px; margin-bottom:32px; font-weight: bold;}
   
@@ -36,12 +33,10 @@
   button:disabled { opacity:0.5; cursor:not-allowed; transform:none !important; }
 
   .player-row { display:flex; align-items:center; gap:15px; padding:12px 0; border-bottom:1px solid var(--border); font-size:15px; font-weight:bold; color: white;}
-  .player-row:last-child { border-bottom:none; }
   .player-avatar { width:40px; height:40px; border-radius:50%; object-fit: cover; border: 2px solid transparent; background: #111;}
   .badge { font-size:10px; letter-spacing:1px; text-transform:uppercase; padding:4px 8px; border-radius:4px; margin-left:auto; }
   .badge-master { background:rgba(0,255,255,0.1); color:var(--cyan); border:1px solid var(--cyan); }
   
-  /* JEU */
   #gameCanvas { border: 4px solid var(--border); background: #000; box-shadow: 0 0 40px rgba(0,0,0,0.8); border-radius: 8px; margin-top: 10px; max-width: 100%;}
   .game-header { display: flex; justify-content: space-around; width: 100%; margin-bottom: 10px; flex-wrap: wrap; gap: 15px; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 10px; border: 1px solid #333;}
   .player-hud { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s;}
@@ -49,18 +44,13 @@
   .player-hud .score-hud { font-size: 20px; font-family: 'Bebas Neue'; background: rgba(255,255,255,0.1); padding: 2px 10px; border-radius: 5px; }
   #statusText { font-family: 'Bebas Neue'; font-size: 38px; letter-spacing: 2px; text-align: center; height: 45px;}
 
-  /* ÉCRAN DE VICTOIRE */
-  .victory-card { text-align: center; padding: 40px; background: rgba(20,20,30,0.95); border: 2px solid; border-radius: 20px; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); backdrop-filter: blur(10px); width: 100%; max-width: 500px; display: flex; flex-direction: column; align-items: center;}
+  .victory-card { text-align: center; padding: 40px; background: rgba(20,20,30,0.95); border: 2px solid; border-radius: 20px; backdrop-filter: blur(10px); width: 100%; max-width: 500px; display: flex; flex-direction: column; align-items: center;}
   .victory-avatar { width: 120px; height: 120px; border-radius: 50%; border: 4px solid; margin-bottom: 20px; object-fit: cover; background: #111;}
   .victory-title { font-family: 'Bebas Neue'; font-size: 70px; margin-bottom: 5px; letter-spacing: 4px;}
   .victory-name { font-size: 35px; margin-bottom: 30px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;}
-  .btn-outline { background: transparent; border: 2px solid #555; color: white; box-shadow: none; margin-top: 15px;}
-  .btn-outline:hover { border-color: white; transform: translateY(-2px);}
-  @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
   .loading-text { text-align: center; font-size: 18px; color: var(--cyan); font-weight: bold; margin-bottom: 20px; animation: blink 1s infinite alternate; }
   @keyframes blink { from { opacity: 0.5; } to { opacity: 1; } }
-
 </style>
 </head>
 <body>
@@ -71,15 +61,13 @@
   <div class="logo">KAVALE</div>
   <div class="tagline">3 manches gagnantes - Jusqu'à 4 joueurs</div>
   <div class="join-card" style="background: transparent; border: none; box-shadow: none;">
-    <div id="loadingProfile" class="loading-text">Connexion au profil en cours...</div>
-    <div id="errorDisplay" style="color: red; text-align: center; display: none; margin-top: 10px;"></div>
+    <div id="loadingProfile" class="loading-text">VÉRIFICATION DU COMPTE...</div>
   </div>
 </div>
 
 <div class="screen" id="screenLobby">
   <div class="logo">KAVALE</div>
   <div class="tagline" id="lobbySubtitle">En attente des pilotes...</div>
-  
   <div class="players-list">
     <h3>Pilotes (Max 4)</h3>
     <div id="playersList"></div>
@@ -98,22 +86,19 @@
   <div class="logo" style="margin-bottom: 40px;">KAVALE</div>
   <div class="victory-card" id="victoryCard">
     <h2 class="victory-title" id="victoryTitle">VICTOIRE !</h2>
-    <img src="" id="victoryAvatar" class="victory-avatar" onerror="this.src='https://via.placeholder.com/120/333/fff?text=?'">
+    <img src="" id="victoryAvatar" class="victory-avatar" onerror="this.src='https://via.placeholder.com/120'">
     <div class="victory-name" id="victoryName">Pseudo</div>
     <button class="btn-primary" onclick="location.reload()">🔄 Rejouer</button>
-    <button class="btn-outline" onclick="window.location.href='../index.html'">🏠 Retour au Hub</button>
+    <button class="btn-primary" style="margin-top:10px; background:transparent; border:1px solid #555; color:white;" onclick="window.location.href='../index.html'">🏠 Menu Principal</button>
   </div>
 </div>
 
 <script>
-// --- CONFIGURATION SUPABASE ---
 const SUPABASE_URL = 'https://pdybshweyfvxzvngnuxe.supabase.co'; 
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkeWJzaHdleWZ2eHp2bmdudXhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDg2MDAsImV4cCI6MjA5MDUyNDYwMH0.u442X28Mhs-4T-tydabnMm8now8VfAEeNU-Sicuipq4'; 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
 const GAME_ID = 'kavale_main_lobby';
 
-// --- VARIABLES GLOBALES ---
 let myPseudo = '';
 let myAvatar = '';
 let myColorCode = '#00FFFF'; 
@@ -122,469 +107,193 @@ let gameState = 'lobby';
 let realtimeChannel = null; 
 let dbSyncInterval = null; 
 
-// --- MOTEUR DE JEU KAVALE ---
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const gridSize = 10;
 let gameLoop = null;
 let playersGameData = {}; 
 let orderedPlayerNames = [];
-
 let isCountingDown = false;
 let isRoundEnding = false;
-let syncSpamInterval = null;
 
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
-// --- INITIALISATION & AUTO-CONNEXION SÉCURISÉE ---
 window.onload = async () => {
-    try {
-        // 1. Lire le pseudo sauvegardé par le Hub
-        myPseudo = localStorage.getItem('cdsi_logged_user');
-        
-        if (!myPseudo || myPseudo === 'null' || myPseudo === 'undefined') {
-            window.location.href = '../index.html'; 
-            return;
-        }
-
-        // 2. Récupérer l'avatar officiel dans la BDD
-        const { data, error } = await sb.from('cdsi_users').select('avatar').eq('pseudo', myPseudo).maybeSingle();
-        
-        if (data && data.avatar) {
-            // MAGIE ICI : On s'assure qu'on ajoute "../" pour que l'image charge depuis le dossier kavale
-            myAvatar = data.avatar.startsWith('../') ? data.avatar : '../' + data.avatar;
-        } else {
-            myAvatar = '../bingoudalo/avatar/paulo1.jpg'; // Secours
-        }
-
-        await autoJoinLobby();
-        
-    } catch (err) {
-        console.error(err);
-        document.getElementById('loadingProfile').style.display = 'none';
-        const errDiv = document.getElementById('errorDisplay');
-        errDiv.style.display = 'block';
-        errDiv.innerHTML = `Erreur locale détectée.<br><br><button class='btn-primary' onclick='location.reload()'>Rafraîchir</button>`;
+    myPseudo = localStorage.getItem('cdsi_logged_user');
+    
+    // SÉCURITÉ : Si pas de pseudo, on renvoie au Hub pour se connecter
+    if (!myPseudo || myPseudo === 'null') {
+        window.location.href = '../index.html'; 
+        return;
     }
+
+    const { data, error } = await sb.from('cdsi_users').select('avatar').eq('pseudo', myPseudo).maybeSingle();
+    
+    if (data && data.avatar) {
+        myAvatar = '../' + data.avatar; 
+    } else {
+        myAvatar = '../bingoudalo/avatar/paulo1.jpg';
+    }
+
+    autoJoinLobby();
 };
 
-// --- BASE DE DONNÉES (LOBBY) ---
 async function fetchLobbyState() {
-    try {
-        const {data, error} = await sb.from('bingo_state').select('data').eq('id', GAME_ID).maybeSingle();
-        if (error) throw error;
-        return data?.data || null;
-    } catch(e) { 
-        console.error("Erreur fetch state:", e);
-        return null; 
-    }
-}
-async function updateLobbyState(newState) {
-    try {
-        await sb.from('bingo_state').upsert({ id: GAME_ID, data: newState, updated_at: new Date().toISOString() }, { onConflict: 'id' });
-    } catch(e) {
-        console.error("Erreur update state:", e);
-    }
+    const {data} = await sb.from('bingo_state').select('data').eq('id', GAME_ID).maybeSingle();
+    return data?.data || null;
 }
 
-// --- REJOINDRE LE LOBBY AUTOMATIQUEMENT ---
+async function updateLobbyState(newState) {
+    await sb.from('bingo_state').upsert({ id: GAME_ID, data: newState, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+}
+
 async function autoJoinLobby() {
     let state = await fetchLobbyState();
-    
-    if(!state || !state.players || Object.keys(state.players).length === 0) {
-        state = { phase: 'lobby', master: myPseudo, players: {}, gameEndedSaved: false };
-    } else {
-        if (!state.players[state.master]) {
-            state.master = myPseudo; 
-        }
-    }
+    if(!state || !state.players) state = { phase: 'lobby', master: myPseudo, players: {}, gameEndedSaved: false };
 
     if(Object.keys(state.players).length >= 4 && !state.players[myPseudo]) {
-        alert("L'arène est pleine (4 joueurs max) !");
+        alert("Salle pleine !");
         window.location.href = '../index.html';
         return;
     }
 
-    isMaster = (state.master === myPseudo);
-    
-    // ATTRIBUTION INTELLIGENTE DE COULEUR
     if(!state.players[myPseudo]) {
-        const NEON_COLORS = ['#00FFFF', '#FF00FF', '#FFFF00', '#00FF00'];
-        let usedColors = Object.values(state.players).map(p => p.colorCode);
-        let availableColors = NEON_COLORS.filter(c => !usedColors.includes(c));
-        
-        if (availableColors.length > 0) {
-            myColorCode = availableColors[Math.floor(Math.random() * availableColors.length)];
-        } else {
-            myColorCode = NEON_COLORS[Math.floor(Math.random() * NEON_COLORS.length)];
-        }
-
+        const colors = ['#00FFFF', '#FF00FF', '#FFFF00', '#00FF00'];
+        myColorCode = colors[Object.keys(state.players).length] || '#FFFFFF';
         state.players[myPseudo] = { pseudo: myPseudo, avatar: myAvatar, colorCode: myColorCode, score: 0 };
     } else {
-        // Met à jour l'avatar si on l'a changé sur le Hub
-        state.players[myPseudo].avatar = myAvatar; 
         myColorCode = state.players[myPseudo].colorCode;
     }
     
     await updateLobbyState(state);
-    showScreen('screenLobby');
-    startLobbySync(); 
-}
-
-// --- SYNCHRONISATION LOBBY ---
-function startLobbySync() {
-    if(dbSyncInterval) clearInterval(dbSyncInterval);
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById('screenLobby').classList.add('active');
+    
     dbSyncInterval = setInterval(async () => {
-        const state = await fetchLobbyState();
-        if(state) updateLobbyUI(state);
-    }, 2000);
+        const s = await fetchLobbyState();
+        if(s) updateLobbyUI(s);
+    }, 1500);
 }
 
 function updateLobbyUI(state) {
-    if(!state || !state.players) return;
-    
     isMaster = (state.master === myPseudo);
-    const playersList = Object.values(state.players);
-    
-    document.getElementById('playersList').innerHTML = playersList.map(p => `
+    document.getElementById('playersList').innerHTML = Object.values(state.players).map(p => `
         <div class="player-row">
-            <img src="${p.avatar}" class="player-avatar" style="border-color: ${p.colorCode}" onerror="this.src='https://via.placeholder.com/40/333/fff?text=?'">
+            <img src="${p.avatar}" class="player-avatar" style="border-color: ${p.colorCode}">
             <span style="color: ${p.colorCode}">${p.pseudo}</span>
-            ${state.master === p.pseudo ? '<span class="badge badge-master">👑 Maître</span>' : ''}
+            ${state.master === p.pseudo ? '<span class="badge badge-master">👑 Chef</span>' : ''}
         </div>
     `).join('');
 
-    if(state.phase === 'lobby') {
-        const controls = document.getElementById('lobbyControls');
-        if(isMaster) {
-            if (playersList.length >= 2) {
-                controls.innerHTML = `<button class="btn-primary" onclick="launchGameFromLobby()">🏁 Démarrer la partie</button>`;
-                document.getElementById('lobbySubtitle').textContent = `Tu es le maître. Lance la partie quand tout le monde est prêt.`;
-            } else {
-                controls.innerHTML = `<p style="color:var(--cyan); font-size:14px; font-weight:bold; text-align:center;">Il faut au moins 2 joueurs pour démarrer !</p>`;
-                document.getElementById('lobbySubtitle').textContent = `En attente d'autres pilotes...`;
-            }
-        } else {
-            controls.innerHTML = '';
-            document.getElementById('lobbySubtitle').textContent = `Attends que ${state.master} lance la partie...`;
-        }
-    } 
-    else if(state.phase === 'playing' && gameState === 'lobby') {
+    if(state.phase === 'lobby' && isMaster) {
+        document.getElementById('lobbyControls').innerHTML = `<button class="btn-primary" onclick="startGame()">LANCER</button>`;
+    } else if(state.phase === 'playing' && gameState === 'lobby') {
         gameState = 'playing';
-        clearInterval(dbSyncInterval); 
-        initGameEngine(state.players); 
+        clearInterval(dbSyncInterval);
+        initGameEngine(state.players);
     }
 }
 
-// --- LE MAÎTRE LANCE LE JEU ---
-async function launchGameFromLobby() {
+async function startGame() {
     let state = await fetchLobbyState();
     state.phase = 'playing';
-    await updateLobbyState(state); 
-    
-    gameState = 'playing';
-    clearInterval(dbSyncInterval);
-    initGameEngine(state.players);
+    await updateLobbyState(state);
 }
-
-// ==========================================
-// MOTEUR DE JEU ORIGINAL (KAVALE - TRON)
-// ==========================================
 
 function initGameEngine(lobbyPlayers) {
-    showScreen('screenGame');
-    
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById('screenGame').classList.add('active');
     orderedPlayerNames = Object.keys(lobbyPlayers);
-    const numPlayers = orderedPlayerNames.length;
     
-    // Ajustement de la taille du plateau selon le nombre de joueurs
-    const newSize = 500 + ((numPlayers - 2) * 150);
-    canvas.width = newSize;
-    canvas.height = newSize;
-    
-    playersGameData = {};
     const header = document.getElementById('gameHeader');
     header.innerHTML = '';
-
-    // Initialisation HUD et Stats en direct
     orderedPlayerNames.forEach(pseudo => {
         const p = lobbyPlayers[pseudo];
-        
-        playersGameData[pseudo] = { 
-            color: p.colorCode, avatar: p.avatar, score: 0, dead: false, 
-            x: 0, y: 0, direction: 'right', nextDir: 'right', trail: [] 
-        };
-        
-        header.innerHTML += `
-            <div class="player-hud" id="hud-${pseudo}" style="color: ${p.colorCode};">
-                <img src="${p.avatar}" style="border-color: ${p.colorCode}" onerror="this.src='https://via.placeholder.com/35/333/fff?text=?'">
-                <span>${pseudo} : <span class="score-hud" id="score-${pseudo}">0</span>/3</span>
-            </div>
-        `;
+        playersGameData[pseudo] = { color: p.colorCode, avatar: p.avatar, score: 0, dead: false, x: 0, y: 0, nextDir: 'right', trail: [] };
+        header.innerHTML += `<div class="player-hud" id="hud-${pseudo}" style="color:${p.colorCode}"><img src="${p.avatar}"><span>${pseudo}: <span id="score-${pseudo}">0</span></span></div>`;
     });
 
-    resetPlayerPositions(); 
-
-    realtimeChannel = sb.channel('kavale_arena');
-    
-    realtimeChannel.on('broadcast', { event: 'move' }, (payload) => {
-        const data = payload.payload;
-        if(data.pseudo !== myPseudo && playersGameData[data.pseudo]) {
-            playersGameData[data.pseudo].nextDir = data.direction;
-            playersGameData[data.pseudo].x = data.x;
-            playersGameData[data.pseudo].y = data.y;
+    resetPositions();
+    realtimeChannel = sb.channel('kavale_arena').on('broadcast', {event:'move'}, (p)=>{
+        if(p.payload.pseudo !== myPseudo && playersGameData[p.payload.pseudo]) {
+            playersGameData[p.payload.pseudo].nextDir = p.payload.direction;
         }
-    });
+    }).on('broadcast', {event:'start'}, ()=>startCountdown()).subscribe();
 
-    realtimeChannel.on('broadcast', { event: 'p2_ready' }, () => {
-        if (isMaster && !isCountingDown) {
-            realtimeChannel.send({ type: 'broadcast', event: 'start_countdown', payload: {} });
-            startCountdown();
-        }
-    });
-
-    realtimeChannel.on('broadcast', { event: 'start_countdown' }, () => {
-        if (!isMaster && !isCountingDown) {
-            clearInterval(syncSpamInterval); 
-            startCountdown();
-        }
-    });
-
-    realtimeChannel.on('broadcast', { event: 'next_round' }, () => {
-        if (!isMaster) prepareNextRound(false);
-    });
-
-    realtimeChannel.subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-            document.getElementById('statusText').textContent = "SYNCHRONISATION...";
-            if (!isMaster) {
-                syncSpamInterval = setInterval(() => { realtimeChannel.send({ type: 'broadcast', event: 'p2_ready', payload: {} }); }, 500);
-            }
-        }
-    });
+    if(isMaster) setTimeout(()=>realtimeChannel.send({type:'broadcast', event:'start'}), 1000);
 }
 
-function resetPlayerPositions() {
+function resetPositions() {
     const size = canvas.width;
-    const spawnPoints = [
-        { x: 100, y: size/2, dir: 'right' },            
-        { x: size - 100, y: size/2, dir: 'left' },      
-        { x: size/2, y: 100, dir: 'down' },             
-        { x: size/2, y: size - 100, dir: 'up' }         
-    ];
-
-    orderedPlayerNames.forEach((pseudo, index) => {
-        const p = playersGameData[pseudo];
-        const sp = spawnPoints[index];
-        p.x = Math.round(sp.x / 10) * 10;
-        p.y = Math.round(sp.y / 10) * 10;
-        p.direction = sp.dir;
-        p.nextDir = sp.dir;
-        p.trail = [];
-        p.dead = false;
-        
-        document.getElementById(`hud-${pseudo}`).style.opacity = '1';
+    const spawns = [{x:50, y:size/2, d:'right'}, {x:size-50, y:size/2, d:'left'}, {x:size/2, y:50, d:'down'}, {x:size/2, y:size-50, d:'up'}];
+    orderedPlayerNames.forEach((n, i) => {
+        playersGameData[n].x = spawns[i].x; playersGameData[n].y = spawns[i].y;
+        playersGameData[n].nextDir = spawns[i].d; playersGameData[n].direction = spawns[i].d;
+        playersGameData[n].trail = []; playersGameData[n].dead = false;
+        document.getElementById(`hud-${n}`).style.opacity = '1';
     });
-    
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 function startCountdown() {
-    isCountingDown = true;
-    isRoundEnding = false;
-    let count = 3;
-    const statusEl = document.getElementById('statusText');
-    const interval = setInterval(() => {
-        statusEl.textContent = count > 0 ? count : "GO !";
-        statusEl.style.color = count > 0 ? "white" : "var(--cyan)";
-        if(count === 0) {
-            clearInterval(interval);
-            setTimeout(() => statusEl.textContent = "", 1000); 
-            if(gameLoop) clearInterval(gameLoop);
-            gameLoop = setInterval(updatePhysics, 80); 
-        }
-        count--;
+    let c = 3;
+    const t = document.getElementById('statusText');
+    const i = setInterval(() => {
+        t.textContent = c > 0 ? c : "GO !";
+        if(c-- < 0) { clearInterval(i); gameLoop = setInterval(update, 80); }
     }, 1000);
 }
 
-// --- PHYSIQUE ---
-function updatePhysics() {
-    if (isRoundEnding) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const pseudos = orderedPlayerNames;
-    
-    pseudos.forEach(pseudo => {
-        const p = playersGameData[pseudo];
-        if (p.dead) return;
-
-        p.trail.push({ x: p.x, y: p.y });
+function update() {
+    ctx.clearRect(0,0,600,600);
+    orderedPlayerNames.forEach(n => {
+        const p = playersGameData[n];
+        if(p.dead) return;
+        p.trail.push({x:p.x, y:p.y});
         p.direction = p.nextDir;
+        if(p.direction==='up') p.y-=10; if(p.direction==='down') p.y+=10;
+        if(p.direction==='left') p.x-=10; if(p.direction==='right') p.x+=10;
 
-        if (p.direction === 'up') p.y -= gridSize;
-        if (p.direction === 'down') p.y += gridSize;
-        if (p.direction === 'left') p.x -= gridSize;
-        if (p.direction === 'right') p.x += gridSize;
+        if(p.x<0 || p.x>=600 || p.y<0 || p.y>=600) p.dead = true;
+        orderedPlayerNames.forEach(o => {
+            playersGameData[o].trail.forEach(t => { if(p.x===t.x && p.y===t.y) p.dead=true; });
+        });
 
-        checkCollisions(pseudo, pseudos);
-
-        ctx.fillStyle = p.color;
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = p.color;
-        p.trail.forEach(pos => ctx.fillRect(pos.x, pos.y, gridSize, gridSize));
-        
-        ctx.fillStyle = 'white';
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = 'white';
-        ctx.fillRect(p.x, p.y, gridSize, gridSize);
-        ctx.shadowBlur = 0; 
+        if(p.dead) document.getElementById(`hud-${n}`).style.opacity = '0.3';
+        ctx.fillStyle = p.color; p.trail.forEach(t=>ctx.fillRect(t.x, t.y, 10, 10));
+        ctx.fillStyle = 'white'; ctx.fillRect(p.x, p.y, 10, 10);
     });
 
-    checkWinCondition(pseudos);
-}
-
-// --- CONTRÔLES ---
-window.addEventListener('keydown', e => {
-    if (gameState !== 'playing' || isRoundEnding || !playersGameData[myPseudo] || playersGameData[myPseudo].dead) return;
-
-    let newDir = null;
-    const p = playersGameData[myPseudo];
-
-    if (e.code === 'ArrowUp' && p.direction !== 'down') newDir = 'up';
-    if (e.code === 'ArrowDown' && p.direction !== 'up') newDir = 'down';
-    if (e.code === 'ArrowLeft' && p.direction !== 'right') newDir = 'left';
-    if (e.code === 'ArrowRight' && p.direction !== 'left') newDir = 'right';
-
-    if (newDir && newDir !== p.nextDir) {
-        p.nextDir = newDir;
-        if(realtimeChannel) {
-            realtimeChannel.send({ type: 'broadcast', event: 'move', payload: { pseudo: myPseudo, direction: newDir, x: p.x, y: p.y }});
-        }
-    }
-});
-
-// --- COLLISIONS ---
-function checkCollisions(myId, allIds) {
-    const p = playersGameData[myId];
-    // Mur
-    if (p.x < 0 || p.x >= canvas.width || p.y < 0 || p.y >= canvas.height) { 
-        p.dead = true; 
-        document.getElementById(`hud-${myId}`).style.opacity = '0.4'; 
-        return;
-    }
-
-    // Autres joueurs et soi-même
-    allIds.forEach(otherId => {
-        const otherP = playersGameData[otherId];
-        for (let i = 0; i < otherP.trail.length; i++) {
-            if (p.x === otherP.trail[i].x && p.y === otherP.trail[i].y) { 
-                p.dead = true; 
-                document.getElementById(`hud-${myId}`).style.opacity = '0.4';
-            }
-        }
-        // Frontal
-        if (myId !== otherId && p.x === otherP.x && p.y === otherP.y) {
-            p.dead = true; otherP.dead = true;
-            document.getElementById(`hud-${myId}`).style.opacity = '0.4';
-            document.getElementById(`hud-${otherId}`).style.opacity = '0.4';
-        }
-    });
-}
-
-// --- GESTION DES MANCHES ET VICTOIRE ---
-function checkWinCondition(allIds) {
-    const alive = allIds.filter(id => !playersGameData[id].dead);
-    
-    if (alive.length <= 1 && allIds.length > 1) {
-        isRoundEnding = true;
-        handleRoundEnd(alive);
+    const alive = orderedPlayerNames.filter(n=>!playersGameData[n].dead);
+    if(alive.length <= 1) {
+        clearInterval(gameLoop);
+        if(alive.length===1) {
+            playersGameData[alive[0]].score++;
+            document.getElementById(`score-${alive[0]}`).textContent = playersGameData[alive[0]].score;
+            if(playersGameData[alive[0]].score >= 3) finish(alive[0]); else setTimeout(()=>resetPositions() || startCountdown(), 2000);
+        } else setTimeout(()=>resetPositions() || startCountdown(), 2000);
     }
 }
 
-function handleRoundEnd(alivePlayers) {
-    clearInterval(gameLoop);
-    const statusEl = document.getElementById('statusText');
-
-    if(alivePlayers.length === 0) {
-        statusEl.textContent = "CRASH TOTAL ! MANCHE NULLE";
-        statusEl.style.color = "white";
-        setTimeout(() => prepareNextRound(true), 3000);
-    } else {
-        const winnerPseudo = alivePlayers[0];
-        const winner = playersGameData[winnerPseudo];
-        winner.score++;
-        document.getElementById(`score-${winnerPseudo}`).textContent = winner.score;
-        
-        if(winner.score >= 3) {
-            statusEl.textContent = `🏆 VICTOIRE TOTALE ! 🏆`;
-            statusEl.style.color = winner.color;
-            setTimeout(() => triggerVictoryScreen(winnerPseudo), 2000);
-        } else {
-            statusEl.textContent = `MANCHE POUR ${winnerPseudo} !`;
-            statusEl.style.color = winner.color;
-            setTimeout(() => prepareNextRound(true), 3000);
-        }
-    }
-}
-
-function prepareNextRound(triggerBroadcast) {
-    resetPlayerPositions();
-    if(isMaster && triggerBroadcast) {
-        realtimeChannel.send({ type: 'broadcast', event: 'next_round', payload: {} });
-        startCountdown();
-    } else if (!isMaster && !triggerBroadcast) {
-        startCountdown();
-    }
-}
-
-// --- ÉCRAN DE VICTOIRE & SAUVEGARDE EN DB ---
-async function triggerVictoryScreen(winnerPseudo) {
-    const winner = playersGameData[winnerPseudo];
-    
-    document.getElementById('victoryName').textContent = winnerPseudo;
-    document.getElementById('victoryName').style.color = winner.color;
-    document.getElementById('victoryAvatar').src = winner.avatar;
-    document.getElementById('victoryAvatar').style.borderColor = winner.color;
-    
-    document.getElementById('victoryCard').style.borderColor = winner.color;
-    document.getElementById('victoryCard').style.boxShadow = `0 0 50px ${winner.color}`;
-    document.getElementById('victoryTitle').style.color = winner.color;
-    document.getElementById('victoryTitle').style.textShadow = `0 0 20px ${winner.color}`;
-
-    showScreen('screenVictory');
-
-    // SEUL LE MAÎTRE SAUVEGARDE LA VICTOIRE (Évite que la BDD reçoive 4 fois +1)
+async function finish(w) {
+    document.getElementById('victoryName').textContent = w;
+    document.getElementById('victoryAvatar').src = playersGameData[w].avatar;
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById('screenVictory').classList.add('active');
     if(isMaster) {
-        let state = await fetchLobbyState();
-        if (state && !state.gameEndedSaved) {
-            state.gameEndedSaved = true;
-            await updateLobbyState(state);
-            
-            // LECTURE ET ECRITURE SUR LA NOUVELLE TABLE DE PROFILS
-            let {data} = await sb.from('cdsi_users').select('kavale_wins').eq('pseudo', winnerPseudo).single();
-            if (data) {
-                await sb.from('cdsi_users').update({ kavale_wins: (data.kavale_wins || 0) + 1 }).eq('pseudo', winnerPseudo);
-            }
-        }
-        // Ferme le lobby
+        const {data} = await sb.from('cdsi_users').select('kavale_wins').eq('pseudo', w).single();
+        await sb.from('cdsi_users').update({ kavale_wins: (data?.kavale_wins || 0) + 1 }).eq('pseudo', w);
         await sb.from('bingo_state').delete().eq('id', GAME_ID);
-    }
-
-    if(realtimeChannel) {
-        sb.removeChannel(realtimeChannel);
     }
 }
 
-// Sécurité nettoyage
-window.addEventListener("beforeunload", async (e) => {
-    if (gameState === 'lobby' && isMaster) {
-        await sb.from('bingo_state').delete().eq('id', GAME_ID);
-    }
+window.addEventListener('keydown', e => {
+    const p = playersGameData[myPseudo];
+    if(!p || p.dead) return;
+    let d = null;
+    if(e.code==='ArrowUp' && p.direction!=='down') d='up';
+    if(e.code==='ArrowDown' && p.direction!=='up') d='down';
+    if(e.code==='ArrowLeft' && p.direction!=='right') d='left';
+    if(e.code==='ArrowRight' && p.direction!=='left') d='right';
+    if(d) { p.nextDir = d; realtimeChannel.send({type:'broadcast', event:'move', payload:{pseudo:myPseudo, direction:d}}); }
 });
-
 </script>
 </body>
 </html>
