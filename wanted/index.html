@@ -83,7 +83,6 @@
   .player-row img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid #555; }
   .badge { background: rgba(0,255,255,0.2); color: var(--cyan); padding: 3px 8px; border-radius: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;}
 
-  /* EFFET ILLUMINATION QUAND TROUVÉ */
   .found-glow { 
       background: rgba(241, 196, 15, 0.2) !important; 
       border-color: var(--yellow) !important; 
@@ -92,30 +91,28 @@
       transform: scale(1.02);
   }
 
-  /* GAME LAYOUT (2 COLONNES) */
-  /* CORRECTION : Augmenté max-width à 1200px pour éviter le wrap sur PC */
-  .game-wrapper { display: flex; gap: 20px; width: 100%; max-width: 1200px; align-items: flex-start; justify-content: center; flex-wrap: wrap;}
-  .game-main { flex: 1; min-width: 300px; max-width: 800px; display: flex; flex-direction: column; align-items: center;}
+  /* GAME LAYOUT (ZONE ÉLARGIE POUR LE GRAND PLATEAU) */
+  .game-wrapper { display: flex; gap: 20px; width: 100%; max-width: 1400px; align-items: flex-start; justify-content: center; flex-wrap: wrap;}
   
-  /* SIDEBAR EFFET VERRE */
+  /* GAME MAIN PREND MAINTENANT JUSQU'À 1000px DE LARGE */
+  .game-main { flex: 1; min-width: 300px; max-width: 1000px; display: flex; flex-direction: column; align-items: center;}
+  
   .game-sidebar { width: 300px; background: rgba(20,20,30,0.6); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
 
-  /* GAME CANVAS & OVERLAYS */
+  /* GAME CANVAS GÉANT */
   #gameContainer { position: relative; width: 100%; }
-  canvas { background: #0b0c10; border: 4px solid rgba(255,255,255,0.2); border-radius: 10px; width: 100%; cursor: crosshair; box-shadow: 0 15px 40px rgba(0,0,0,0.6); display: block; }
+  canvas { background: #0b0c10; border: 4px solid rgba(255,255,255,0.2); border-radius: 10px; width: 100%; aspect-ratio: 4 / 3; cursor: crosshair; box-shadow: 0 15px 40px rgba(0,0,0,0.8); display: block; }
+  
   .overlay { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); border-radius: 10px; z-index: 10; backdrop-filter: blur(8px); }
-  .overlay h2 { font-family: 'Bebas Neue'; font-size: 70px; letter-spacing: 2px; }
+  .overlay h2 { font-family: 'Bebas Neue'; font-size: 80px; letter-spacing: 2px; }
   #foundOverlay h2 { color: var(--cyan); text-shadow: 0 0 30px var(--cyan); }
 
-  /* CORRECTION : Aligné le header */
   .game-header { display: flex; justify-content: space-between; width: 100%; margin-bottom: 15px; align-items: center; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); padding: 10px 20px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 20px rgba(0,0,0,0.3);}
   .target-box { display: flex; align-items: center; gap: 15px; text-align: left; }
-  /* CORRECTION : Cible mtn en PNG */
-  .target-box img { width: 55px; height: 55px; object-fit: cover; border-radius: 8px; border: 2px solid var(--yellow); box-shadow: 0 0 20px rgba(241, 196, 15, 0.6); }
-  .round-info { font-family: 'Bebas Neue'; font-size: 35px; color: white; line-height: 1; text-shadow: 0 2px 5px rgba(0,0,0,0.8); margin: 0; }
+  .target-box img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 2px solid var(--yellow); box-shadow: 0 0 20px rgba(241, 196, 15, 0.6); }
+  .round-info { font-family: 'Bebas Neue'; font-size: 40px; color: white; line-height: 1; text-shadow: 0 2px 5px rgba(0,0,0,0.8); margin: 0; }
   
-  /* LE TIMER */
-  .timer-box { font-family: 'Bebas Neue'; font-size: 45px; color: var(--magenta); text-shadow: 0 0 15px var(--magenta); min-width: 60px; text-align: center;}
+  .timer-box { font-family: 'Bebas Neue'; font-size: 50px; color: var(--magenta); text-shadow: 0 0 15px var(--magenta); min-width: 70px; text-align: center;}
   .timer-box.hurry { color: #ff3333; text-shadow: 0 0 25px #ff3333; animation: pulse 0.5s infinite alternate;}
   @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.15); } }
 
@@ -155,7 +152,7 @@
             <div class="target-box">
               <img src="../bingoudalo/avatar/dayoub.png" alt="Cible">
               <div>
-                  <div style="font-size: 13px; font-weight: bold; color: var(--yellow); letter-spacing: 2px;">CIBLE</div>
+                  <div style="font-size: 14px; font-weight: bold; color: var(--yellow); letter-spacing: 2px;">CIBLE</div>
                   <div class="round-info" id="roundDisplay">MANCHE 1/5</div>
               </div>
             </div>
@@ -163,11 +160,11 @@
           </div>
           
           <div id="gameContainer">
-            <canvas id="gameCanvas" width="800" height="600"></canvas>
+            <canvas id="gameCanvas" width="1000" height="750"></canvas>
             
             <div class="overlay" id="foundOverlay">
               <h2>TROUVÉ !</h2>
-              <p id="foundPositionText" style="font-size: 18px; color: white;">En attente des autres joueurs...</p>
+              <p id="foundPositionText" style="font-size: 20px; color: white;">En attente des autres joueurs...</p>
             </div>
           </div>
       </div>
@@ -202,7 +199,6 @@ const AVATARS = [
   '../bingoudalo/avatar/paulo1.jpg', '../bingoudalo/avatar/tom.png', '../bingoudalo/avatar/wilbaut_suss.png'
 ];
 
-// CORRECTION : Image cible mtn dayoub.png
 const targetImg = new Image(); targetImg.src = '../bingoudalo/avatar/dayoub.png';
 
 const distractorSrcs = [
@@ -244,7 +240,6 @@ function renderAvatarSelection() {
 function selectAvatar(src) { myAvatar = src; renderAvatarSelection(); }
 
 window.onload = () => {
-    // Récupérer le pseudo et avatar si on a déjà joué
     const savedPseudo = localStorage.getItem('wanted_pseudo');
     const savedAvatar = localStorage.getItem('wanted_avatar');
     
@@ -266,9 +261,7 @@ async function fetchState() {
         const {data, error} = await sb.from('bingo_state').select('data').eq('id', GAME_ID).maybeSingle();
         if (error) return null;
         return data?.data || null;
-    } catch (e) {
-        return null;
-    }
+    } catch (e) { return null; }
 }
 
 async function updateState(newState) {
@@ -315,7 +308,6 @@ async function joinLobby() {
     }
 }
 
-// Polling toutes les secondes
 function startSync() {
     updateUI(null);
     if(dbSyncInterval) clearInterval(dbSyncInterval);
@@ -364,7 +356,6 @@ function updateUI(state) {
             startVisualTimer();
         }
         
-        // Mise à jour du classement en direct
         document.getElementById('liveLeaderboard').innerHTML = Object.values(state.players).sort((a,b)=>b.score - a.score).map(p => {
             const hasFound = state.roundWinners.includes(p.pseudo);
             const glowClass = hasFound ? 'found-glow' : '';
@@ -425,7 +416,6 @@ async function startRound() {
     let state = await fetchState();
     state.phase = 'playing';
     state.roundWinners = []; 
-    // On ajoute + 32 secondes pour compenser le temps de chargement réseau
     state.roundEndTime = Date.now() + 32000; 
     await updateState(state);
 }
@@ -476,10 +466,10 @@ function initGameEngine(round) {
     document.getElementById('foundOverlay').style.display = 'none';
     hasFound = false;
 
-    // Difficulté progressive
-    let targetSize = 70 - (round * 5); 
-    let speedMult = 1 + (round * 0.5); 
-    let numDistractors = 30 * round;   
+    // TAILLES DE VISAGES PLUS GROSSES
+    let targetSize = 100 - (round * 8); // Manche 1: 92px, Manche 5: 60px
+    let speedMult = 1.5 + (round * 0.6); // Vitesse adaptée au grand plateau
+    let numDistractors = 40 * round;   
 
     heads = [];
     
@@ -527,7 +517,7 @@ function gameLoop() {
         if(h.img.complete) {
             ctx.drawImage(h.img, h.x, h.y, h.size, h.size);
         } else {
-            ctx.fillStyle = h.isTarget ? 'red' : '#333';
+            ctx.fillStyle = h.isTarget ? 'rgba(255,0,0,0.5)' : 'rgba(255,255,255,0.1)';
             ctx.fillRect(h.x, h.y, h.size, h.size);
         }
         ctx.shadowBlur = 0;
