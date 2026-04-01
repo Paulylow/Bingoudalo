@@ -16,7 +16,7 @@
   
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
   
-  /* LE FOND ANIMÉ JOYEUX (Comme sur la Master Page) */
+  /* LE FOND ANIMÉ JOYEUX */
   body { 
     background: linear-gradient(-45deg, #2b0b12, #7a1b1b, #c0392b, #d35400);
     background-size: 400% 400%;
@@ -201,7 +201,6 @@ const AVATARS = [
 
 const targetImg = new Image(); targetImg.src = '../bingoudalo/avatar/dayoub.jpg';
 
-// J'AI CORRIGÉ LES EXTENSIONS ICI AU CAS OÙ (.png pour Elian, Ellio, Paulin selon tes uploads)
 const distractorSrcs = [
     '../bingoudalo/avatar/ellio.png',
     '../bingoudalo/avatar/paulin.png',
@@ -261,10 +260,9 @@ function showScreen(id){
 async function fetchState() {
     try {
         const {data, error} = await sb.from('bingo_state').select('data').eq('id', GAME_ID).maybeSingle();
-        if (error) { console.error("Erreur de lecture DB:", error); return null; }
+        if (error) return null;
         return data?.data || null;
     } catch (e) {
-        console.error("Crash fetchState:", e);
         return null;
     }
 }
@@ -272,12 +270,10 @@ async function fetchState() {
 async function updateState(newState) {
     try {
         await sb.from('bingo_state').upsert({ id: GAME_ID, data: newState, updated_at: new Date().toISOString() }, { onConflict: 'id' });
-    } catch (e) {
-        console.error("Erreur d'écriture DB:", e);
-    }
+    } catch (e) {}
 }
 
-// --- REJOINDRE LE LOBBY (AVEC GESTION D'ERREUR) ---
+// --- REJOINDRE LE LOBBY ---
 async function joinLobby() {
     myPseudo = document.getElementById('pseudoInput').value.trim();
     if(!myPseudo) return alert("Choisis un pseudo !");
@@ -287,24 +283,21 @@ async function joinLobby() {
     joinBtn.innerText = "Connexion en cours...";
 
     try {
-        // On sauvegarde localement
         localStorage.setItem('wanted_pseudo', myPseudo);
         localStorage.setItem('wanted_avatar', myAvatar);
 
         let state = await fetchState();
         
-        // Si le lobby n'existe pas ou est corrompu, on le recrée
         if(!state || !state.players || typeof state.players !== 'object') {
             state = { phase: 'lobby', master: myPseudo, round: 1, players: {}, roundWinners: [], roundEndTime: 0 };
         }
 
         isMaster = (state.master === myPseudo);
         
-        // On enregistre/met à jour le joueur
         if(!state.players[myPseudo]) {
             state.players[myPseudo] = { pseudo: myPseudo, avatar: myAvatar, score: 0 };
         } else {
-            state.players[myPseudo].avatar = myAvatar; // Mise à jour de l'avatar au cas où
+            state.players[myPseudo].avatar = myAvatar; 
         }
         
         await updateState(state);
@@ -312,7 +305,6 @@ async function joinLobby() {
         startSync();
         
     } catch (error) {
-        console.error("Échec de la connexion :", error);
         alert("Une erreur est survenue pendant la connexion. Réessaie !");
         joinBtn.disabled = false;
         joinBtn.innerText = "Rejoindre la traque";
@@ -361,6 +353,8 @@ function updateUI(state) {
     if(state.phase === 'playing') {
         if(currentPhase !== 'playing') {
             currentPhase = 'playing';
+            // LIGNE CORRIGÉE : On affiche l'écran de jeu !
+            showScreen('screenGame'); 
             isEndingRound = false;
             roundEndTime = state.roundEndTime;
             initGameEngine(state.round);
@@ -487,7 +481,6 @@ function initGameEngine(round) {
     heads = [];
     
     for(let i=0; i<numDistractors; i++) {
-        // On s'assure que l'image du distracteur est bien chargée pour éviter un crash canvas
         let dImg = distractorImgs[Math.floor(Math.random() * distractorImgs.length)];
         
         heads.push({
@@ -528,11 +521,9 @@ function gameLoop() {
         if(h.y <= 0 || h.y + h.size >= canvas.height) h.vy *= -1;
 
         ctx.shadowBlur = 10; ctx.shadowColor = 'rgba(0,0,0,0.8)';
-        // On ne dessine l'image que si elle est chargée pour ne pas faire bugger le jeu
         if(h.img.complete) {
             ctx.drawImage(h.img, h.x, h.y, h.size, h.size);
         } else {
-            // Placeholder si l'image n'est pas encore chargée
             ctx.fillStyle = h.isTarget ? 'red' : '#333';
             ctx.fillRect(h.x, h.y, h.size, h.size);
         }
@@ -544,7 +535,6 @@ function gameLoop() {
 
 // --- GESTION DES CLICS SUR LE CANVAS ---
 canvas.addEventListener('mousedown', async (e) => {
-    // Si on a déjà trouvé, ou que le temps est fini, on bloque le clic
     if(hasFound || currentPhase !== 'playing' || Date.now() > roundEndTime) return;
 
     const rect = canvas.getBoundingClientRect();
@@ -578,7 +568,6 @@ canvas.addEventListener('mousedown', async (e) => {
             await updateState(state);
         }
     }
-    // Plus aucune pénalité si on clique à côté !
 });
 
 // Sécurité
