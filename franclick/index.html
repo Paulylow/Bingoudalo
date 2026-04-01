@@ -142,15 +142,37 @@ body.bourrine .francky-btn { border-color:#ff3300; box-shadow:0 0 55px rgba(255,
 /* ── COL MILIEU ── */
 .col-center { width:45%; padding:16px; overflow-y:auto; display:flex; flex-direction:column; gap:12px; }
 .visual-row {
-    border:1px solid #1f2833; border-radius:8px; padding:8px;
-    min-height:68px; display:flex; flex-wrap:wrap; gap:6px;
-    align-items:center; align-content:flex-start;
-    box-shadow:inset 0 0 14px rgba(0,0,0,.7);
+    border:1px solid #1f2833; border-radius:8px; padding:0;
+    min-height:68px; display:flex; flex-direction:column;
+    box-shadow:inset 0 0 14px rgba(0,0,0,.7); overflow:hidden;
+}
+.visual-row-header {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:5px 10px 4px; background:rgba(0,0,0,.35);
+    border-bottom:1px solid rgba(255,255,255,.05);
+    flex-shrink:0;
+}
+.visual-row-name {
+    font-size:12px; color:#aaa; font-weight:bold; letter-spacing:.5px;
+    display:flex; align-items:center; gap:6px;
+}
+.visual-row-name img { width:20px; height:20px; object-fit:cover; border-radius:3px; border:1px solid #444; }
+.visual-row-stats { text-align:right; }
+.visual-row-bps { font-family:'Bebas Neue'; font-size:14px; color:#00FFFF; letter-spacing:1px; }
+.visual-row-bps.boosted { color:#ffdd00; }
+.visual-row-bonus {
+    display:inline-block; font-family:'Bebas Neue'; font-size:11px;
+    background:rgba(255,220,0,.2); color:#ffdd00; border:1px solid rgba(255,220,0,.4);
+    border-radius:4px; padding:1px 5px; margin-top:1px;
+}
+.visual-row-items {
+    display:flex; flex-wrap:wrap; gap:5px; padding:7px; align-content:flex-start;
 }
 .visual-item {
-    width:44px; height:44px; border-radius:5px; background:#000;
+    width:40px; height:40px; border-radius:5px; background:#000;
     display:flex; align-items:center; justify-content:center;
     overflow:hidden; border:1px solid #333; animation:itemPop .25s ease;
+    flex-shrink:0;
 }
 .visual-item img { width:100%; height:100%; object-fit:cover; border-radius:3px; }
 @keyframes itemPop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
@@ -187,12 +209,12 @@ body.bourrine .col-right { border-color:#ff2200; }
 .shop-item.disabled { opacity:.4; filter:grayscale(1); }
 .shop-item.locked { display:none; }
 .item-info h3 { font-size:14px; color:#fff; margin-bottom:4px; display:flex; align-items:center; gap:5px; }
-.item-info p { font-size:11px; color:#666; margin-left:34px; }
-.item-cost { font-weight:bold; color:#FF00FF; font-size:13px; margin-left:34px; margin-top:2px; }
+.item-info p { font-size:11px; color:#666; margin-left:43px; }
+.item-cost { font-weight:bold; color:#FF00FF; font-size:13px; margin-left:43px; margin-top:2px; }
 .item-count { font-family:'Bebas Neue'; font-size:28px; color:#444; }
-.shop-icon { width:26px; height:26px; object-fit:cover; border-radius:4px; border:1px solid #444; flex-shrink:0; }
+.shop-icon { width:38px; height:38px; object-fit:cover; border-radius:5px; border:1px solid #555; flex-shrink:0; }
 /* Boutons x1/x5/x10 */
-.buy-btns { display:flex; gap:5px; margin-top:8px; margin-left:34px; }
+.buy-btns { display:flex; gap:5px; margin-top:8px; margin-left:43px; }
 .buy-btn {
     background:rgba(255,0,255,.15); border:1px solid #FF00FF; color:#FF00FF;
     border-radius:5px; font-family:'Bebas Neue'; font-size:13px; letter-spacing:1px;
@@ -535,7 +557,7 @@ function clickFrancky(e) {
     totalClicks++;
     updateScoreUI(); updateShopColors();
     spawnFx(e.clientX, e.clientY);
-    if (totalClicks > 0 && totalClicks % 1000 === 0) triggerMilestone();
+    if (Math.random() < 1/1000) triggerMilestone(); // 1 chance sur 1000 par clic
 }
 
 function getCostAt(b, n) {
@@ -560,7 +582,18 @@ function buyBuilding(i, qty) {
 }
 
 function getCost(b) { return Math.floor(b.baseCost * Math.pow(1.15, b.count)); }
-function recalcBPS() { bps = buildings.reduce((s,b) => s + b.count*b.bps, 0); }
+
+/* Calcule le bps réel d'une ligne en tenant compte des paliers de 10
+   Chaque tranche de 10 achats ajoute un multiplicateur x1.5 cumulatif :
+   0-9 : x1 | 10-19 : x1.5 | 20-29 : x2.25 | 30+ : x3.375 ... */
+function getRowMultiplier(b) {
+    const paliers = Math.floor(b.count / 10);
+    return Math.pow(1.5, paliers);
+}
+function getRowBPS(b) {
+    return b.count * b.bps * getRowMultiplier(b);
+}
+function recalcBPS() { bps = buildings.reduce((s,b) => s + getRowBPS(b), 0); }
 function updateScoreUI() {
     document.getElementById('scoreDisplay').textContent = Math.floor(score).toLocaleString('fr-FR');
     document.getElementById('bpsDisplay').textContent = bps + ' pts / sec';
@@ -603,7 +636,7 @@ function renderShop() {
             <div class="shop-item-top">
                 <div class="item-info">
                     <h3><img src="${b.icon}" class="shop-icon" onerror="this.style.display='none'" alt="">${b.name}</h3>
-                    <p>Génère ${b.bps} pts/s</p>
+                    <p>Génère ${b.bps} pts/s — palier x${getRowMultiplier(b).toFixed(2)} (${Math.floor(b.count/10)*10}+${b.count%10 >= 0 ? b.count%10 : 0}/10)</p>
                     <div class="item-cost">x1 : ${cost1.toLocaleString('fr-FR')} pts</div>
                 </div>
                 <div class="item-count">${b.count}</div>
@@ -621,9 +654,32 @@ function renderVisuals() {
     vc.innerHTML = '';
     buildings.forEach(b => {
         if (!b.count) return;
+        const mult = getRowMultiplier(b);
+        const rowBps = getRowBPS(b);
+        const paliers = Math.floor(b.count / 10);
+        const boostedClass = paliers > 0 ? 'boosted' : '';
+        const nextPalier = 10 - (b.count % 10);
+        const bonusTag = paliers > 0
+            ? `<span class="visual-row-bonus">x${mult.toFixed(2)} BOOST</span>`
+            : `<span style="font-size:10px;color:#555">+boost dans ${nextPalier}</span>`;
+
         let h = `<div class="visual-row" style="background:${b.bg};">`;
+        // Header avec nom, icône, bps
+        h += `<div class="visual-row-header">
+            <div class="visual-row-name">
+                <img src="${b.icon}" alt="" onerror="this.style.display='none'">
+                ${b.name}
+            </div>
+            <div class="visual-row-stats">
+                <div class="visual-row-bps ${boostedClass}">${rowBps % 1 === 0 ? rowBps : rowBps.toFixed(1)} pts/s</div>
+                ${bonusTag}
+            </div>
+        </div>`;
+        // Items
+        h += '<div class="visual-row-items">';
         for (let i=0;i<b.count;i++) h += `<div class="visual-item"><img src="${b.icon}" alt="" onerror="this.style.display='none'"></div>`;
-        vc.innerHTML += h + '</div>';
+        h += '</div></div>';
+        vc.innerHTML += h;
     });
 }
 
