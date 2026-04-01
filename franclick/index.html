@@ -179,16 +179,29 @@ body.bourrine .col-right { border-color:#ff2200; }
 .shop-title { font-family:'Bebas Neue'; font-size:26px; text-align:center; margin-bottom:16px; color:#FF00FF; border-bottom:2px solid; padding-bottom:8px; }
 .shop-item {
     background:rgba(0,0,0,.4); border:2px solid #1f2833;
-    border-radius:8px; padding:12px; margin-bottom:12px;
-    transition:.18s; display:flex; justify-content:space-between; align-items:center;
+    border-radius:8px; padding:10px 12px; margin-bottom:10px;
+    transition:.18s;
 }
-.shop-item:not(.disabled):hover { border-color:#FF00FF; background:rgba(255,0,255,.08); }
+.shop-item-top { display:flex; justify-content:space-between; align-items:center; }
+.shop-item:not(.disabled) .shop-item-top:hover { }
 .shop-item.disabled { opacity:.4; filter:grayscale(1); }
+.shop-item.locked { display:none; }
 .item-info h3 { font-size:14px; color:#fff; margin-bottom:4px; display:flex; align-items:center; gap:5px; }
 .item-info p { font-size:11px; color:#666; margin-left:34px; }
-.item-cost { font-weight:bold; color:#FF00FF; font-size:14px; margin-left:34px; margin-top:3px; }
+.item-cost { font-weight:bold; color:#FF00FF; font-size:13px; margin-left:34px; margin-top:2px; }
 .item-count { font-family:'Bebas Neue'; font-size:28px; color:#444; }
 .shop-icon { width:26px; height:26px; object-fit:cover; border-radius:4px; border:1px solid #444; flex-shrink:0; }
+/* Boutons x1/x5/x10 */
+.buy-btns { display:flex; gap:5px; margin-top:8px; margin-left:34px; }
+.buy-btn {
+    background:rgba(255,0,255,.15); border:1px solid #FF00FF; color:#FF00FF;
+    border-radius:5px; font-family:'Bebas Neue'; font-size:13px; letter-spacing:1px;
+    padding:3px 10px; transition:.15s; flex:1;
+}
+.buy-btn:hover { background:rgba(255,0,255,.35); }
+.buy-btn.cant { opacity:.35; }
+.shop-item:not(.disabled) { border-color:#2a2a3a; }
+.shop-item:not(.disabled):hover { border-color:#FF00FF; background:rgba(255,0,255,.06); }
 
 .reset-btn {
     margin-top:24px; width:100%; padding:9px; background:transparent;
@@ -525,10 +538,23 @@ function clickFrancky(e) {
     if (totalClicks > 0 && totalClicks % 1000 === 0) triggerMilestone();
 }
 
-function buyBuilding(i) {
-    const b = buildings[i], c = getCost(b);
-    if (score >= c) {
-        score -= c; b.count++;
+function getCostAt(b, n) {
+    // Coût du n-ième achat (0-indexed)
+    return Math.floor(b.baseCost * Math.pow(1.15, b.count + n));
+}
+function getMultiCost(b, qty) {
+    // Somme des coûts pour qty achats consécutifs
+    let total = 0;
+    for (let n = 0; n < qty; n++) total += getCostAt(b, n);
+    return total;
+}
+function buyBuilding(i, qty) {
+    qty = qty || 1;
+    const b = buildings[i];
+    const totalCost = getMultiCost(b, qty);
+    if (score >= totalCost) {
+        score -= totalCost;
+        b.count += qty;
         recalcBPS(); renderShop(); renderVisuals(); updateScoreUI(); saveGame();
     }
 }
@@ -542,21 +568,51 @@ function updateScoreUI() {
 function updateShopColors() {
     buildings.forEach((b,i) => {
         const el = document.getElementById('si'+i);
-        if (el) el.classList.toggle('disabled', score < getCost(b));
+        if (!el) return;
+        const unlocked = isUnlocked(i);
+        el.classList.toggle('locked', !unlocked);
+        el.classList.toggle('disabled', score < getCost(b));
+        // Mettre à jour les boutons x1/x5/x10
+        const btns = el.querySelectorAll('.buy-btn');
+        const qtys = [1, 5, 10];
+        btns.forEach((btn, k) => {
+            const enough = score >= getMultiCost(b, qtys[k]);
+            btn.classList.toggle('cant', !enough);
+        });
     });
 }
+function isUnlocked(i) {
+    // Le premier building est toujours visible
+    // Les suivants se déverrouillent quand le précédent a au moins 1 achat
+    if (i === 0) return true;
+    return buildings[i-1].count >= 1;
+}
+
 function renderShop() {
-    const c = document.getElementById('shopContainer');
-    c.innerHTML = '';
+    const container = document.getElementById('shopContainer');
+    container.innerHTML = '';
     buildings.forEach((b,i) => {
-        const cost = getCost(b), dis = score >= cost ? '' : 'disabled';
-        c.innerHTML += `<div class="shop-item ${dis}" id="si${i}" onclick="buyBuilding(${i})">
-            <div class="item-info">
-                <h3><img src="${b.icon}" class="shop-icon" onerror="this.style.display='none'" alt="">${b.name}</h3>
-                <p>Génère ${b.bps} pts/s</p>
-                <div class="item-cost">${cost.toLocaleString('fr-FR')} pts</div>
+        const unlocked = isUnlocked(i);
+        const cost1  = getCost(b);
+        const cost5  = getMultiCost(b, 5);
+        const cost10 = getMultiCost(b, 10);
+        const dis    = score >= cost1 ? '' : 'disabled';
+        const locked = unlocked ? '' : 'locked';
+        container.innerHTML += `
+        <div class="shop-item ${dis} ${locked}" id="si${i}">
+            <div class="shop-item-top">
+                <div class="item-info">
+                    <h3><img src="${b.icon}" class="shop-icon" onerror="this.style.display='none'" alt="">${b.name}</h3>
+                    <p>Génère ${b.bps} pts/s</p>
+                    <div class="item-cost">x1 : ${cost1.toLocaleString('fr-FR')} pts</div>
+                </div>
+                <div class="item-count">${b.count}</div>
             </div>
-            <div class="item-count">${b.count}</div>
+            <div class="buy-btns">
+                <button class="buy-btn ${score>=cost1?'':'cant'}" onclick="buyBuilding(${i},1)">x1</button>
+                <button class="buy-btn ${score>=cost5?'':'cant'}" onclick="buyBuilding(${i},5)">x5</button>
+                <button class="buy-btn ${score>=cost10?'':'cant'}" onclick="buyBuilding(${i},10)">x10</button>
+            </div>
         </div>`;
     });
 }
@@ -703,16 +759,19 @@ async function syncScoreToDB() {
 }
 
 async function resetGame() {
-    if (confirm("T'es sûr de vouloir tout effacer ? Tu vas retomber à 0 !")) {
-        localStorage.removeItem('fc5');
-        score = 0;
-        if(myPseudo) {
-            try {
-                await sb.from('cdsi_users').update({ franclick_score: 0 }).eq('pseudo', myPseudo);
-            } catch(e){}
-        }
-        location.reload();
+    const ok = confirm("T'es sûr de vouloir tout effacer ? Tu vas retomber à 0 !");
+    if (!ok) return;
+    // Reset local immédiat
+    localStorage.removeItem('fc5');
+    score = 0; totalClicks = 0;
+    buildings.forEach(b => { b.count = 0; });
+    recalcBPS(); renderShop(); renderVisuals(); updateScoreUI();
+    // Sync DB en arrière-plan, puis reload
+    if (myPseudo) {
+        try { await sb.from('cdsi_users').update({ franclick_score: 0 }).eq('pseudo', myPseudo); } catch(e){}
     }
+    saveGame();
+    location.reload();
 }
 
 /* ── INIT SÉCURISÉE ── */
