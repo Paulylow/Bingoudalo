@@ -7,89 +7,225 @@
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --cyan: #00FFFF; --magenta: #FF00FF; --yellow: #f1c40f; --text: #ffffff; }
+        :root { 
+            --orange: #f39c12;    /* Orange vif principal */
+            --orange-glow: rgba(243, 156, 18, 0.5);
+            --gold: #f1c40f;      /* Jaune doré pour accents */
+            --text: #ffffff;
+            --surface: rgba(20, 20, 20, 0.6); /* Fond de carte semi-transparent */
+            --border: rgba(255, 255, 255, 0.1);
+        }
+        
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         
+        /* FOND AVEC COULEURS CHAUDES (DÉGRADÉ ORANGE/ROUGE) */
         body { 
-            background: linear-gradient(-45deg, #1a0509, #4a1010, #80231c, #9c3f00);
-            background-size: 400% 400%; animation: fondChaud 15s ease infinite;
-            color: var(--text); font-family: 'DM Sans', sans-serif; 
-            min-height: 100vh; overflow-x: hidden; display: flex;
+            margin: 0;
+            padding: 0;
+            /* Dégradé dynamique et chaleureux */
+            background: linear-gradient(-45deg, #441010, #b53400, #f39c12, #c0392b);
+            background-size: 400% 400%;
+            animation: warmGradient 15s ease infinite;
+            
+            color: var(--text); 
+            font-family: 'DM Sans', sans-serif; 
+            min-height: 100vh; 
+            overflow-x: hidden; 
+            display: flex;
         }
-        @keyframes fondChaud { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        /* VUES */
+        @keyframes warmGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* VUES (CONNEXION OU JEUX) */
         #authView, #appView { width: 100%; display: none; flex-direction: column; align-items: center; }
-        #authView.active { display: flex; justify-content: center; height: 100vh; }
+        #authView.active { 
+            display: flex; 
+            justify-content: center; 
+            height: 100vh; 
+            /* Fond légèrement assombri pour l'écran de connexion */
+            background-color: rgba(0,0,0,0.5); 
+        }
         #appView.active { display: flex; }
 
-        /* AUTHENTIFICATION */
-        .auth-card {
-            background: rgba(20, 20, 30, 0.8); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 40px; width: 100%; max-width: 400px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8); text-align: center;
+        /* CARTES EFFET VERRE FUMÉ (Glassmorphism) */
+        .card-style {
+            background: rgba(20, 20, 30, 0.7); 
+            backdrop-filter: blur(15px); 
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--border); 
+            border-radius: 20px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5); 
         }
-        .auth-logo { font-family: 'Bebas Neue'; font-size: 50px; color: var(--cyan); margin-bottom: 20px; text-shadow: 0 0 15px var(--cyan); }
-        .auth-input { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 15px; color: white; margin-bottom: 15px; font-size: 16px; outline: none; transition: 0.3s; }
-        .auth-input:focus { border-color: var(--cyan); box-shadow: 0 0 15px rgba(0,255,255,0.3); }
-        .auth-btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; cursor: pointer; transition: 0.2s; font-size: 16px; margin-bottom: 10px; }
-        .btn-cyan { background: var(--cyan); color: black; box-shadow: 0 0 15px rgba(0,255,255,0.4); }
-        .btn-cyan:hover { transform: translateY(-2px); box-shadow: 0 0 25px rgba(0,255,255,0.6); }
-        .btn-magenta { background: transparent; border: 2px solid var(--magenta); color: var(--magenta); }
-        .btn-magenta:hover { background: var(--magenta); color: white; box-shadow: 0 0 20px rgba(255,0,255,0.5); }
+
+        /* ÉCRAN D'AUTHENTIFICATION */
+        .auth-card {
+            padding: 40px; 
+            width: 100%; 
+            max-width: 400px;
+            text-align: center;
+        }
+        .auth-logo { 
+            font-family: 'Bebas Neue'; 
+            font-size: 60px; 
+            color: var(--orange); 
+            margin-bottom: 20px; 
+            text-shadow: 0 0 20px var(--orange-glow); 
+            letter-spacing: 2px;
+        }
+        .auth-input { 
+            width: 100%; 
+            background: rgba(0,0,0,0.4); 
+            border: 1px solid rgba(255,255,255,0.1); 
+            border-radius: 8px; 
+            padding: 15px; 
+            color: white; 
+            margin-bottom: 15px; 
+            font-size: 16px; 
+            outline: none; 
+            transition: 0.3s; 
+        }
+        .auth-input:focus { border-color: var(--orange); box-shadow: 0 0 15px var(--orange-glow); }
+        
+        .auth-btn { 
+            width: 100%; 
+            padding: 15px; 
+            border: none; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            cursor: pointer; 
+            transition: 0.2s; 
+            font-size: 16px; 
+            margin-bottom: 10px; 
+        }
+        /* Bouton Principal Orange */
+        .btn-primary-orange { 
+            background: var(--orange); 
+            color: black; 
+            box-shadow: 0 5px 15px rgba(243,156,18,0.3); 
+        }
+        .btn-primary-orange:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(243,156,18,0.5); }
+        /* Bouton Secondaire Contour Orange */
+        .btn-outline { 
+            background: transparent; 
+            border: 2px solid var(--orange); 
+            color: var(--orange); 
+        }
+        .btn-outline:hover { 
+            background: var(--orange); 
+            color: black; 
+            box-shadow: 0 0 20px var(--orange-glow); 
+        }
         .error-msg { color: #ff4444; font-size: 14px; margin-bottom: 15px; min-height: 20px; }
 
-        /* APP VIEW - LAYOUT PRINCIPAL */
+        /* HUB PRINCIPAL - LAYOUT */
         .main-container { display: flex; width: 100%; max-width: 1600px; margin: 0 auto; padding: 20px; gap: 30px; }
         .content-area { flex: 1; display: flex; flex-direction: column; align-items: center; }
         
         /* SIDEBAR PROFIL (DROITE) */
         .profile-sidebar {
-            width: 320px; background: rgba(20, 20, 30, 0.7); backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 25px;
-            display: flex; flex-direction: column; align-items: center; height: fit-content; position: sticky; top: 20px;
+            width: 320px; 
+            padding: 25px;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            height: fit-content; 
+            position: sticky; 
+            top: 20px;
         }
-        .profile-avatar { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid var(--cyan); margin-bottom: 15px; box-shadow: 0 0 20px rgba(0,255,255,0.5); }
-        .profile-name { font-family: 'Bebas Neue'; font-size: 35px; color: white; letter-spacing: 1px; margin-bottom: 20px; }
+        .profile-avatar { 
+            width: 120px; 
+            height: 120px; 
+            border-radius: 50%; 
+            object-fit: cover; 
+            border: 4px solid var(--orange); 
+            margin-bottom: 15px; 
+            box-shadow: 0 0 20px var(--orange-glow); 
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .profile-avatar:hover { transform: scale(1.05); box-shadow: 0 0 30px var(--orange-glow); }
+        .profile-name { font-family: 'Bebas Neue'; font-size: 40px; color: white; letter-spacing: 1px; margin-bottom: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);}
         
-        .stat-box { width: 100%; background: rgba(0,0,0,0.5); border-radius: 8px; padding: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); }
-        .stat-label { font-size: 13px; color: #aaa; text-transform: uppercase; }
-        .stat-value { font-family: 'Bebas Neue'; font-size: 22px; color: var(--yellow); }
+        .stat-box { width: 100%; background: rgba(0,0,0,0.4); border-radius: 8px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); }
+        .stat-label { font-size: 13px; color: #ccc; text-transform: uppercase; letter-spacing: 1px;}
+        .stat-value { font-family: 'Bebas Neue'; font-size: 26px; color: var(--gold); letter-spacing: 1px; }
         
-        .logout-btn { margin-top: 20px; width: 100%; padding: 10px; background: transparent; border: 1px solid red; color: red; border-radius: 5px; cursor: pointer; text-transform: uppercase; font-weight: bold; transition: 0.2s; }
-        .logout-btn:hover { background: red; color: white; }
+        .logout-btn { margin-top: 20px; width: 100%; padding: 10px; background: transparent; border: 1px solid #ff4444; color: #ff4444; border-radius: 5px; cursor: pointer; text-transform: uppercase; font-weight: bold; transition: 0.2s; }
+        .logout-btn:hover { background: #ff4444; color: white; box-shadow: 0 0 15px rgba(255,68,68,0.5); }
 
         /* GRILLE DES JEUX */
-        .main-logo { max-width: 350px; margin-bottom: 40px; margin-top: 20px; filter: drop-shadow(0 0 15px rgba(243, 156, 18, 0.6)); }
+        .main-logo { 
+            max-width: 400px; 
+            margin-bottom: 40px; 
+            margin-top: 20px; 
+            filter: drop-shadow(0 0 15px var(--orange-glow)); 
+            transition: 0.3s;
+        }
+        .main-logo:hover { transform: scale(1.03); }
+
         .games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; width: 100%; margin-bottom: 50px; }
-        .game-card { background: rgba(20, 20, 20, 0.6); border-radius: 15px; overflow: hidden; text-decoration: none; color: white; border: 2px solid rgba(255, 255, 255, 0.1); transition: 0.3s; }
-        .game-card:hover { transform: translateY(-10px); border-color: var(--yellow); box-shadow: 0 15px 30px rgba(241, 196, 15, 0.4); }
-        .game-thumbnail { width: 100%; height: 180px; object-fit: cover; border-bottom: 2px solid rgba(243, 156, 18, 0.5); }
-        .game-info { padding: 15px; text-align: center; }
-        .game-info h2 { margin: 0 0 5px 0; font-family: 'Bebas Neue'; font-size: 28px; color: var(--yellow); letter-spacing: 1px;}
-        .game-info span { font-size: 13px; color: #aaa; }
+        
+        .game-card { 
+            text-decoration: none; 
+            color: white; 
+            transition: 0.3s; 
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .game-card:hover { 
+            transform: translateY(-10px); 
+            border-color: var(--orange); 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4); 
+        }
+        .game-thumbnail { width: 100%; height: 180px; object-fit: cover; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .game-info { padding: 15px; text-align: center; flex: 1;}
+        .game-info h2 { 
+            margin: 0 0 5px 0; 
+            font-family: 'Bebas Neue'; 
+            font-size: 32px; 
+            color: var(--orange); 
+            letter-spacing: 1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .game-info span { font-size: 13px; color: #eee; }
 
         /* MODAL CHOIX AVATAR */
-        #avatarModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; }
-        .avatar-grid { display: flex; flex-wrap: wrap; gap: 15px; max-width: 500px; justify-content: center; background: #111; padding: 30px; border-radius: 15px; border: 1px solid var(--cyan); }
-        .avatar-option { width: 70px; height: 70px; border-radius: 50%; cursor: pointer; object-fit: cover; border: 3px solid transparent; transition: 0.2s; }
-        .avatar-option:hover { transform: scale(1.1); border-color: var(--cyan); }
+        #avatarModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+        .avatar-grid { 
+            display: flex; flex-wrap: wrap; gap: 15px; max-width: 500px; 
+            justify-content: center; background: rgba(20,20,20,0.9); 
+            padding: 30px; border-radius: 15px; 
+            border: 2px solid var(--orange); 
+            box-shadow: 0 0 50px rgba(243,156,18,0.2);
+        }
+        .avatar-option { 
+            width: 70px; height: 70px; border-radius: 50%; 
+            cursor: pointer; object-fit: cover; 
+            border: 3px solid transparent; transition: 0.2s; 
+        }
+        .avatar-option:hover { transform: scale(1.1); border-color: var(--orange); box-shadow: 0 0 15px var(--orange-glow); }
     </style>
 </head>
 <body>
 
     <div id="authView" class="screen active">
-        <div class="auth-card">
+        <div class="auth-card card-style">
             <div class="auth-logo">CDSI GAMES</div>
-            <p style="color: #aaa; margin-bottom: 20px; font-size: 14px;">Connecte-toi pour sauvegarder tes stats</p>
+            <p style="color: #eee; margin-bottom: 25px; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">Connecte-toi pour sauvegarder tes stats</p>
             
             <div id="errorMsg" class="error-msg"></div>
             
-            <input type="text" id="pseudoInput" class="auth-input" placeholder="Pseudo" maxlength="15">
-            <input type="password" id="passwordInput" class="auth-input" placeholder="Mot de passe">
+            <input type="text" id="pseudoInput" class="auth-input" placeholder="Pseudo..." maxlength="15">
+            <input type="password" id="passwordInput" class="auth-input" placeholder="Mot de passe...">
             
-            <button class="auth-btn btn-cyan" onclick="login()">Se Connecter</button>
-            <button class="auth-btn btn-magenta" onclick="register()">Créer un compte</button>
+            <button class="auth-btn btn-primary-orange" onclick="login()">Se Connecter</button>
+            <button class="auth-btn btn-outline" onclick="register()">Créer un compte</button>
         </div>
     </div>
 
@@ -97,40 +233,40 @@
         <div class="main-container">
             
             <div class="content-area">
-                <img src="images/cdsi-games-logo.png" alt="CDSI GAMES" class="main-logo" onerror="this.src='https://via.placeholder.com/350x100/111/f1c40f?text=CDSI+GAMES'">
+                <img src="images/cdsi-games-logo.png" alt="CDSI GAMES" class="main-logo" onerror="this.src='https://via.placeholder.com/400x100/111/f1c40f?text=CDSI+GAMES'">
                 
                 <div class="games-grid">
-                    <a href="bingoudalo/index.html" class="game-card">
+                    <a href="bingoudalo/index.html" class="game-card card-style">
                         <img src="images/bingoudalo-vignette.png" class="game-thumbnail" onerror="this.src='https://via.placeholder.com/400x190/111/fff?text=BINGOUDALO'">
                         <div class="game-info"><h2>Bingoudalo</h2><span>Jeu multijoueur</span></div>
                     </a>
-                    <a href="kavale/index.html" class="game-card">
+                    <a href="kavale/index.html" class="game-card card-style">
                         <img src="images/kavale-vignette.png" class="game-thumbnail" onerror="this.src='https://via.placeholder.com/400x190/111/fff?text=KAVALE'">
                         <div class="game-info"><h2>Kavale</h2><span>Arène multijoueur</span></div>
                     </a>
-                    <a href="franclick/index.html" class="game-card">
+                    <a href="franclick/index.html" class="game-card card-style">
                         <img src="images/franclick-vignette.png" class="game-thumbnail" onerror="this.src='https://via.placeholder.com/400x190/111/fff?text=FRANCLICK'">
                         <div class="game-info"><h2>Franclick</h2><span>Clicker Solo</span></div>
                     </a>
-                    <a href="wanted/index.html" class="game-card">
+                    <a href="wanted/index.html" class="game-card card-style">
                         <img src="images/wanted-vignette.jpg" class="game-thumbnail" onerror="this.src='https://via.placeholder.com/400x190/111/fff?text=WANTED'">
-                        <div class="game-info"><h2>Wanted Dayoub</h2><span>Réflexe Multijoueur</span></div>
+                        <div class="game-info"><h2>Wanted Dayoub</h2><span>Jeu de réflexe Multijoueur</span></div>
                     </a>
                 </div>
             </div>
 
-            <div class="profile-sidebar">
-                <img src="" id="userAvatar" class="profile-avatar" onclick="openAvatarModal()" style="cursor: pointer;" title="Changer d'avatar">
+            <div class="profile-sidebar card-style">
+                <img src="" id="userAvatar" class="profile-avatar" onclick="openAvatarModal()" title="Changer ton avatar">
                 <div class="profile-name" id="userPseudo">PSEUDO</div>
                 
-                <button class="auth-btn btn-magenta" style="font-size: 12px; padding: 8px; margin-bottom: 20px;" onclick="openAvatarModal()">Changer d'avatar</button>
+                <button class="auth-btn btn-outline" style="font-size: 11px; padding: 8px 15px; margin-bottom: 20px;" onclick="openAvatarModal()">Changer d'avatar</button>
 
                 <div style="width: 100%; border-top: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px;"></div>
                 
                 <div class="stat-box"><span class="stat-label">Victoires Kavale</span><span class="stat-value" id="statKavale">0</span></div>
                 <div class="stat-box"><span class="stat-label">Victoires Bingoudalo</span><span class="stat-value" id="statBingo">0</span></div>
                 <div class="stat-box"><span class="stat-label">Victoires Wanted</span><span class="stat-value" id="statWanted">0</span></div>
-                <div class="stat-box"><span class="stat-label">Score Franclick</span><span class="stat-value" id="statFranclick" style="color: var(--cyan);">0</span></div>
+                <div class="stat-box"><span class="stat-label">Score Franclick</span><span class="stat-value" id="statFranclick">0</span></div>
 
                 <button class="logout-btn" onclick="logout()">Déconnexion</button>
             </div>
@@ -144,13 +280,14 @@
     </div>
 
 <script>
-    // --- CONFIGURATION SUPABASE ---
+    // --- CONFIGURATION SUPABASE (NE PAS CHANGER) ---
     const SUPABASE_URL = 'https://pdybshweyfvxzvngnuxe.supabase.co'; 
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkeWJzaHdleWZ2eHp2bmdudXhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDg2MDAsImV4cCI6MjA5MDUyNDYwMH0.u442X28Mhs-4T-tydabnMm8now8VfAEeNU-Sicuipq4'; 
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let currentUser = null;
 
+    // Liste des avatars disponibles
     const AVATARS = [
         'bingoudalo/avatar/9k.png', 'bingoudalo/avatar/bbc.png', 'bingoudalo/avatar/christophe.jpg', 
         'bingoudalo/avatar/coudoux.png', 'bingoudalo/avatar/elian.jpg', 'bingoudalo/avatar/ellio.png', 
@@ -158,8 +295,9 @@
         'bingoudalo/avatar/paulo1.jpg', 'bingoudalo/avatar/tom.png', 'bingoudalo/avatar/wilbaut_suss.png'
     ];
 
-    // --- INITIALISATION ---
+    // --- INITIALISATION AU CHARGEMENT ---
     window.onload = () => {
+        // Vérifier si un utilisateur est déjà connecté localement
         const savedPseudo = localStorage.getItem('cdsi_logged_user');
         if(savedPseudo) {
             loadUserProfile(savedPseudo);
@@ -167,48 +305,57 @@
             showView('authView');
         }
         
-        // Générer la grille d'avatars
+        // Générer la grille d'avatars dans le modal
         document.getElementById('avatarGridContainer').innerHTML = AVATARS.map(src => 
             `<img src="${src}" class="avatar-option" onclick="updateAvatar('${src}')" onerror="this.src='https://via.placeholder.com/70'">`
         ).join('');
     };
 
+    // Gestion de l'affichage des écrans
     function showView(id) {
         document.getElementById('authView').classList.remove('active');
         document.getElementById('appView').classList.remove('active');
         document.getElementById(id).classList.add('active');
     }
 
+    // Affichage des erreurs d'auth
     function showError(msg) {
         document.getElementById('errorMsg').innerText = msg;
     }
 
-    // --- AUTHENTIFICATION ---
+    // --- LOGIQUE D'AUTHENTIFICATION (CONNEXION) ---
     async function login() {
         const pseudo = document.getElementById('pseudoInput').value.trim();
         const pwd = document.getElementById('passwordInput').value;
+        
         if(!pseudo || !pwd) return showError("Remplis tous les champs.");
 
+        // Chercher l'utilisateur dans la DB
         const { data, error } = await sb.from('cdsi_users').select('*').eq('pseudo', pseudo).single();
         
         if(error || !data) return showError("Ce pseudo n'existe pas.");
         if(data.password !== pwd) return showError("Mot de passe incorrect.");
 
+        // Connecté ! Sauvegarde locale
         localStorage.setItem('cdsi_logged_user', pseudo);
         currentUser = data;
         updateDashboardUI();
         showView('appView');
     }
 
+    // --- LOGIQUE D'AUTHENTIFICATION (INSCRIPTION) ---
     async function register() {
         const pseudo = document.getElementById('pseudoInput').value.trim();
         const pwd = document.getElementById('passwordInput').value;
+        
         if(!pseudo || !pwd) return showError("Remplis tous les champs.");
+        if(pseudo.length < 3) return showError("Pseudo trop court (min 3 chars).");
 
-        // Vérifier si existe déjà
+        // Vérifier si le pseudo existe déjà
         const { data: existing } = await sb.from('cdsi_users').select('pseudo').eq('pseudo', pseudo).maybeSingle();
         if(existing) return showError("Ce pseudo est déjà pris !");
 
+        // Créer le nouvel utilisateur
         const newUser = {
             pseudo: pseudo,
             password: pwd,
@@ -217,17 +364,20 @@
         };
 
         const { error } = await sb.from('cdsi_users').insert([newUser]);
-        if(error) return showError("Erreur lors de la création.");
+        if(error) return showError("Erreur lors de la création du compte.");
 
+        // Connecté automatiquement ! Sauvegarde locale
         localStorage.setItem('cdsi_logged_user', pseudo);
         currentUser = newUser;
         updateDashboardUI();
         showView('appView');
     }
 
+    // Déconnexion
     function logout() {
         localStorage.removeItem('cdsi_logged_user');
         currentUser = null;
+        // Reset des champs
         document.getElementById('pseudoInput').value = '';
         document.getElementById('passwordInput').value = '';
         showError("");
@@ -238,7 +388,8 @@
     async function loadUserProfile(pseudo) {
         const { data, error } = await sb.from('cdsi_users').select('*').eq('pseudo', pseudo).single();
         if(error || !data) {
-            logout(); // Le compte a peut-être été supprimé
+            // Le compte a peut-être été supprimé de la DB
+            logout();
         } else {
             currentUser = data;
             updateDashboardUI();
@@ -246,31 +397,44 @@
         }
     }
 
+    // Mise à jour de l'interface avec les données de currentUser
     function updateDashboardUI() {
         if(!currentUser) return;
+        
+        // Sidebar Profil
         document.getElementById('userPseudo').innerText = currentUser.pseudo;
         document.getElementById('userAvatar').src = currentUser.avatar || 'https://via.placeholder.com/120';
         
+        // Stats
         document.getElementById('statKavale').innerText = currentUser.kavale_wins;
         document.getElementById('statBingo').innerText = currentUser.bingoudalo_wins;
         document.getElementById('statWanted').innerText = currentUser.wanted_wins;
+        // Franclick peut être un float, on l'arrondit pour l'affichage
         document.getElementById('statFranclick').innerText = Math.floor(currentUser.franclick_score);
     }
 
+    // Modal Avatars
     function openAvatarModal() {
         document.getElementById('avatarModal').style.display = 'flex';
     }
 
+    // Mise à jour de l'avatar (optimiste + DB)
     async function updateAvatar(newSrc) {
+        // Fermer le modal
         document.getElementById('avatarModal').style.display = 'none';
         if(!currentUser) return;
         
-        // MAJ Optimiste
+        // Mise à jour Optimiste (immédiate visuellement)
         currentUser.avatar = newSrc;
         document.getElementById('userAvatar').src = newSrc;
 
-        // MAJ Base de données
-        await sb.from('cdsi_users').update({ avatar: newSrc }).eq('pseudo', currentUser.pseudo);
+        // Mise à jour réelle dans la base de données
+        const { error } = await sb.from('cdsi_users').update({ avatar: newSrc }).eq('pseudo', currentUser.pseudo);
+        
+        if(error) {
+            console.error("Erreur DB lors de la MAJ de l'avatar:", error);
+            alert("Erreur lors de la sauvegarde de l'avatar...");
+        }
     }
 
 </script>
