@@ -93,7 +93,8 @@
   }
 
   /* GAME LAYOUT (2 COLONNES) */
-  .game-wrapper { display: flex; gap: 20px; width: 100%; max-width: 1100px; align-items: flex-start; justify-content: center; flex-wrap: wrap;}
+  /* CORRECTION : Augmenté max-width à 1200px pour éviter le wrap sur PC */
+  .game-wrapper { display: flex; gap: 20px; width: 100%; max-width: 1200px; align-items: flex-start; justify-content: center; flex-wrap: wrap;}
   .game-main { flex: 1; min-width: 300px; max-width: 800px; display: flex; flex-direction: column; align-items: center;}
   
   /* SIDEBAR EFFET VERRE */
@@ -106,10 +107,12 @@
   .overlay h2 { font-family: 'Bebas Neue'; font-size: 70px; letter-spacing: 2px; }
   #foundOverlay h2 { color: var(--cyan); text-shadow: 0 0 30px var(--cyan); }
 
+  /* CORRECTION : Aligné le header */
   .game-header { display: flex; justify-content: space-between; width: 100%; margin-bottom: 15px; align-items: center; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); padding: 10px 20px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 20px rgba(0,0,0,0.3);}
-  .target-box { display: flex; align-items: center; gap: 15px;}
+  .target-box { display: flex; align-items: center; gap: 15px; text-align: left; }
+  /* CORRECTION : Cible mtn en PNG */
   .target-box img { width: 55px; height: 55px; object-fit: cover; border-radius: 8px; border: 2px solid var(--yellow); box-shadow: 0 0 20px rgba(241, 196, 15, 0.6); }
-  .round-info { font-family: 'Bebas Neue'; font-size: 35px; color: white; line-height: 1; text-shadow: 0 2px 5px rgba(0,0,0,0.8);}
+  .round-info { font-family: 'Bebas Neue'; font-size: 35px; color: white; line-height: 1; text-shadow: 0 2px 5px rgba(0,0,0,0.8); margin: 0; }
   
   /* LE TIMER */
   .timer-box { font-family: 'Bebas Neue'; font-size: 45px; color: var(--magenta); text-shadow: 0 0 15px var(--magenta); min-width: 60px; text-align: center;}
@@ -150,7 +153,7 @@
       <div class="game-main">
           <div class="game-header">
             <div class="target-box">
-              <img src="../bingoudalo/avatar/dayoub.jpg" alt="Cible">
+              <img src="../bingoudalo/avatar/dayoub.png" alt="Cible">
               <div>
                   <div style="font-size: 13px; font-weight: bold; color: var(--yellow); letter-spacing: 2px;">CIBLE</div>
                   <div class="round-info" id="roundDisplay">MANCHE 1/5</div>
@@ -199,7 +202,8 @@ const AVATARS = [
   '../bingoudalo/avatar/paulo1.jpg', '../bingoudalo/avatar/tom.png', '../bingoudalo/avatar/wilbaut_suss.png'
 ];
 
-const targetImg = new Image(); targetImg.src = '../bingoudalo/avatar/dayoub.jpg';
+// CORRECTION : Image cible mtn dayoub.png
+const targetImg = new Image(); targetImg.src = '../bingoudalo/avatar/dayoub.png';
 
 const distractorSrcs = [
     '../bingoudalo/avatar/ellio.png',
@@ -353,7 +357,6 @@ function updateUI(state) {
     if(state.phase === 'playing') {
         if(currentPhase !== 'playing') {
             currentPhase = 'playing';
-            // LIGNE CORRIGÉE : On affiche l'écran de jeu !
             showScreen('screenGame'); 
             isEndingRound = false;
             roundEndTime = state.roundEndTime;
