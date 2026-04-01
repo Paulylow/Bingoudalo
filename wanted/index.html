@@ -15,7 +15,8 @@
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
   body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; overflow-x: hidden;}
   
-  .hub-link { position: absolute; top: 20px; left: 20px; color: var(--cyan); text-decoration: none; font-weight: bold; font-size: 14px; text-transform: uppercase; }
+  .hub-link { position: absolute; top: 20px; left: 20px; color: var(--cyan); text-decoration: none; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: 0.2s;}
+  .hub-link:hover { text-shadow: 0 0 10px var(--cyan); }
   
   .screen { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 800px; }
   .screen.active { display: flex; animation: fadeIn 0.3s; }
@@ -25,31 +26,57 @@
   
   .card { background: rgba(20,20,30,0.9); border: 2px solid var(--border); border-radius: 15px; padding: 30px; width: 100%; max-width: 500px; box-shadow: 0 0 30px rgba(0,0,0,0.8); text-align: center; }
   input[type="text"] { width: 100%; background: #000; border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-size: 16px; color: white; outline: none; margin-bottom: 15px; text-align: center;}
-  input[type="text"]:focus { border-color: var(--cyan); }
+  input[type="text"]:focus { border-color: var(--cyan); box-shadow: 0 0 10px rgba(0,255,255,0.2); }
   
+  /* SÉLECTION AVATAR */
+  .avatar-selection { margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
+  .avatar-selection p { font-size: 12px; color: var(--cyan); text-transform: uppercase; letter-spacing: 1px; margin: 0; }
+  .avatar-grid { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  .avatar-option { width: 45px; height: 45px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: 0.2s; object-fit: cover; background: #000; }
+  .avatar-option.selected { border-color: var(--cyan); transform: scale(1.15); box-shadow: 0 0 15px rgba(0,255,255,0.5); z-index: 2; }
+
   button { font-family: 'DM Sans'; font-weight: bold; text-transform: uppercase; border: none; border-radius: 8px; cursor: pointer; padding: 12px 24px; transition: 0.2s; width: 100%; margin-top: 10px; font-size: 14px; }
   .btn-primary { background: var(--cyan); color: #000; box-shadow: 0 0 15px rgba(0,255,255,0.4); }
   .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 25px rgba(0,255,255,0.7); }
   .btn-magenta { background: var(--magenta); color: #fff; box-shadow: 0 0 15px rgba(255,0,255,0.4); }
+  .btn-magenta:hover { transform: translateY(-2px); box-shadow: 0 0 25px rgba(255,0,255,0.7); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
   
-  .player-list { margin-top: 20px; width: 100%; text-align: left;}
-  .player-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #333; font-weight: bold; }
+  .player-list { margin-top: 10px; width: 100%; text-align: left; display: flex; flex-direction: column; gap: 5px;}
+  .player-row { display: flex; align-items: center; justify-content: space-between; padding: 10px; border: 1px solid #333; border-radius: 8px; font-weight: bold; background: rgba(0,0,0,0.5); transition: 0.3s;}
+  .player-row-info { display: flex; align-items: center; gap: 10px; }
+  .player-row img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1px solid #555; }
   .badge { background: rgba(0,255,255,0.2); color: var(--cyan); padding: 2px 8px; border-radius: 4px; font-size: 11px; }
 
-  /* GAME CANVAS */
-  #gameContainer { position: relative; width: 100%; max-width: 800px; }
+  /* EFFET ILLUMINATION QUAND TROUVÉ */
+  .found-glow { 
+      background: rgba(241, 196, 15, 0.1) !important; 
+      border-color: var(--yellow) !important; 
+      color: var(--yellow); 
+      box-shadow: 0 0 15px rgba(241, 196, 15, 0.4); 
+  }
+
+  /* GAME LAYOUT (2 COLONNES) */
+  .game-wrapper { display: flex; gap: 20px; width: 100%; max-width: 1000px; align-items: flex-start; justify-content: center; flex-wrap: wrap;}
+  .game-main { flex: 1; min-width: 300px; max-width: 800px; display: flex; flex-direction: column; align-items: center;}
+  .game-sidebar { width: 300px; background: rgba(20,20,30,0.9); border: 2px solid var(--border); border-radius: 15px; padding: 20px; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
+
+  /* GAME CANVAS & OVERLAYS */
+  #gameContainer { position: relative; width: 100%; }
   canvas { background: #111; border: 4px solid var(--border); border-radius: 10px; width: 100%; cursor: crosshair; box-shadow: 0 0 40px rgba(0,0,0,0.8); display: block; }
-  
-  /* OVERLAYS JEU */
   .overlay { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); border-radius: 10px; z-index: 10; backdrop-filter: blur(5px); }
   .overlay h2 { font-family: 'Bebas Neue'; font-size: 60px; letter-spacing: 2px; }
-  #penaltyOverlay h2 { color: red; text-shadow: 0 0 20px red; }
   #foundOverlay h2 { color: var(--cyan); text-shadow: 0 0 20px var(--cyan); }
 
-  .game-header { display: flex; justify-content: space-between; width: 100%; max-width: 800px; margin-bottom: 10px; align-items: flex-end; }
-  .target-box { background: rgba(0,0,0,0.5); border: 2px solid var(--yellow); padding: 10px; border-radius: 10px; text-align: center; box-shadow: 0 0 15px rgba(241, 196, 15, 0.3); }
-  .target-box img { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; margin-bottom: 5px; }
-  .round-info { font-family: 'Bebas Neue'; font-size: 30px; color: white; }
+  .game-header { display: flex; justify-content: space-between; width: 100%; margin-bottom: 15px; align-items: center; background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 10px; border: 1px solid #333;}
+  .target-box { display: flex; align-items: center; gap: 15px;}
+  .target-box img { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 2px solid var(--yellow); box-shadow: 0 0 15px rgba(241, 196, 15, 0.5); }
+  .round-info { font-family: 'Bebas Neue'; font-size: 35px; color: white; line-height: 1;}
+  
+  /* LE TIMER */
+  .timer-box { font-family: 'Bebas Neue'; font-size: 45px; color: var(--magenta); text-shadow: 0 0 15px var(--magenta); min-width: 60px; text-align: center;}
+  .timer-box.hurry { color: red; text-shadow: 0 0 20px red; animation: pulse 0.5s infinite alternate;}
+  @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
 
 </style>
 </head>
@@ -61,6 +88,12 @@
   <div class="logo">WANTED<br><span style="color:var(--cyan); font-size:40px;">DAYOUB</span></div>
   <div class="card">
     <input type="text" id="pseudoInput" placeholder="Ton pseudo..." maxlength="15" />
+    
+    <div class="avatar-selection">
+      <p>Choisis ton avatar :</p>
+      <div class="avatar-grid" id="avatarGrid"></div>
+    </div>
+
     <button class="btn-primary" id="joinBtn" onclick="joinLobby()">Rejoindre la traque</button>
   </div>
 </div>
@@ -68,33 +101,40 @@
 <div class="screen" id="screenLobby">
   <div class="logo">LOBBY</div>
   <div class="card">
-    <h3 style="margin-bottom: 10px; color: var(--cyan);">Joueurs (Max 10)</h3>
+    <h3 style="margin-bottom: 10px; color: var(--cyan); text-align: left;">Joueurs connectés</h3>
     <div class="player-list" id="playersList"></div>
     <div id="lobbyControls" style="margin-top: 20px;"></div>
   </div>
 </div>
 
 <div class="screen" id="screenGame">
-  <div class="game-header">
-    <div class="round-info" id="roundDisplay">MANCHE 1/5</div>
-    <div class="target-box">
-      <img src="../bingoudalo/avatar/dayoub.png" alt="Cible">
-      <div style="font-size: 12px; font-weight: bold; color: var(--yellow);">CIBLE (DAYOUB)</div>
-    </div>
-  </div>
-  
-  <div id="gameContainer">
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
-    
-    <div class="overlay" id="penaltyOverlay">
-      <h2>PÉNALITÉ !</h2>
-      <p>Ne clique pas au hasard (-2 secondes)</p>
-    </div>
-    
-    <div class="overlay" id="foundOverlay">
-      <h2>TROUVÉ !</h2>
-      <p id="foundPositionText">En attente des autres joueurs...</p>
-    </div>
+  <div class="game-wrapper">
+      <div class="game-main">
+          <div class="game-header">
+            <div class="target-box">
+              <img src="../bingoudalo/avatar/dayoub.jpg" alt="Cible">
+              <div>
+                  <div style="font-size: 12px; font-weight: bold; color: var(--yellow); letter-spacing: 1px;">CIBLE</div>
+                  <div class="round-info" id="roundDisplay">MANCHE 1/5</div>
+              </div>
+            </div>
+            <div class="timer-box" id="timerDisplay">30s</div>
+          </div>
+          
+          <div id="gameContainer">
+            <canvas id="gameCanvas" width="800" height="600"></canvas>
+            
+            <div class="overlay" id="foundOverlay">
+              <h2>TROUVÉ !</h2>
+              <p id="foundPositionText">En attente des autres joueurs...</p>
+            </div>
+          </div>
+      </div>
+
+      <div class="game-sidebar">
+          <h3 style="color: var(--cyan); font-family: 'Bebas Neue'; font-size: 24px; letter-spacing: 2px; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 5px;">CLASSEMENT EN DIRECT</h3>
+          <div class="player-list" id="liveLeaderboard"></div>
+      </div>
   </div>
 </div>
 
@@ -113,12 +153,19 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const GAME_ID = 'wanted_main_lobby';
 
-// --- IMAGES DU JEU ---
-const targetImg = new Image(); targetImg.src = '../bingoudalo/avatar/dayoub.png';
+// --- IMAGES DU JEU ET AVATARS ---
+const AVATARS = [
+  '../bingoudalo/avatar/9k.png', '../bingoudalo/avatar/bbc.png', '../bingoudalo/avatar/christophe.jpg', 
+  '../bingoudalo/avatar/coudoux.png', '../bingoudalo/avatar/elian.jpg', '../bingoudalo/avatar/ellio.png', 
+  '../bingoudalo/avatar/epstein.png', '../bingoudalo/avatar/matheo.jpg', '../bingoudalo/avatar/paulin.jpg', 
+  '../bingoudalo/avatar/paulo1.jpg', '../bingoudalo/avatar/tom.png', '../bingoudalo/avatar/wilbaut_suss.png'
+];
+
+const targetImg = new Image(); targetImg.src = '../bingoudalo/avatar/dayoub.jpg';
 const distractorSrcs = [
     '../bingoudalo/avatar/ellio.png',
     '../bingoudalo/avatar/paulin.png',
-    '../bingoudalo/avatar/elian.png'
+    '../bingoudalo/avatar/elian.jpg' // Corrigé l'extension d'Elian au cas où
 ];
 const distractorImgs = distractorSrcs.map(src => {
     let img = new Image(); img.src = src; return img;
@@ -126,17 +173,31 @@ const distractorImgs = distractorSrcs.map(src => {
 
 // --- VARIABLES GLOBALES ---
 let myPseudo = '';
+let myAvatar = AVATARS[0];
 let isMaster = false;
 let dbSyncInterval = null;
 let currentPhase = 'lobby';
+
+// Variables Timer
+let roundEndTime = 0;
+let visualTimerInterval = null;
+let isEndingRound = false;
 
 // Variables Moteur de Jeu
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 let heads = [];
 let animFrame;
-let penaltyActive = false;
 let hasFound = false;
+
+// --- INITIALISATION AVATARS ---
+function renderAvatarSelection() {
+  document.getElementById('avatarGrid').innerHTML = AVATARS.map(src => 
+    `<img src="${src}" class="avatar-option ${src === myAvatar ? 'selected' : ''}" onclick="selectAvatar('${src}')" onerror="this.src='https://via.placeholder.com/45/333/fff?text=?'">`
+  ).join('');
+}
+function selectAvatar(src) { myAvatar = src; renderAvatarSelection(); }
+window.onload = renderAvatarSelection;
 
 // --- NAVIGATION ---
 function showScreen(id){
@@ -162,13 +223,12 @@ async function joinLobby() {
 
     let state = await fetchState();
     if(!state || !state.players || Object.keys(state.players).length === 0) {
-        state = { phase: 'lobby', master: myPseudo, round: 1, players: {}, roundWinners: [] };
+        state = { phase: 'lobby', master: myPseudo, round: 1, players: {}, roundWinners: [], roundEndTime: 0 };
     }
 
     isMaster = (state.master === myPseudo);
-    if(!state.players[myPseudo]) {
-        state.players[myPseudo] = { pseudo: myPseudo, score: 0 };
-    }
+    // On enregistre aussi l'avatar choisi !
+    state.players[myPseudo] = { pseudo: myPseudo, avatar: myAvatar, score: 0 };
     
     await updateState(state);
     showScreen('screenLobby');
@@ -181,7 +241,7 @@ function startSync() {
     dbSyncInterval = setInterval(async () => {
         const state = await fetchState();
         if(state) updateUI(state);
-    }, 1500); // Check rapide
+    }, 1500);
 }
 
 // --- MISE À JOUR INTERFACE GLOBALE ---
@@ -189,47 +249,83 @@ function updateUI(state) {
     if(!state) return;
     isMaster = (state.master === myPseudo);
 
-    // LOBBY
+    // --- LOBBY ---
     if(state.phase === 'lobby' && currentPhase !== 'lobby') {
         currentPhase = 'lobby'; showScreen('screenLobby');
     }
     if(state.phase === 'lobby') {
         document.getElementById('playersList').innerHTML = Object.values(state.players).map(p => `
             <div class="player-row">
-                <span>${p.pseudo} ${p.score > 0 ? `(${p.score} pts)` : ''}</span>
+                <div class="player-row-info">
+                    <img src="${p.avatar}" onerror="this.src='https://via.placeholder.com/30'">
+                    <span>${p.pseudo} ${p.score > 0 ? `(${p.score} pts)` : ''}</span>
+                </div>
                 ${state.master === p.pseudo ? '<span class="badge">Maître</span>' : ''}
             </div>
         `).join('');
 
         const ctrl = document.getElementById('lobbyControls');
-        if(isMaster) ctrl.innerHTML = `<button class="btn-primary" onclick="startRound()">Démarrer Manche ${state.round}</button>`;
-        else ctrl.innerHTML = `<p style="color:var(--cyan); font-size:12px;">En attente du maître...</p>`;
+        if(isMaster) {
+            // Un seul joueur = on peut tester quand même
+            ctrl.innerHTML = `<button class="btn-primary" onclick="startRound()">Démarrer Manche ${state.round}</button>`;
+        } else {
+            ctrl.innerHTML = `<p style="color:var(--cyan); font-size:12px;">En attente du maître...</p>`;
+        }
     }
 
-    // EN JEU
-    if(state.phase === 'playing' && currentPhase !== 'playing') {
-        currentPhase = 'playing';
-        initGameEngine(state.round);
+    // --- EN JEU ---
+    if(state.phase === 'playing') {
+        if(currentPhase !== 'playing') {
+            currentPhase = 'playing';
+            isEndingRound = false;
+            roundEndTime = state.roundEndTime;
+            initGameEngine(state.round);
+            startVisualTimer();
+        }
+        
+        // Mise à jour du classement en direct
+        document.getElementById('liveLeaderboard').innerHTML = Object.values(state.players).sort((a,b)=>b.score - a.score).map(p => {
+            const hasFound = state.roundWinners.includes(p.pseudo);
+            const glowClass = hasFound ? 'found-glow' : '';
+            const statusText = hasFound ? '✓ Trouvé' : '...';
+            
+            return `
+            <div class="player-row ${glowClass}">
+                <div class="player-row-info">
+                    <img src="${p.avatar}" onerror="this.src='https://via.placeholder.com/30'">
+                    <span>${p.pseudo}</span>
+                </div>
+                <span style="font-size: 12px; font-weight: normal;">${statusText}</span>
+            </div>`;
+        }).join('');
     }
 
-    // VÉRIFICATION FIN DE MANCHE (Si tout le monde a cliqué)
-    if(state.phase === 'playing' && isMaster) {
-        if(state.roundWinners.length === Object.keys(state.players).length) {
+    // VÉRIFICATION FIN DE MANCHE (Soit tout le monde a trouvé, soit le temps est écoulé)
+    if(state.phase === 'playing' && isMaster && !isEndingRound) {
+        let allFound = state.roundWinners.length === Object.keys(state.players).length;
+        let timeUp = Date.now() > state.roundEndTime;
+        
+        if(allFound || timeUp) {
+            isEndingRound = true;
             endRoundCompute(state);
         }
     }
 
-    // RÉSULTATS MANCHE
+    // --- RÉSULTATS MANCHE ---
     if(state.phase === 'round_end' && currentPhase !== 'round_end') {
         currentPhase = 'round_end';
+        if(visualTimerInterval) clearInterval(visualTimerInterval);
         showScreen('screenScores');
         document.getElementById('scoreTitle').innerText = state.round > 5 ? "CLASSEMENT FINAL" : "FIN DE LA MANCHE";
         
         let sortedPlayers = Object.values(state.players).sort((a,b) => b.score - a.score);
         document.getElementById('scoreList').innerHTML = sortedPlayers.map((p, i) => `
-            <div class="player-row" style="${i===0 ? 'color:var(--yellow); font-size:18px;' : ''}">
-                <span>${i+1}. ${p.pseudo}</span>
-                <span>${p.score} pts</span>
+            <div class="player-row" style="${i===0 ? 'border-color:var(--yellow); color:var(--yellow);' : ''}">
+                <div class="player-row-info">
+                    <img src="${p.avatar}" onerror="this.src='https://via.placeholder.com/30'">
+                    <span>${i+1}. ${p.pseudo}</span>
+                </div>
+                <span style="font-size:18px; font-family:'Bebas Neue';">${p.score} pts</span>
             </div>
         `).join('');
 
@@ -247,12 +343,12 @@ function updateUI(state) {
 async function startRound() {
     let state = await fetchState();
     state.phase = 'playing';
-    state.roundWinners = []; // Reset des gagnants
+    state.roundWinners = []; 
+    state.roundEndTime = Date.now() + 30000; // + 30 secondes
     await updateState(state);
 }
 
 async function endRoundCompute(state) {
-    // Calcul des points selon l'ordre d'arrivée (roundWinners)
     state.phase = 'round_end';
     
     if(state.roundWinners[0]) state.players[state.roundWinners[0]].score += 3;
@@ -275,38 +371,48 @@ async function resetGame() {
 }
 
 // ==========================================
-// MOTEUR DU JEU (CANVAS)
+// MOTEUR DU JEU (CANVAS & TIMER)
 // ==========================================
 
+function startVisualTimer() {
+    const timerEl = document.getElementById('timerDisplay');
+    if(visualTimerInterval) clearInterval(visualTimerInterval);
+    
+    visualTimerInterval = setInterval(() => {
+        let remaining = Math.max(0, Math.ceil((roundEndTime - Date.now()) / 1000));
+        timerEl.innerText = remaining + 's';
+        
+        if (remaining <= 5) timerEl.classList.add('hurry');
+        else timerEl.classList.remove('hurry');
+
+        if(remaining <= 0) clearInterval(visualTimerInterval);
+    }, 100);
+}
+
 function initGameEngine(round) {
-    showScreen('screenGame');
     document.getElementById('roundDisplay').innerText = `MANCHE ${round}/5`;
     document.getElementById('foundOverlay').style.display = 'none';
-    document.getElementById('penaltyOverlay').style.display = 'none';
     hasFound = false;
-    penaltyActive = false;
 
     // Difficulté progressive
-    let targetSize = 70 - (round * 5); // La tête devient plus petite
-    let speedMult = 1 + (round * 0.5); // Ça va de plus en plus vite
-    let numDistractors = 30 * round;   // De plus en plus de têtes
+    let targetSize = 70 - (round * 5); 
+    let speedMult = 1 + (round * 0.5); 
+    let numDistractors = 30 * round;   
 
     heads = [];
     
-    // 1. Générer les distracteurs
     for(let i=0; i<numDistractors; i++) {
         heads.push({
             img: distractorImgs[Math.floor(Math.random() * distractorImgs.length)],
             x: Math.random() * (canvas.width - targetSize),
             y: Math.random() * (canvas.height - targetSize),
-            size: targetSize + (Math.random() * 20 - 10), // Légère variation de taille
+            size: targetSize + (Math.random() * 20 - 10), 
             vx: (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 2 + speedMult),
             vy: (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 2 + speedMult),
             isTarget: false
         });
     }
 
-    // 2. Générer LA cible (Dayoub) au milieu de la liste (pour qu'il soit parfois couvert, parfois au-dessus)
     heads.splice(Math.floor(heads.length / 2), 0, {
         img: targetImg,
         x: Math.random() * (canvas.width - targetSize),
@@ -330,18 +436,11 @@ function gameLoop() {
         h.x += h.vx;
         h.y += h.vy;
         
-        // Rebond sur les murs
         if(h.x <= 0 || h.x + h.size >= canvas.width) h.vx *= -1;
         if(h.y <= 0 || h.y + h.size >= canvas.height) h.vy *= -1;
 
-        // Effet ombre
         ctx.shadowBlur = 5; ctx.shadowColor = 'rgba(0,0,0,0.5)';
-        if(h.isTarget) {
-            // Pas de surbrillance pour la cible (sinon c'est trop facile)
-            ctx.drawImage(h.img, h.x, h.y, h.size, h.size);
-        } else {
-            ctx.drawImage(h.img, h.x, h.y, h.size, h.size);
-        }
+        ctx.drawImage(h.img, h.x, h.y, h.size, h.size);
         ctx.shadowBlur = 0;
     });
 
@@ -350,7 +449,8 @@ function gameLoop() {
 
 // --- GESTION DES CLICS SUR LE CANVAS ---
 canvas.addEventListener('mousedown', async (e) => {
-    if(hasFound || penaltyActive || currentPhase !== 'playing') return;
+    // Si on a déjà trouvé, ou que le temps est fini, on bloque le clic
+    if(hasFound || currentPhase !== 'playing' || Date.now() > roundEndTime) return;
 
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
@@ -359,44 +459,33 @@ canvas.addEventListener('mousedown', async (e) => {
     const clickX = (e.clientX - rect.left) * scaleX;
     const clickY = (e.clientY - rect.top) * scaleY;
 
-    // On cherche si on a cliqué sur Dayoub (on vérifie toutes les têtes en partant de la dernière dessinée = celle au-dessus)
     let clickedHead = null;
     for (let i = heads.length - 1; i >= 0; i--) {
         const h = heads[i];
         if (clickX >= h.x && clickX <= h.x + h.size && clickY >= h.y && clickY <= h.y + h.size) {
             clickedHead = h;
-            break; // On a touché la tête la plus haute
+            break; 
         }
     }
 
-    if (clickedHead) {
-        if (clickedHead.isTarget) {
-            // GAGNÉ !
-            hasFound = true;
-            document.getElementById('foundOverlay').style.display = 'flex';
+    if (clickedHead && clickedHead.isTarget) {
+        // GAGNÉ !
+        hasFound = true;
+        document.getElementById('foundOverlay').style.display = 'flex';
+        
+        let state = await fetchState();
+        // Sécurité pour ne s'inscrire qu'une seule fois
+        if(!state.roundWinners.includes(myPseudo)) {
+            state.roundWinners.push(myPseudo);
             
-            // On s'enregistre dans la DB comme ayant trouvé
-            let state = await fetchState();
-            if(!state.roundWinners.includes(myPseudo)) {
-                state.roundWinners.push(myPseudo);
-                
-                // Mettre à jour l'overlay avec notre position
-                let position = state.roundWinners.length;
-                let text = position === 1 ? "1er ! (+3 pts)" : position === 2 ? "2ème ! (+2 pts)" : position === 3 ? "3ème ! (+1 pt)" : "Trop lent (+0 pt)";
-                document.getElementById('foundPositionText').innerText = text;
-                
-                await updateState(state);
-            }
-        } else {
-            // PÉNALITÉ : Cliqué sur un faux !
-            penaltyActive = true;
-            document.getElementById('penaltyOverlay').style.display = 'flex';
-            setTimeout(() => {
-                penaltyActive = false;
-                document.getElementById('penaltyOverlay').style.display = 'none';
-            }, 2000);
+            let position = state.roundWinners.length;
+            let text = position === 1 ? "1er ! (+3 pts)" : position === 2 ? "2ème ! (+2 pts)" : position === 3 ? "3ème ! (+1 pt)" : "Trouvé ! (+0 pt)";
+            document.getElementById('foundPositionText').innerText = text;
+            
+            await updateState(state);
         }
     }
+    // Note : Plus de pénalité si c'est la mauvaise tête !
 });
 
 // Sécurité
