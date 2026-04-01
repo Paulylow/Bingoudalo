@@ -159,12 +159,12 @@ body.bourrine .francky-btn { border-color:#ff3300; box-shadow:0 0 55px rgba(255,
     display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
     background:#0d0d1a; border:3px solid #FF00FF;
     box-shadow:0 0 40px rgba(255,0,255,.35); border-radius:14px;
-    padding:24px 30px; text-align:center; z-index:800; min-width:280px;
+    padding:28px 34px; text-align:center; z-index:800; min-width:440px;
     animation:popIn .4s cubic-bezier(.17,.89,.32,1.28);
 }
 @keyframes popIn{0%{transform:translate(-50%,-50%) scale(.3);opacity:0}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
 #milestone-popup h2 { font-family:'Bebas Neue'; font-size:24px; color:#FF00FF; letter-spacing:2px; margin-bottom:10px; }
-#milestone-popup img { width:160px; height:160px; object-fit:cover; border-radius:8px; border:2px solid #FF00FF; margin:0 auto 10px; display:block; }
+#milestone-popup img { width:380px; height:380px; object-fit:cover; border-radius:10px; border:2px solid #FF00FF; margin:0 auto 14px; display:block; }
 #milestone-popup p { font-size:13px; color:#aaa; margin-bottom:14px; }
 #milestone-close { background:#FF00FF; color:#fff; border:none; border-radius:6px; font-family:'Bebas Neue'; font-size:18px; letter-spacing:1px; padding:6px 22px; }
 
@@ -282,7 +282,6 @@ body.bourrine .col-right { border-color:#ff2200; }
 <div id="milestone-popup">
     <h2>🎉 CLIC MILLIÈME !</h2>
     <img id="milestone-img" src="" alt="">
-    <p id="milestone-caption"></p>
     <button id="milestone-close" onclick="closeMilestone()">OK STYLÉ</button>
 </div>
 
@@ -669,7 +668,6 @@ function triggerMilestone() {
     if (!MILESTONE.length) return;
     const item = MILESTONE[Math.floor(Math.random()*MILESTONE.length)];
     document.getElementById('milestone-img').src = item.src;
-    document.getElementById('milestone-caption').textContent = item.cap || '';
     document.getElementById('milestone-popup').style.display = 'block';
 }
 function closeMilestone() {
