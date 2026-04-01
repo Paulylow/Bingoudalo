@@ -1,416 +1,589 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KAVALE - Arène Multijoueur</title>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        :root {
-            --bg: #0b0c10; --surface: #14141e; --border: #1f2833;
-            --cyan: #00FFFF; --magenta: #FF00FF; --text: #c5c6c7;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KAVALE 🏍️💨 - Arène Multijoueur</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0b0c10; --surface: #14141e; --border: #1f2833;
+    --cyan: #00FFFF; --magenta: #FF00FF; --accent3: #45a29e;
+    --text: #c5c6c7; --muted: #66fcf1;
+  }
+  body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:32px 16px; position:relative; overflow-x:hidden; }
+  
+  /* Quadrillage Cyberpunk original */
+  body::before { content:''; position:fixed; inset:0; background-image: linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px); background-size: 30px 30px; pointer-events:none; z-index:0; }
+  
+  .hub-link { position: absolute; top: 20px; left: 20px; color: var(--muted); text-decoration: none; font-weight: bold; z-index: 10; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s;}
+  .hub-link:hover { color: var(--cyan); text-shadow: 0 0 10px var(--cyan); }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-        
-        body {
-            background-color: var(--bg);
-            /* Petit quadrillage style arène cyber */
-            background-image: linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px);
-            background-size: 30px 30px;
-            color: var(--text);
-            font-family: 'DM Sans', sans-serif;
-            display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh; overflow: hidden; padding: 20px;
-        }
+  .screen { display:none; flex-direction:column; align-items:center; width:100%; max-width:800px; position:relative; z-index:1; }
+  .screen.active { display:flex; }
+  
+  .logo { font-family:'Bebas Neue',sans-serif; font-size:clamp(52px,10vw,88px); letter-spacing:8px; line-height:1; background:linear-gradient(135deg,var(--cyan) 0%,var(--magenta) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; filter:drop-shadow(0 0 20px rgba(0,255,255,0.4)); font-style: italic; }
+  .tagline { color:var(--muted); font-size:14px; letter-spacing:4px; text-transform:uppercase; margin-top:6px; margin-bottom:32px; font-weight: bold;}
+  
+  .join-card, .players-list { background:rgba(20,20,30,0.8); border:1px solid var(--border); border-radius:16px; padding:36px 32px; width:100%; max-width:500px; display:flex; flex-direction:column; gap:16px; backdrop-filter: blur(10px); box-shadow: 0 0 30px rgba(0,255,255,0.1); }
+  .join-card h2, .players-list h3 { font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:2px; color:white; margin:0;}
+  
+  button { font-family:'DM Sans',sans-serif; font-weight:700; font-size:14px; letter-spacing:2px; text-transform:uppercase; border:none; border-radius:8px; cursor:pointer; padding:14px 24px; transition:0.2s; width: 100%;}
+  .btn-primary { background:var(--cyan); color:#000; box-shadow:0 0 20px rgba(0,255,255,0.3); }
+  .btn-primary:hover { transform:translateY(-2px); box-shadow:0 0 30px rgba(0,255,255,0.6); }
+  button:disabled { opacity:0.5; cursor:not-allowed; transform:none !important; }
 
-        .hub-link { position: absolute; top: 20px; left: 20px; color: var(--cyan); text-decoration: none; font-weight: bold; font-size: 14px; text-transform: uppercase; z-index: 100;}
+  .player-row { display:flex; align-items:center; gap:15px; padding:12px 0; border-bottom:1px solid var(--border); font-size:15px; font-weight:bold; color: white;}
+  .player-row:last-child { border-bottom:none; }
+  .player-avatar { width:40px; height:40px; border-radius:50%; object-fit: cover; border: 2px solid transparent; background: #111;}
+  .badge { font-size:10px; letter-spacing:1px; text-transform:uppercase; padding:4px 8px; border-radius:4px; margin-left:auto; }
+  .badge-master { background:rgba(0,255,255,0.1); color:var(--cyan); border:1px solid var(--cyan); }
+  
+  /* JEU */
+  #gameCanvas { border: 4px solid var(--border); background: #000; box-shadow: 0 0 40px rgba(0,0,0,0.8); border-radius: 8px; margin-top: 10px; max-width: 100%;}
+  .game-header { display: flex; justify-content: space-around; width: 100%; margin-bottom: 10px; flex-wrap: wrap; gap: 15px; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 10px; border: 1px solid #333;}
+  .player-hud { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s;}
+  .player-hud img { width: 35px; height: 35px; border-radius: 50%; border: 2px solid transparent; object-fit: cover; background: #111;}
+  .player-hud .score-hud { font-size: 20px; font-family: 'Bebas Neue'; background: rgba(255,255,255,0.1); padding: 2px 10px; border-radius: 5px; }
+  #statusText { font-family: 'Bebas Neue'; font-size: 38px; letter-spacing: 2px; text-align: center; height: 45px;}
 
-        /* VUES */
-        .screen { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 800px; margin-top: 50px; }
-        .screen.active { display: flex; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+  /* ÉCRAN DE VICTOIRE */
+  .victory-card { text-align: center; padding: 40px; background: rgba(20,20,30,0.95); border: 2px solid; border-radius: 20px; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); backdrop-filter: blur(10px); width: 100%; max-width: 500px; display: flex; flex-direction: column; align-items: center;}
+  .victory-avatar { width: 120px; height: 120px; border-radius: 50%; border: 4px solid; margin-bottom: 20px; object-fit: cover; background: #111;}
+  .victory-title { font-family: 'Bebas Neue'; font-size: 70px; margin-bottom: 5px; letter-spacing: 4px;}
+  .victory-name { font-size: 35px; margin-bottom: 30px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;}
+  .btn-outline { background: transparent; border: 2px solid #555; color: white; box-shadow: none; margin-top: 15px;}
+  .btn-outline:hover { border-color: white; transform: translateY(-2px);}
+  @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-        .logo { font-family: 'Bebas Neue'; font-size: 80px; letter-spacing: 5px; background: linear-gradient(90deg, var(--cyan), var(--magenta)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; text-align: center;}
-        .subtitle { background: #004d4d; color: white; padding: 5px 15px; font-weight: bold; letter-spacing: 2px; font-size: 14px; text-transform: uppercase; margin-bottom: 40px; border-left: 4px solid var(--cyan); }
+  .loading-text { text-align: center; font-size: 18px; color: var(--cyan); font-weight: bold; margin-bottom: 20px; animation: blink 1s infinite alternate; }
+  @keyframes blink { from { opacity: 0.5; } to { opacity: 1; } }
 
-        /* ÉCRAN DE CHARGEMENT */
-        #loadingMsg { font-size: 20px; color: var(--cyan); font-weight: bold; text-shadow: 0 0 10px var(--cyan); animation: pulse 1s infinite alternate; margin-top: 50px;}
-        @keyframes pulse { from { opacity: 0.5; } to { opacity: 1; } }
-
-        /* LOBBY */
-        .card { background: rgba(20, 20, 30, 0.9); border: 2px solid var(--border); border-radius: 15px; padding: 30px; width: 100%; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
-        .player-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-        .player-row { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(0,255,255,0.2); border-radius: 8px; font-weight: bold; }
-        .player-row img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--cyan); margin-right: 15px; }
-        .player-info { display: flex; align-items: center; }
-        .badge { background: rgba(255,0,255,0.2); color: var(--magenta); padding: 3px 8px; border-radius: 4px; font-size: 11px; text-transform: uppercase; border: 1px solid var(--magenta);}
-
-        button { font-family: 'DM Sans'; font-weight: bold; text-transform: uppercase; border: none; border-radius: 8px; cursor: pointer; padding: 15px 24px; transition: 0.2s; width: 100%; font-size: 16px; }
-        .btn-cyan { background: var(--cyan); color: #000; box-shadow: 0 0 15px rgba(0,255,255,0.4); }
-        .btn-cyan:hover { transform: translateY(-2px); box-shadow: 0 0 25px rgba(0,255,255,0.7); }
-
-        /* JEU */
-        #gameHeader { display: flex; justify-content: space-between; width: 100%; max-width: 900px; margin-bottom: 15px; color: white; font-family: 'Bebas Neue'; font-size: 24px; }
-        .score-board { display: flex; gap: 15px; }
-        .score-item { background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 8px; border: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
-        .score-item img { width: 30px; height: 30px; border-radius: 50%; }
-        
-        #gameContainer { position: relative; width: 100%; max-width: 900px; }
-        canvas { background: rgba(10,10,15,0.9); border: 3px solid var(--cyan); border-radius: 10px; width: 100%; height: auto; aspect-ratio: 16/9; box-shadow: 0 0 30px rgba(0,255,255,0.2); display: block; cursor: crosshair;}
-        
-        .overlay { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); border-radius: 10px; z-index: 10; backdrop-filter: blur(5px); }
-        .overlay h2 { font-family: 'Bebas Neue'; font-size: 60px; color: var(--magenta); text-shadow: 0 0 20px var(--magenta); letter-spacing: 2px; text-align: center; }
-    </style>
+</style>
 </head>
 <body>
 
-    <a href="../index.html" class="hub-link">← Retour au Hub</a>
+<a href="../index.html" class="hub-link">← Retour au Hub</a>
 
-    <div id="screenLoading" class="screen active">
-        <div class="logo">KAVALE</div>
-        <div class="subtitle">3 MANCHES GAGNANTES - JUSQU'À 4 JOUEURS</div>
-        <div id="loadingMsg">Connexion au profil en cours...</div>
-    </div>
+<div class="screen active" id="screenJoin">
+  <div class="logo">KAVALE</div>
+  <div class="tagline">3 manches gagnantes - Jusqu'à 4 joueurs</div>
+  <div class="join-card" style="background: transparent; border: none; box-shadow: none;">
+    <div id="loadingProfile" class="loading-text">Connexion au profil en cours...</div>
+    <div id="errorDisplay" style="color: red; text-align: center; display: none; margin-top: 10px;"></div>
+  </div>
+</div>
 
-    <div id="screenLobby" class="screen">
-        <div class="logo">KAVALE</div>
-        <div class="subtitle">SALLE D'ATTENTE</div>
-        <div class="card">
-            <div class="player-list" id="playersList"></div>
-            <div id="lobbyControls"></div>
-        </div>
-    </div>
+<div class="screen" id="screenLobby">
+  <div class="logo">KAVALE</div>
+  <div class="tagline" id="lobbySubtitle">En attente des pilotes...</div>
+  
+  <div class="players-list">
+    <h3>Pilotes (Max 4)</h3>
+    <div id="playersList"></div>
+    <div id="lobbyControls" style="margin-top: 15px;"></div>
+  </div>
+</div>
 
-    <div id="screenGame" class="screen" style="margin-top: 20px;">
-        <div id="gameHeader">
-            <div>OBJECTIF : CATCH LA CIBLE</div>
-            <div class="score-board" id="scoreBoard"></div>
-        </div>
-        <div id="gameContainer">
-            <canvas id="gameCanvas" width="1280" height="720"></canvas>
-            <div class="overlay" id="endOverlay">
-                <h2 id="winnerText">VICTOIRE !</h2>
-                <p style="color: white; margin-top: 10px;" id="winSubText">Enregistrement des stats...</p>
-                <div id="endControls" style="margin-top: 20px; width: 200px;"></div>
-            </div>
-        </div>
-    </div>
+<div class="screen" id="screenGame">
+    <div id="statusText">PRÉPARATION...</div>
+    <div class="game-header" id="gameHeader"></div>
+    <canvas id="gameCanvas" width="600" height="600"></canvas>
+    <p style="color: #666; font-size: 12px; margin-top: 15px; text-transform: uppercase; letter-spacing: 1px;">Contrôles : Flèches directionnelles</p>
+</div>
+
+<div class="screen" id="screenVictory">
+  <div class="logo" style="margin-bottom: 40px;">KAVALE</div>
+  <div class="victory-card" id="victoryCard">
+    <h2 class="victory-title" id="victoryTitle">VICTOIRE !</h2>
+    <img src="" id="victoryAvatar" class="victory-avatar" onerror="this.src='https://via.placeholder.com/120/333/fff?text=?'">
+    <div class="victory-name" id="victoryName">Pseudo</div>
+    <button class="btn-primary" onclick="location.reload()">🔄 Rejouer</button>
+    <button class="btn-outline" onclick="window.location.href='../index.html'">🏠 Retour au Hub</button>
+  </div>
+</div>
 
 <script>
-    // --- CONFIGURATION SUPABASE ---
-    const SUPABASE_URL = 'https://pdybshweyfvxzvngnuxe.supabase.co'; 
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkeWJzaHdleWZ2eHp2bmdudXhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDg2MDAsImV4cCI6MjA5MDUyNDYwMH0.u442X28Mhs-4T-tydabnMm8now8VfAEeNU-Sicuipq4'; 
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const ROOM_ID = 'kavale_arena';
+// --- CONFIGURATION SUPABASE ---
+const SUPABASE_URL = 'https://pdybshweyfvxzvngnuxe.supabase.co'; 
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkeWJzaHdleWZ2eHp2bmdudXhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDg2MDAsImV4cCI6MjA5MDUyNDYwMH0.u442X28Mhs-4T-tydabnMm8now8VfAEeNU-Sicuipq4'; 
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // --- VARIABLES JOUEUR ---
-    let myPseudo = localStorage.getItem('cdsi_logged_user');
-    let myAvatar = '';
-    let isMaster = false;
-    let dbSyncInterval = null;
-    let currentPhase = 'loading';
+const GAME_ID = 'kavale_main_lobby';
 
-    // --- VARIABLES JEU ---
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    let animFrame;
-    let gameState = {};
-    let mousePos = { x: 640, y: 360 };
-    let playerImgs = {}; // Cache pour les avatars
+// --- VARIABLES GLOBALES ---
+let myPseudo = '';
+let myAvatar = '';
+let myColorCode = '#00FFFF'; 
+let isMaster = false;
+let gameState = 'lobby'; 
+let realtimeChannel = null; 
+let dbSyncInterval = null; 
 
-    // --- INITIALISATION & AUTHENTIFICATION ---
-    window.onload = async () => {
-        if(!myPseudo) {
-            // Non connecté -> Retour au Hub
-            window.location.href = '../index.html';
+// --- MOTEUR DE JEU KAVALE ---
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const gridSize = 10;
+let gameLoop = null;
+let playersGameData = {}; 
+let orderedPlayerNames = [];
+
+let isCountingDown = false;
+let isRoundEnding = false;
+let syncSpamInterval = null;
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// --- INITIALISATION & AUTO-CONNEXION SÉCURISÉE ---
+window.onload = async () => {
+    try {
+        // 1. Lire le pseudo sauvegardé par le Hub
+        myPseudo = localStorage.getItem('cdsi_logged_user');
+        
+        if (!myPseudo || myPseudo === 'null' || myPseudo === 'undefined') {
+            window.location.href = '../index.html'; 
             return;
         }
+
+        // 2. Récupérer l'avatar officiel dans la BDD
+        const { data, error } = await sb.from('cdsi_users').select('avatar').eq('pseudo', myPseudo).maybeSingle();
         
-        // Charger l'avatar depuis cdsi_users
-        const { data, error } = await sb.from('cdsi_users').select('avatar').eq('pseudo', myPseudo).single();
-        if(data) {
-            myAvatar = data.avatar || 'https://via.placeholder.com/50';
-            joinRoom();
+        if (data && data.avatar) {
+            // MAGIE ICI : On s'assure qu'on ajoute "../" pour que l'image charge depuis le dossier kavale
+            myAvatar = data.avatar.startsWith('../') ? data.avatar : '../' + data.avatar;
         } else {
-            window.location.href = '../index.html'; // Profil introuvable
-        }
-    };
-
-    function showScreen(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-    }
-
-    // --- LOGIQUE MULTIJOUEUR ---
-    async function fetchState() {
-        try {
-            const {data} = await sb.from('bingo_state').select('data').eq('id', ROOM_ID).maybeSingle();
-            return data?.data || null;
-        } catch(e) { return null; }
-    }
-
-    async function updateState(newState) {
-        try {
-            await sb.from('bingo_state').upsert({ id: ROOM_ID, data: newState, updated_at: new Date().toISOString() }, { onConflict: 'id' });
-        } catch(e) {}
-    }
-
-    async function joinRoom() {
-        let state = await fetchState();
-        
-        if(!state || !state.players) {
-            state = { phase: 'lobby', master: myPseudo, players: {}, target: {x: 640, y: 360}, winner: null };
+            myAvatar = '../bingoudalo/avatar/paulo1.jpg'; // Secours
         }
 
-        isMaster = (state.master === myPseudo);
+        await autoJoinLobby();
         
-        // Init player
-        if(!state.players[myPseudo]) {
-            state.players[myPseudo] = { pseudo: myPseudo, avatar: myAvatar, score: 0, x: 640, y: 360 };
+    } catch (err) {
+        console.error(err);
+        document.getElementById('loadingProfile').style.display = 'none';
+        const errDiv = document.getElementById('errorDisplay');
+        errDiv.style.display = 'block';
+        errDiv.innerHTML = `Erreur locale détectée.<br><br><button class='btn-primary' onclick='location.reload()'>Rafraîchir</button>`;
+    }
+};
+
+// --- BASE DE DONNÉES (LOBBY) ---
+async function fetchLobbyState() {
+    try {
+        const {data, error} = await sb.from('bingo_state').select('data').eq('id', GAME_ID).maybeSingle();
+        if (error) throw error;
+        return data?.data || null;
+    } catch(e) { 
+        console.error("Erreur fetch state:", e);
+        return null; 
+    }
+}
+async function updateLobbyState(newState) {
+    try {
+        await sb.from('bingo_state').upsert({ id: GAME_ID, data: newState, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+    } catch(e) {
+        console.error("Erreur update state:", e);
+    }
+}
+
+// --- REJOINDRE LE LOBBY AUTOMATIQUEMENT ---
+async function autoJoinLobby() {
+    let state = await fetchLobbyState();
+    
+    if(!state || !state.players || Object.keys(state.players).length === 0) {
+        state = { phase: 'lobby', master: myPseudo, players: {}, gameEndedSaved: false };
+    } else {
+        if (!state.players[state.master]) {
+            state.master = myPseudo; 
+        }
+    }
+
+    if(Object.keys(state.players).length >= 4 && !state.players[myPseudo]) {
+        alert("L'arène est pleine (4 joueurs max) !");
+        window.location.href = '../index.html';
+        return;
+    }
+
+    isMaster = (state.master === myPseudo);
+    
+    // ATTRIBUTION INTELLIGENTE DE COULEUR
+    if(!state.players[myPseudo]) {
+        const NEON_COLORS = ['#00FFFF', '#FF00FF', '#FFFF00', '#00FF00'];
+        let usedColors = Object.values(state.players).map(p => p.colorCode);
+        let availableColors = NEON_COLORS.filter(c => !usedColors.includes(c));
+        
+        if (availableColors.length > 0) {
+            myColorCode = availableColors[Math.floor(Math.random() * availableColors.length)];
         } else {
-            // Update au cas où on a changé d'avatar
-            state.players[myPseudo].avatar = myAvatar;
+            myColorCode = NEON_COLORS[Math.floor(Math.random() * NEON_COLORS.length)];
         }
-        
-        await updateState(state);
-        startSync();
-    }
 
-    function startSync() {
-        if(dbSyncInterval) clearInterval(dbSyncInterval);
-        
-        // En jeu, on sync plus vite (150ms). Dans le lobby, 1s suffit.
-        let syncRate = currentPhase === 'playing' ? 150 : 1000;
-        
-        dbSyncInterval = setInterval(async () => {
-            const state = await fetchState();
-            if(state) {
-                // Si on est en jeu, on envoie aussi notre position
-                if(state.phase === 'playing' && state.players[myPseudo]) {
-                    state.players[myPseudo].x = mousePos.x;
-                    state.players[myPseudo].y = mousePos.y;
-                    
-                    // Master vérifie les collisions (premier arrivé à la cible)
-                    if(isMaster && !state.winner) {
-                        checkCollisions(state);
-                    }
-                    await updateState(state);
-                }
-                updateUI(state);
-            }
-        }, syncRate);
+        state.players[myPseudo] = { pseudo: myPseudo, avatar: myAvatar, colorCode: myColorCode, score: 0 };
+    } else {
+        // Met à jour l'avatar si on l'a changé sur le Hub
+        state.players[myPseudo].avatar = myAvatar; 
+        myColorCode = state.players[myPseudo].colorCode;
     }
+    
+    await updateLobbyState(state);
+    showScreen('screenLobby');
+    startLobbySync(); 
+}
 
-    function checkCollisions(state) {
-        let targetRadius = 25;
-        let playerRadius = 25;
-        
-        for (let pName in state.players) {
-            let p = state.players[pName];
-            let dx = p.x - state.target.x;
-            let dy = p.y - state.target.y;
-            let distance = Math.sqrt(dx*dx + dy*dy);
-            
-            if(distance < targetRadius + playerRadius) {
-                // Touché !
-                state.players[pName].score += 1;
-                if(state.players[pName].score >= 3) {
-                    state.phase = 'end';
-                    state.winner = pName;
-                    registerWin(pName); // On enregistre la victoire dans les stats
-                } else {
-                    // Respawn de la cible
-                    state.target.x = 100 + Math.random() * 1080;
-                    state.target.y = 100 + Math.random() * 520;
-                }
-                break; // Un seul peut toucher à la fois
-            }
-        }
-    }
+// --- SYNCHRONISATION LOBBY ---
+function startLobbySync() {
+    if(dbSyncInterval) clearInterval(dbSyncInterval);
+    dbSyncInterval = setInterval(async () => {
+        const state = await fetchLobbyState();
+        if(state) updateLobbyUI(state);
+    }, 2000);
+}
 
-    // --- ENREGISTREMENT DES STATS DANS LA DB ---
-    async function registerWin(winnerPseudo) {
-        // Seul le Master fait la requête pour éviter les doublons
+function updateLobbyUI(state) {
+    if(!state || !state.players) return;
+    
+    isMaster = (state.master === myPseudo);
+    const playersList = Object.values(state.players);
+    
+    document.getElementById('playersList').innerHTML = playersList.map(p => `
+        <div class="player-row">
+            <img src="${p.avatar}" class="player-avatar" style="border-color: ${p.colorCode}" onerror="this.src='https://via.placeholder.com/40/333/fff?text=?'">
+            <span style="color: ${p.colorCode}">${p.pseudo}</span>
+            ${state.master === p.pseudo ? '<span class="badge badge-master">👑 Maître</span>' : ''}
+        </div>
+    `).join('');
+
+    if(state.phase === 'lobby') {
+        const controls = document.getElementById('lobbyControls');
         if(isMaster) {
-            // 1. Lire le score actuel du gagnant
-            const { data } = await sb.from('cdsi_users').select('kavale_wins').eq('pseudo', winnerPseudo).single();
-            if(data) {
-                let newWins = (data.kavale_wins || 0) + 1;
-                // 2. Mettre à jour
-                await sb.from('cdsi_users').update({ kavale_wins: newWins }).eq('pseudo', winnerPseudo);
-            }
-        }
-    }
-
-    // --- INTERFACE ---
-    function updateUI(state) {
-        gameState = state;
-        isMaster = (state.master === myPseudo);
-
-        // --- LOBBY ---
-        if(state.phase === 'lobby') {
-            if(currentPhase !== 'lobby') { currentPhase = 'lobby'; showScreen('screenLobby'); startSync(); }
-            
-            document.getElementById('playersList').innerHTML = Object.values(state.players).map(p => `
-                <div class="player-row">
-                    <div class="player-info">
-                        <img src="${p.avatar}" onerror="this.src='https://via.placeholder.com/40'">
-                        <span>${p.pseudo}</span>
-                    </div>
-                    ${state.master === p.pseudo ? '<span class="badge">Hôte</span>' : ''}
-                </div>
-            `).join('');
-
-            const ctrl = document.getElementById('lobbyControls');
-            if(isMaster) {
-                ctrl.innerHTML = `<button class="btn-cyan" onclick="startGame()">LANCER L'ARÈNE</button>`;
+            if (playersList.length >= 2) {
+                controls.innerHTML = `<button class="btn-primary" onclick="launchGameFromLobby()">🏁 Démarrer la partie</button>`;
+                document.getElementById('lobbySubtitle').textContent = `Tu es le maître. Lance la partie quand tout le monde est prêt.`;
             } else {
-                ctrl.innerHTML = `<p style="text-align:center; color:var(--cyan);">En attente de l'hôte...</p>`;
+                controls.innerHTML = `<p style="color:var(--cyan); font-size:14px; font-weight:bold; text-align:center;">Il faut au moins 2 joueurs pour démarrer !</p>`;
+                document.getElementById('lobbySubtitle').textContent = `En attente d'autres pilotes...`;
             }
+        } else {
+            controls.innerHTML = '';
+            document.getElementById('lobbySubtitle').textContent = `Attends que ${state.master} lance la partie...`;
         }
-
-        // --- EN JEU ---
-        if(state.phase === 'playing') {
-            if(currentPhase !== 'playing') { 
-                currentPhase = 'playing'; 
-                showScreen('screenGame'); 
-                document.getElementById('endOverlay').style.display = 'none';
-                startSync(); // On relance le sync pour qu'il soit plus rapide
-                startGameEngine();
-            }
-            
-            // MAJ Scores
-            document.getElementById('scoreBoard').innerHTML = Object.values(state.players).map(p => `
-                <div class="score-item" style="${p.score >= 2 ? 'border-color:var(--magenta);' : ''}">
-                    <img src="${p.avatar}" onerror="this.src='https://via.placeholder.com/30'">
-                    <span>${p.score} pts</span>
-                </div>
-            `).join('');
-        }
-
-        // --- FIN DE PARTIE ---
-        if(state.phase === 'end') {
-            if(currentPhase !== 'end') {
-                currentPhase = 'end';
-                document.getElementById('endOverlay').style.display = 'flex';
-                document.getElementById('winnerText').innerText = `${state.winner} REMPORTE LA KAVALE !`;
-                
-                const ctrl = document.getElementById('endControls');
-                if(isMaster) {
-                    ctrl.innerHTML = `<button class="btn-cyan" onclick="resetLobby()">RETOURNER AU LOBBY</button>`;
-                } else {
-                    ctrl.innerHTML = `<p style="font-size:14px;">En attente de l'hôte...</p>`;
-                }
-            }
-        }
+    } 
+    else if(state.phase === 'playing' && gameState === 'lobby') {
+        gameState = 'playing';
+        clearInterval(dbSyncInterval); 
+        initGameEngine(state.players); 
     }
+}
 
-    async function startGame() {
-        let state = await fetchState();
-        state.phase = 'playing';
-        state.winner = null;
-        state.target = { x: 640, y: 360 };
-        for (let p in state.players) {
-            state.players[p].score = 0;
-            state.players[p].x = 100 + Math.random() * 1000;
-            state.players[p].y = 100 + Math.random() * 500;
-        }
-        await updateState(state);
-    }
+// --- LE MAÎTRE LANCE LE JEU ---
+async function launchGameFromLobby() {
+    let state = await fetchLobbyState();
+    state.phase = 'playing';
+    await updateLobbyState(state); 
+    
+    gameState = 'playing';
+    clearInterval(dbSyncInterval);
+    initGameEngine(state.players);
+}
 
-    async function resetLobby() {
-        let state = await fetchState();
-        state.phase = 'lobby';
-        await updateState(state);
-    }
+// ==========================================
+// MOTEUR DE JEU ORIGINAL (KAVALE - TRON)
+// ==========================================
 
-    // --- MOTEUR DE JEU CANVAS ---
-    function startGameEngine() {
-        // Précharger les images pour pas lagger
-        Object.values(gameState.players).forEach(p => {
-            if(!playerImgs[p.pseudo]) {
-                let img = new Image();
-                img.src = p.avatar;
-                playerImgs[p.pseudo] = img;
-            }
-        });
+function initGameEngine(lobbyPlayers) {
+    showScreen('screenGame');
+    
+    orderedPlayerNames = Object.keys(lobbyPlayers);
+    const numPlayers = orderedPlayerNames.length;
+    
+    // Ajustement de la taille du plateau selon le nombre de joueurs
+    const newSize = 500 + ((numPlayers - 2) * 150);
+    canvas.width = newSize;
+    canvas.height = newSize;
+    
+    playersGameData = {};
+    const header = document.getElementById('gameHeader');
+    header.innerHTML = '';
+
+    // Initialisation HUD et Stats en direct
+    orderedPlayerNames.forEach(pseudo => {
+        const p = lobbyPlayers[pseudo];
         
-        if(animFrame) cancelAnimationFrame(animFrame);
-        gameLoop();
-    }
-
-    function gameLoop() {
-        if(currentPhase !== 'playing') return;
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Dessiner la cible (Orbe Néon)
-        if(gameState.target) {
-            ctx.beginPath();
-            ctx.arc(gameState.target.x, gameState.target.y, 25, 0, Math.PI * 2);
-            ctx.fillStyle = '#FF00FF';
-            ctx.shadowBlur = 20;
-            ctx.shadowColor = '#FF00FF';
-            ctx.fill();
-            ctx.shadowBlur = 0; // Reset
-        }
-
-        // Dessiner les joueurs
-        if(gameState.players) {
-            Object.values(gameState.players).forEach(p => {
-                // Interpolation basique pour fluidifier (on dessine notre curseur direct, et les autres selon la DB)
-                let renderX = (p.pseudo === myPseudo) ? mousePos.x : p.x;
-                let renderY = (p.pseudo === myPseudo) ? mousePos.y : p.y;
-                
-                let size = 50;
-                ctx.save();
-                ctx.beginPath();
-                ctx.arc(renderX, renderY, size/2, 0, Math.PI * 2);
-                ctx.clip();
-                
-                if(playerImgs[p.pseudo] && playerImgs[p.pseudo].complete) {
-                    ctx.drawImage(playerImgs[p.pseudo], renderX - size/2, renderY - size/2, size, size);
-                } else {
-                    ctx.fillStyle = '#00FFFF';
-                    ctx.fill();
-                }
-                ctx.restore();
-                
-                // Anneau autour du joueur
-                ctx.beginPath();
-                ctx.arc(renderX, renderY, size/2, 0, Math.PI * 2);
-                ctx.strokeStyle = (p.pseudo === myPseudo) ? '#00FFFF' : '#ffffff';
-                ctx.lineWidth = 3;
-                ctx.stroke();
-
-                // Pseudo
-                ctx.fillStyle = "white";
-                ctx.font = "14px 'DM Sans'";
-                ctx.textAlign = "center";
-                ctx.fillText(p.pseudo, renderX, renderY - 35);
-            });
-        }
-
-        animFrame = requestAnimationFrame(gameLoop);
-    }
-
-    // --- CONTROLES SOURIS ---
-    canvas.addEventListener('mousemove', (e) => {
-        if(currentPhase !== 'playing') return;
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        mousePos.x = (e.clientX - rect.left) * scaleX;
-        mousePos.y = (e.clientY - rect.top) * scaleY;
+        playersGameData[pseudo] = { 
+            color: p.colorCode, avatar: p.avatar, score: 0, dead: false, 
+            x: 0, y: 0, direction: 'right', nextDir: 'right', trail: [] 
+        };
+        
+        header.innerHTML += `
+            <div class="player-hud" id="hud-${pseudo}" style="color: ${p.colorCode};">
+                <img src="${p.avatar}" style="border-color: ${p.colorCode}" onerror="this.src='https://via.placeholder.com/35/333/fff?text=?'">
+                <span>${pseudo} : <span class="score-hud" id="score-${pseudo}">0</span>/3</span>
+            </div>
+        `;
     });
 
-    // Nettoyage si on quitte la page
-    window.addEventListener("beforeunload", async () => {
-        if (isMaster) await sb.from('bingo_state').delete().eq('id', ROOM_ID);
+    resetPlayerPositions(); 
+
+    realtimeChannel = sb.channel('kavale_arena');
+    
+    realtimeChannel.on('broadcast', { event: 'move' }, (payload) => {
+        const data = payload.payload;
+        if(data.pseudo !== myPseudo && playersGameData[data.pseudo]) {
+            playersGameData[data.pseudo].nextDir = data.direction;
+            playersGameData[data.pseudo].x = data.x;
+            playersGameData[data.pseudo].y = data.y;
+        }
     });
+
+    realtimeChannel.on('broadcast', { event: 'p2_ready' }, () => {
+        if (isMaster && !isCountingDown) {
+            realtimeChannel.send({ type: 'broadcast', event: 'start_countdown', payload: {} });
+            startCountdown();
+        }
+    });
+
+    realtimeChannel.on('broadcast', { event: 'start_countdown' }, () => {
+        if (!isMaster && !isCountingDown) {
+            clearInterval(syncSpamInterval); 
+            startCountdown();
+        }
+    });
+
+    realtimeChannel.on('broadcast', { event: 'next_round' }, () => {
+        if (!isMaster) prepareNextRound(false);
+    });
+
+    realtimeChannel.subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+            document.getElementById('statusText').textContent = "SYNCHRONISATION...";
+            if (!isMaster) {
+                syncSpamInterval = setInterval(() => { realtimeChannel.send({ type: 'broadcast', event: 'p2_ready', payload: {} }); }, 500);
+            }
+        }
+    });
+}
+
+function resetPlayerPositions() {
+    const size = canvas.width;
+    const spawnPoints = [
+        { x: 100, y: size/2, dir: 'right' },            
+        { x: size - 100, y: size/2, dir: 'left' },      
+        { x: size/2, y: 100, dir: 'down' },             
+        { x: size/2, y: size - 100, dir: 'up' }         
+    ];
+
+    orderedPlayerNames.forEach((pseudo, index) => {
+        const p = playersGameData[pseudo];
+        const sp = spawnPoints[index];
+        p.x = Math.round(sp.x / 10) * 10;
+        p.y = Math.round(sp.y / 10) * 10;
+        p.direction = sp.dir;
+        p.nextDir = sp.dir;
+        p.trail = [];
+        p.dead = false;
+        
+        document.getElementById(`hud-${pseudo}`).style.opacity = '1';
+    });
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function startCountdown() {
+    isCountingDown = true;
+    isRoundEnding = false;
+    let count = 3;
+    const statusEl = document.getElementById('statusText');
+    const interval = setInterval(() => {
+        statusEl.textContent = count > 0 ? count : "GO !";
+        statusEl.style.color = count > 0 ? "white" : "var(--cyan)";
+        if(count === 0) {
+            clearInterval(interval);
+            setTimeout(() => statusEl.textContent = "", 1000); 
+            if(gameLoop) clearInterval(gameLoop);
+            gameLoop = setInterval(updatePhysics, 80); 
+        }
+        count--;
+    }, 1000);
+}
+
+// --- PHYSIQUE ---
+function updatePhysics() {
+    if (isRoundEnding) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const pseudos = orderedPlayerNames;
+    
+    pseudos.forEach(pseudo => {
+        const p = playersGameData[pseudo];
+        if (p.dead) return;
+
+        p.trail.push({ x: p.x, y: p.y });
+        p.direction = p.nextDir;
+
+        if (p.direction === 'up') p.y -= gridSize;
+        if (p.direction === 'down') p.y += gridSize;
+        if (p.direction === 'left') p.x -= gridSize;
+        if (p.direction === 'right') p.x += gridSize;
+
+        checkCollisions(pseudo, pseudos);
+
+        ctx.fillStyle = p.color;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = p.color;
+        p.trail.forEach(pos => ctx.fillRect(pos.x, pos.y, gridSize, gridSize));
+        
+        ctx.fillStyle = 'white';
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = 'white';
+        ctx.fillRect(p.x, p.y, gridSize, gridSize);
+        ctx.shadowBlur = 0; 
+    });
+
+    checkWinCondition(pseudos);
+}
+
+// --- CONTRÔLES ---
+window.addEventListener('keydown', e => {
+    if (gameState !== 'playing' || isRoundEnding || !playersGameData[myPseudo] || playersGameData[myPseudo].dead) return;
+
+    let newDir = null;
+    const p = playersGameData[myPseudo];
+
+    if (e.code === 'ArrowUp' && p.direction !== 'down') newDir = 'up';
+    if (e.code === 'ArrowDown' && p.direction !== 'up') newDir = 'down';
+    if (e.code === 'ArrowLeft' && p.direction !== 'right') newDir = 'left';
+    if (e.code === 'ArrowRight' && p.direction !== 'left') newDir = 'right';
+
+    if (newDir && newDir !== p.nextDir) {
+        p.nextDir = newDir;
+        if(realtimeChannel) {
+            realtimeChannel.send({ type: 'broadcast', event: 'move', payload: { pseudo: myPseudo, direction: newDir, x: p.x, y: p.y }});
+        }
+    }
+});
+
+// --- COLLISIONS ---
+function checkCollisions(myId, allIds) {
+    const p = playersGameData[myId];
+    // Mur
+    if (p.x < 0 || p.x >= canvas.width || p.y < 0 || p.y >= canvas.height) { 
+        p.dead = true; 
+        document.getElementById(`hud-${myId}`).style.opacity = '0.4'; 
+        return;
+    }
+
+    // Autres joueurs et soi-même
+    allIds.forEach(otherId => {
+        const otherP = playersGameData[otherId];
+        for (let i = 0; i < otherP.trail.length; i++) {
+            if (p.x === otherP.trail[i].x && p.y === otherP.trail[i].y) { 
+                p.dead = true; 
+                document.getElementById(`hud-${myId}`).style.opacity = '0.4';
+            }
+        }
+        // Frontal
+        if (myId !== otherId && p.x === otherP.x && p.y === otherP.y) {
+            p.dead = true; otherP.dead = true;
+            document.getElementById(`hud-${myId}`).style.opacity = '0.4';
+            document.getElementById(`hud-${otherId}`).style.opacity = '0.4';
+        }
+    });
+}
+
+// --- GESTION DES MANCHES ET VICTOIRE ---
+function checkWinCondition(allIds) {
+    const alive = allIds.filter(id => !playersGameData[id].dead);
+    
+    if (alive.length <= 1 && allIds.length > 1) {
+        isRoundEnding = true;
+        handleRoundEnd(alive);
+    }
+}
+
+function handleRoundEnd(alivePlayers) {
+    clearInterval(gameLoop);
+    const statusEl = document.getElementById('statusText');
+
+    if(alivePlayers.length === 0) {
+        statusEl.textContent = "CRASH TOTAL ! MANCHE NULLE";
+        statusEl.style.color = "white";
+        setTimeout(() => prepareNextRound(true), 3000);
+    } else {
+        const winnerPseudo = alivePlayers[0];
+        const winner = playersGameData[winnerPseudo];
+        winner.score++;
+        document.getElementById(`score-${winnerPseudo}`).textContent = winner.score;
+        
+        if(winner.score >= 3) {
+            statusEl.textContent = `🏆 VICTOIRE TOTALE ! 🏆`;
+            statusEl.style.color = winner.color;
+            setTimeout(() => triggerVictoryScreen(winnerPseudo), 2000);
+        } else {
+            statusEl.textContent = `MANCHE POUR ${winnerPseudo} !`;
+            statusEl.style.color = winner.color;
+            setTimeout(() => prepareNextRound(true), 3000);
+        }
+    }
+}
+
+function prepareNextRound(triggerBroadcast) {
+    resetPlayerPositions();
+    if(isMaster && triggerBroadcast) {
+        realtimeChannel.send({ type: 'broadcast', event: 'next_round', payload: {} });
+        startCountdown();
+    } else if (!isMaster && !triggerBroadcast) {
+        startCountdown();
+    }
+}
+
+// --- ÉCRAN DE VICTOIRE & SAUVEGARDE EN DB ---
+async function triggerVictoryScreen(winnerPseudo) {
+    const winner = playersGameData[winnerPseudo];
+    
+    document.getElementById('victoryName').textContent = winnerPseudo;
+    document.getElementById('victoryName').style.color = winner.color;
+    document.getElementById('victoryAvatar').src = winner.avatar;
+    document.getElementById('victoryAvatar').style.borderColor = winner.color;
+    
+    document.getElementById('victoryCard').style.borderColor = winner.color;
+    document.getElementById('victoryCard').style.boxShadow = `0 0 50px ${winner.color}`;
+    document.getElementById('victoryTitle').style.color = winner.color;
+    document.getElementById('victoryTitle').style.textShadow = `0 0 20px ${winner.color}`;
+
+    showScreen('screenVictory');
+
+    // SEUL LE MAÎTRE SAUVEGARDE LA VICTOIRE (Évite que la BDD reçoive 4 fois +1)
+    if(isMaster) {
+        let state = await fetchLobbyState();
+        if (state && !state.gameEndedSaved) {
+            state.gameEndedSaved = true;
+            await updateLobbyState(state);
+            
+            // LECTURE ET ECRITURE SUR LA NOUVELLE TABLE DE PROFILS
+            let {data} = await sb.from('cdsi_users').select('kavale_wins').eq('pseudo', winnerPseudo).single();
+            if (data) {
+                await sb.from('cdsi_users').update({ kavale_wins: (data.kavale_wins || 0) + 1 }).eq('pseudo', winnerPseudo);
+            }
+        }
+        // Ferme le lobby
+        await sb.from('bingo_state').delete().eq('id', GAME_ID);
+    }
+
+    if(realtimeChannel) {
+        sb.removeChannel(realtimeChannel);
+    }
+}
+
+// Sécurité nettoyage
+window.addEventListener("beforeunload", async (e) => {
+    if (gameState === 'lobby' && isMaster) {
+        await sb.from('bingo_state').delete().eq('id', GAME_ID);
+    }
+});
 
 </script>
 </body>
