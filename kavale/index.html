@@ -27,18 +27,6 @@
   .join-card, .players-list { background:rgba(20,20,30,0.8); border:1px solid var(--border); border-radius:16px; padding:36px 32px; width:100%; max-width:500px; display:flex; flex-direction:column; gap:16px; backdrop-filter: blur(10px); box-shadow: 0 0 30px rgba(0,255,255,0.1); }
   .join-card h2, .players-list h3 { font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:2px; color:white; margin:0;}
   
-  input[type="text"] { width:100%; background:rgba(0,0,0,0.5); border:1px solid var(--border); border-radius:8px; padding:14px 16px; font-family:'DM Sans',sans-serif; font-size:15px; color:white; outline:none; transition:0.2s; }
-  input[type="text"]:focus { border-color:var(--cyan); box-shadow: 0 0 15px rgba(0,255,255,0.2);}
-  
-  .avatar-selection { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
-  .avatar-selection p { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin: 0; }
-  .avatar-grid { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
-  .avatar-option { width: 45px; height: 45px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: 0.2s; object-fit: cover; background: #000; }
-  .avatar-option.selected { border-color: var(--cyan); transform: scale(1.15); box-shadow: 0 0 15px rgba(0,255,255,0.5); z-index: 2; }
-  
-  .bike-selection { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 5px; }
-  .bike-option { padding: 10px 15px; border-radius: 8px; border: 2px solid #333; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 12px; transition: 0.2s; background: rgba(0,0,0,0.5); }
-  
   button { font-family:'DM Sans',sans-serif; font-weight:700; font-size:14px; letter-spacing:2px; text-transform:uppercase; border:none; border-radius:8px; cursor:pointer; padding:14px 24px; transition:0.2s; width: 100%;}
   .btn-primary { background:var(--cyan); color:#000; box-shadow:0 0 20px rgba(0,255,255,0.3); }
   .btn-primary:hover { transform:translateY(-2px); box-shadow:0 0 30px rgba(0,255,255,0.6); }
@@ -46,7 +34,7 @@
 
   .player-row { display:flex; align-items:center; gap:15px; padding:12px 0; border-bottom:1px solid var(--border); font-size:15px; font-weight:bold; color: white;}
   .player-row:last-child { border-bottom:none; }
-  .player-avatar { width:40px; height:40px; border-radius:50%; object-fit: cover; border: 2px solid #444; }
+  .player-avatar { width:40px; height:40px; border-radius:50%; object-fit: cover; border: 2px solid transparent; }
   .badge { font-size:10px; letter-spacing:1px; text-transform:uppercase; padding:4px 8px; border-radius:4px; margin-left:auto; }
   .badge-master { background:rgba(0,255,255,0.1); color:var(--cyan); border:1px solid var(--cyan); }
   
@@ -67,6 +55,9 @@
   .btn-outline:hover { border-color: white; transform: translateY(-2px);}
   @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
+  .loading-text { text-align: center; font-size: 18px; color: var(--cyan); font-weight: bold; margin-bottom: 20px; animation: blink 1s infinite alternate; }
+  @keyframes blink { from { opacity: 0.5; } to { opacity: 1; } }
+
 </style>
 </head>
 <body>
@@ -76,27 +67,8 @@
 <div class="screen active" id="screenJoin">
   <div class="logo">KAVALE</div>
   <div class="tagline">3 manches gagnantes - Jusqu'à 4 joueurs</div>
-  
-  <div class="join-card">
-    <h2>Rejoindre l'arène</h2>
-    <input type="text" id="pseudoInput" placeholder="Ton pseudo..." maxlength="15" />
-    
-    <div class="avatar-selection">
-      <p>1. Choisis ton avatar :</p>
-      <div class="avatar-grid" id="avatarGrid"></div>
-    </div>
-
-    <div class="avatar-selection">
-      <p>2. Choisis ta couleur :</p>
-      <div class="bike-selection">
-        <div class="bike-option" style="color:#00FFFF" onclick="selectColor('#00FFFF', this)">Cyan</div>
-        <div class="bike-option" style="color:#FF00FF" onclick="selectColor('#FF00FF', this)">Magenta</div>
-        <div class="bike-option" style="color:#FFFF00" onclick="selectColor('#FFFF00', this)">Jaune</div>
-        <div class="bike-option" style="color:#00FF00" onclick="selectColor('#00FF00', this)">Vert</div>
-      </div>
-    </div>
-
-    <button class="btn-primary" id="joinBtn" onclick="joinLobby()" style="margin-top: 15px;">Entrer dans le Lobby</button>
+  <div class="join-card" style="background: transparent; border: none; box-shadow: none;">
+    <div id="loadingProfile" class="loading-text">Connexion au profil en cours...</div>
   </div>
 </div>
 
@@ -138,15 +110,9 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const GAME_ID = 'kavale_main_lobby';
 
 // --- VARIABLES GLOBALES ---
-const AVATARS = [
-  '../bingoudalo/avatar/9k.png', '../bingoudalo/avatar/bbc.png', '../bingoudalo/avatar/christophe.jpg', 
-  '../bingoudalo/avatar/coudoux.png', '../bingoudalo/avatar/elian.jpg', '../bingoudalo/avatar/matheo.jpg', 
-  '../bingoudalo/avatar/paulin.jpg', '../bingoudalo/avatar/paulo1.jpg', '../bingoudalo/avatar/tom.png'
-];
-
 let myPseudo = '';
-let myAvatar = AVATARS[0];
-let myColorCode = '#00FFFF'; 
+let myAvatar = '';
+let myColorCode = '#00FFFF'; // Couleur par défaut
 let isMaster = false;
 let gameState = 'lobby'; 
 let realtimeChannel = null; 
@@ -158,79 +124,97 @@ const ctx = canvas.getContext('2d');
 const gridSize = 10;
 let gameLoop = null;
 let playersGameData = {}; 
-let orderedPlayerNames = []; // Pour attribuer les positions de départ
+let orderedPlayerNames = [];
 
 let isCountingDown = false;
 let isRoundEnding = false;
 let syncSpamInterval = null;
-
-// --- UI : AVATAR & COULEUR ---
-function renderAvatarSelection() {
-  document.getElementById('avatarGrid').innerHTML = AVATARS.map(src => 
-    `<img src="${src}" class="avatar-option ${src === myAvatar ? 'selected' : ''}" onclick="selectAvatar('${src}')" onerror="this.src='https://via.placeholder.com/45/333/fff?text=?'">`
-  ).join('');
-}
-function selectAvatar(src) { myAvatar = src; renderAvatarSelection(); }
-
-function selectColor(hex, el) {
-    myColorCode = hex;
-    document.querySelectorAll('.bike-option').forEach(btn => {
-        btn.style.borderColor = '#333';
-        btn.style.background = 'rgba(0,0,0,0.5)';
-        btn.style.boxShadow = 'none';
-    });
-    el.style.borderColor = hex;
-    el.style.background = `rgba(${hexToRgb(hex)}, 0.1)`;
-    el.style.boxShadow = `0 0 15px rgba(${hexToRgb(hex)}, 0.4)`;
-}
-
-// Fonction utilitaire pour ombre couleur
-function hexToRgb(hex) {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '255,255,255';
-}
 
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
-// --- BASE DE DONNÉES (LOBBY) ---
-async function fetchLobbyState() {
-    const {data} = await sb.from('bingo_state').select('data').eq('id', GAME_ID).maybeSingle();
-    return data?.data || null;
-}
-async function updateLobbyState(newState) {
-    await sb.from('bingo_state').upsert({ id: GAME_ID, data: newState, updated_at: new Date().toISOString() }, { onConflict: 'id' });
-}
-
-// --- REJOINDRE LE LOBBY ---
-async function joinLobby() {
-    myPseudo = document.getElementById('pseudoInput').value.trim();
-    if(!myPseudo) return alert("Choisis un pseudo !");
+// --- INITIALISATION & AUTO-CONNEXION ---
+window.onload = async () => {
+    myPseudo = localStorage.getItem('cdsi_logged_user');
     
-    document.getElementById('joinBtn').disabled = true;
-    document.getElementById('joinBtn').textContent = 'Connexion...';
-
-    let state = await fetchLobbyState();
-    
-    if(!state || !state.players || Object.keys(state.players).length === 0) {
-        state = { phase: 'lobby', master: myPseudo, players: {} };
-    }
-
-    if(Object.keys(state.players).length >= 4 && !state.players[myPseudo]) {
-        alert("La salle est pleine (4 joueurs max) !");
-        document.getElementById('joinBtn').disabled = false;
-        document.getElementById('joinBtn').textContent = 'Entrer dans le Lobby';
+    if (!myPseudo) {
+        window.location.href = '../index.html'; 
         return;
     }
 
-    isMaster = (state.master === myPseudo);
-    state.players[myPseudo] = { pseudo: myPseudo, avatar: myAvatar, colorCode: myColorCode, score: 0 };
-    
-    await updateLobbyState(state);
-    showScreen('screenLobby');
-    startLobbySync(); 
+    // Récupérer l'avatar depuis la DB
+    const { data, error } = await sb.from('cdsi_users').select('avatar').eq('pseudo', myPseudo).single();
+    if (data && data.avatar) {
+        myAvatar = '../' + data.avatar; 
+    } else {
+        myAvatar = '../bingoudalo/avatar/paulo1.jpg'; // Secours
+    }
+
+    autoJoinLobby();
+};
+
+// --- BASE DE DONNÉES (LOBBY) ---
+async function fetchLobbyState() {
+    try {
+        const {data} = await sb.from('bingo_state').select('data').eq('id', GAME_ID).maybeSingle();
+        return data?.data || null;
+    } catch(e) { return null; }
+}
+async function updateLobbyState(newState) {
+    try {
+        await sb.from('bingo_state').upsert({ id: GAME_ID, data: newState, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+    } catch(e) {}
+}
+
+// --- REJOINDRE LE LOBBY AUTOMATIQUEMENT ---
+async function autoJoinLobby() {
+    try {
+        let state = await fetchLobbyState();
+        
+        if(!state || !state.players || Object.keys(state.players).length === 0) {
+            state = { phase: 'lobby', master: myPseudo, players: {}, gameEndedSaved: false };
+        } else {
+            if (!state.players[state.master]) {
+                state.master = myPseudo; // Si le master a buggé
+            }
+        }
+
+        if(Object.keys(state.players).length >= 4 && !state.players[myPseudo]) {
+            alert("La salle est pleine (4 joueurs max) !");
+            window.location.href = '../index.html';
+            return;
+        }
+
+        isMaster = (state.master === myPseudo);
+        
+        // ATTRIBUTION INTELLIGENTE DE COULEUR
+        if(!state.players[myPseudo]) {
+            const NEON_COLORS = ['#00FFFF', '#FF00FF', '#FFFF00', '#00FF00'];
+            let usedColors = Object.values(state.players).map(p => p.colorCode);
+            let availableColors = NEON_COLORS.filter(c => !usedColors.includes(c));
+            
+            // Prendre une couleur libre s'il en reste, sinon au hasard
+            if (availableColors.length > 0) {
+                myColorCode = availableColors[Math.floor(Math.random() * availableColors.length)];
+            } else {
+                myColorCode = NEON_COLORS[Math.floor(Math.random() * NEON_COLORS.length)];
+            }
+
+            state.players[myPseudo] = { pseudo: myPseudo, avatar: myAvatar, colorCode: myColorCode, score: 0 };
+        } else {
+            state.players[myPseudo].avatar = myAvatar; 
+            myColorCode = state.players[myPseudo].colorCode; // On récupère sa couleur déjà assignée
+        }
+        
+        await updateLobbyState(state);
+        showScreen('screenLobby');
+        startLobbySync(); 
+    } catch (error) {
+        alert("Erreur de connexion au serveur. Retour au Hub.");
+        window.location.href = '../index.html';
+    }
 }
 
 // --- SYNCHRONISATION LOBBY ---
@@ -252,7 +236,7 @@ function updateLobbyUI(state) {
     document.getElementById('playersList').innerHTML = playersList.map(p => `
         <div class="player-row">
             <img src="${p.avatar}" class="player-avatar" style="border-color: ${p.colorCode}" onerror="this.src='https://via.placeholder.com/40/333/fff?text=?'">
-            <span>${p.pseudo}</span>
+            <span style="color: ${p.colorCode}">${p.pseudo}</span>
             ${state.master === p.pseudo ? '<span class="badge badge-master">👑 Maître</span>' : ''}
         </div>
     `).join('');
@@ -260,9 +244,14 @@ function updateLobbyUI(state) {
     if(state.phase === 'lobby') {
         const controls = document.getElementById('lobbyControls');
         if(isMaster) {
-            controls.innerHTML = `<button class="btn-primary" onclick="launchGameFromLobby()">🏁 Démarrer la partie</button>`;
-            document.getElementById('lobbySubtitle').textContent = `Tu es le maître. Attends des adversaires.`;
-            if(playersList.length < 2) controls.querySelector('button').disabled = true;
+            // VÉRIFICATION : Au moins 2 joueurs requis pour Kavale !
+            if (playersList.length >= 2) {
+                controls.innerHTML = `<button class="btn-primary" onclick="launchGameFromLobby()">🏁 Démarrer la partie</button>`;
+                document.getElementById('lobbySubtitle').textContent = `Tu es le maître. Lance la partie quand tout le monde est là.`;
+            } else {
+                controls.innerHTML = `<p style="color:var(--cyan); font-size:14px; font-weight:bold; text-align:center;">Il faut au moins 2 joueurs pour démarrer !</p>`;
+                document.getElementById('lobbySubtitle').textContent = `En attente d'autres pilotes...`;
+            }
         } else {
             controls.innerHTML = '';
             document.getElementById('lobbySubtitle').textContent = `Attends que ${state.master} lance la partie...`;
@@ -296,7 +285,6 @@ function initGameEngine(lobbyPlayers) {
     orderedPlayerNames = Object.keys(lobbyPlayers);
     const numPlayers = orderedPlayerNames.length;
     
-    // Grille Dynamique : 500px (2j) | 650px (3j) | 800px (4j)
     const newSize = 500 + ((numPlayers - 2) * 150);
     canvas.width = newSize;
     canvas.height = newSize;
@@ -308,13 +296,11 @@ function initGameEngine(lobbyPlayers) {
     orderedPlayerNames.forEach(pseudo => {
         const p = lobbyPlayers[pseudo];
         
-        // On sauvegarde aussi l'avatar pour l'écran de victoire !
         playersGameData[pseudo] = { 
             color: p.colorCode, avatar: p.avatar, score: 0, dead: false, 
             x: 0, y: 0, direction: 'right', nextDir: 'right', trail: [] 
         };
         
-        // HUD
         header.innerHTML += `
             <div class="player-hud" id="hud-${pseudo}" style="color: ${p.colorCode};">
                 <img src="${p.avatar}" style="border-color: ${p.colorCode}">
@@ -359,8 +345,6 @@ function initGameEngine(lobbyPlayers) {
             document.getElementById('statusText').textContent = "SYNCHRONISATION...";
             if (!isMaster) {
                 syncSpamInterval = setInterval(() => { realtimeChannel.send({ type: 'broadcast', event: 'p2_ready', payload: {} }); }, 500);
-            } else if (numPlayers === 1) {
-                startCountdown();
             }
         }
     });
@@ -490,10 +474,6 @@ function checkWinCondition(allIds) {
     if (alive.length <= 1 && allIds.length > 1) {
         isRoundEnding = true;
         handleRoundEnd(alive);
-    } else if (allIds.length === 1 && alive.length === 0) {
-        // Test Solo
-        isRoundEnding = true;
-        handleRoundEnd([]);
     }
 }
 
@@ -533,32 +513,39 @@ function prepareNextRound(triggerBroadcast) {
     }
 }
 
-// --- L'ÉCRAN DE VICTOIRE ET NETTOYAGE ---
+// --- L'ÉCRAN DE VICTOIRE ET SAUVEGARDE EN DB ---
 async function triggerVictoryScreen(winnerPseudo) {
     const winner = playersGameData[winnerPseudo];
     
-    // Mettre à jour l'écran de victoire
     document.getElementById('victoryName').textContent = winnerPseudo;
     document.getElementById('victoryName').style.color = winner.color;
     document.getElementById('victoryAvatar').src = winner.avatar;
     document.getElementById('victoryAvatar').style.borderColor = winner.color;
     
-    // Dynamiser les néons avec la couleur du gagnant
     document.getElementById('victoryCard').style.borderColor = winner.color;
     document.getElementById('victoryCard').style.boxShadow = `0 0 50px ${winner.color}`;
     document.getElementById('victoryTitle').style.color = winner.color;
     document.getElementById('victoryTitle').style.textShadow = `0 0 20px ${winner.color}`;
 
-    // Afficher l'écran
     showScreen('screenVictory');
 
-    // Déconnecter proprement et nettoyer la DB
+    // SEUL LE MAÎTRE SAUVEGARDE LA VICTOIRE POUR ÉVITER LES DOUBLONS
+    if(isMaster) {
+        let state = await fetchLobbyState();
+        if (state && !state.gameEndedSaved) {
+            state.gameEndedSaved = true;
+            await updateLobbyState(state);
+            
+            let {data} = await sb.from('cdsi_users').select('kavale_wins').eq('pseudo', winnerPseudo).single();
+            if (data) {
+                await sb.from('cdsi_users').update({ kavale_wins: (data.kavale_wins || 0) + 1 }).eq('pseudo', winnerPseudo);
+            }
+        }
+        await sb.from('bingo_state').delete().eq('id', GAME_ID);
+    }
+
     if(realtimeChannel) {
         sb.removeChannel(realtimeChannel);
-    }
-    if(isMaster) {
-        // Le Maître nettoie la salle pour les prochaines parties !
-        await sb.from('bingo_state').delete().eq('id', GAME_ID);
     }
 }
 
@@ -569,10 +556,6 @@ window.addEventListener("beforeunload", async (e) => {
     }
 });
 
-window.onload = () => {
-    document.querySelectorAll('.bike-option')[0].click();
-    renderAvatarSelection();
-};
 </script>
 </body>
 </html>
