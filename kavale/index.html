@@ -86,7 +86,7 @@
   <div class="logo" style="margin-bottom: 40px;">KAVALE</div>
   <div class="victory-card" id="victoryCard">
     <h2 class="victory-title" id="victoryTitle">VICTOIRE !</h2>
-    <img src="" id="victoryAvatar" class="victory-avatar" onerror="this.src='https://via.placeholder.com/120'">
+    <img src="" id="victoryAvatar" class="victory-avatar" onerror="this.onerror=null; this.src='../bingoudalo/avatar/paulo1.jpg';">
     <div class="victory-name" id="victoryName">Pseudo</div>
     <button class="btn-primary" onclick="location.reload()">🔄 Rejouer</button>
     <button class="btn-primary" style="margin-top:10px; background:transparent; border:1px solid #555; color:white;" onclick="window.location.href='../index.html'">🏠 Menu Principal</button>
@@ -115,7 +115,6 @@ let gameLoop = null;
 let playersGameData = {}; 
 let orderedPlayerNames = [];
 
-// Fonction pour afficher les erreurs critiques
 function showLoadingError(message) {
     const loader = document.getElementById('loadingProfile');
     loader.style.animation = 'none';
@@ -133,7 +132,6 @@ window.onload = async () => {
             return;
         }
 
-        // On interroge Supabase avec gestion d'erreur stricte
         const { data, error } = await sb.from('cdsi_users').select('avatar').eq('pseudo', myPseudo).maybeSingle();
         
         if (error) throw new Error("Impossible de lire la base de données.");
@@ -170,7 +168,6 @@ async function autoJoinLobby() {
         if(!state || !state.players) {
             state = { phase: 'lobby', master: myPseudo, players: {}, gameEndedSaved: false };
         } else {
-            // Reprendre le lead si le maitre a crashé/quitté
             if (!state.players[state.master] && Object.keys(state.players).length > 0) {
                 state.master = Object.keys(state.players)[0];
             } else if (!state.master) {
@@ -217,9 +214,10 @@ async function autoJoinLobby() {
 
 function updateLobbyUI(state) {
     isMaster = (state.master === myPseudo);
+    // Remplacement du .placeholder.com par paulo1.jpg local pour éviter le spam réseau
     document.getElementById('playersList').innerHTML = Object.values(state.players).map(p => `
         <div class="player-row">
-            <img src="${p.avatar}" class="player-avatar" style="border-color: ${p.colorCode}">
+            <img src="${p.avatar}" class="player-avatar" style="border-color: ${p.colorCode}" onerror="this.onerror=null; this.src='../bingoudalo/avatar/paulo1.jpg';">
             <span style="color: ${p.colorCode}">${p.pseudo}</span>
             ${state.master === p.pseudo ? '<span class="badge badge-master">👑 Chef</span>' : ''}
         </div>
@@ -240,3 +238,108 @@ async function startGame() {
         state.phase = 'playing';
         await updateLobbyState(state);
     } catch(e) {
+        alert("Erreur de lancement : " + e.message);
+    }
+}
+
+function initGameEngine(lobbyPlayers) {
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById('screenGame').classList.add('active');
+    orderedPlayerNames = Object.keys(lobbyPlayers);
+    
+    const header = document.getElementById('gameHeader');
+    header.innerHTML = '';
+    orderedPlayerNames.forEach(pseudo => {
+        const p = lobbyPlayers[pseudo];
+        playersGameData[pseudo] = { color: p.colorCode, avatar: p.avatar, score: 0, dead: false, x: 0, y: 0, nextDir: 'right', trail: [] };
+        header.innerHTML += `<div class="player-hud" id="hud-${pseudo}" style="color:${p.colorCode}"><img src="${p.avatar}" onerror="this.onerror=null; this.src='../bingoudalo/avatar/paulo1.jpg';"><span>${pseudo}: <span id="score-${pseudo}">0</span></span></div>`;
+    });
+
+    resetPositions();
+    realtimeChannel = sb.channel('kavale_arena').on('broadcast', {event:'move'}, (p)=>{
+        if(p.payload.pseudo !== myPseudo && playersGameData[p.payload.pseudo]) {
+            playersGameData[p.payload.pseudo].nextDir = p.payload.direction;
+        }
+    }).on('broadcast', {event:'start'}, ()=>startCountdown()).subscribe();
+
+    if(isMaster) setTimeout(()=>realtimeChannel.send({type:'broadcast', event:'start'}), 1000);
+}
+
+function resetPositions() {
+    const size = canvas.width;
+    const spawns = [{x:50, y:size/2, d:'right'}, {x:size-50, y:size/2, d:'left'}, {x:size/2, y:50, d:'down'}, {x:size/2, y:size-50, d:'up'}];
+    orderedPlayerNames.forEach((n, i) => {
+        playersGameData[n].x = spawns[i].x; playersGameData[n].y = spawns[i].y;
+        playersGameData[n].nextDir = spawns[i].d; playersGameData[n].direction = spawns[i].d;
+        playersGameData[n].trail = []; playersGameData[n].dead = false;
+        document.getElementById(`hud-${n}`).style.opacity = '1';
+    });
+}
+
+function startCountdown() {
+    let c = 3;
+    const t = document.getElementById('statusText');
+    const i = setInterval(() => {
+        t.textContent = c > 0 ? c : "GO !";
+        if(c-- < 0) { clearInterval(i); t.textContent = ""; gameLoop = setInterval(update, 80); }
+    }, 1000);
+}
+
+function update() {
+    ctx.clearRect(0,0,600,600);
+    orderedPlayerNames.forEach(n => {
+        const p = playersGameData[n];
+        if(p.dead) return;
+        p.trail.push({x:p.x, y:p.y});
+        p.direction = p.nextDir;
+        if(p.direction==='up') p.y-=10; if(p.direction==='down') p.y+=10;
+        if(p.direction==='left') p.x-=10; if(p.direction==='right') p.x+=10;
+
+        if(p.x<0 || p.x>=600 || p.y<0 || p.y>=600) p.dead = true;
+        orderedPlayerNames.forEach(o => {
+            playersGameData[o].trail.forEach(t => { if(p.x===t.x && p.y===t.y) p.dead=true; });
+        });
+
+        if(p.dead) document.getElementById(`hud-${n}`).style.opacity = '0.3';
+        ctx.fillStyle = p.color; p.trail.forEach(t=>ctx.fillRect(t.x, t.y, 10, 10));
+        ctx.fillStyle = 'white'; ctx.fillRect(p.x, p.y, 10, 10);
+    });
+
+    const alive = orderedPlayerNames.filter(n=>!playersGameData[n].dead);
+    if(alive.length <= 1) {
+        clearInterval(gameLoop);
+        if(alive.length===1) {
+            playersGameData[alive[0]].score++;
+            document.getElementById(`score-${alive[0]}`).textContent = playersGameData[alive[0]].score;
+            if(playersGameData[alive[0]].score >= 3) finish(alive[0]); else setTimeout(()=>resetPositions() || startCountdown(), 2000);
+        } else setTimeout(()=>resetPositions() || startCountdown(), 2000);
+    }
+}
+
+async function finish(w) {
+    document.getElementById('victoryName').textContent = w;
+    document.getElementById('victoryAvatar').src = playersGameData[w].avatar;
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById('screenVictory').classList.add('active');
+    if(isMaster) {
+        try {
+            const {data} = await sb.from('cdsi_users').select('kavale_wins').eq('pseudo', w).single();
+            await sb.from('cdsi_users').update({ kavale_wins: (data?.kavale_wins || 0) + 1 }).eq('pseudo', w);
+            await sb.from('bingo_state').delete().eq('id', GAME_ID);
+        } catch(e) { console.error("Erreur sauvegarde victoire", e); }
+    }
+}
+
+window.addEventListener('keydown', e => {
+    const p = playersGameData[myPseudo];
+    if(!p || p.dead) return;
+    let d = null;
+    if(e.code==='ArrowUp' && p.direction!=='down') d='up';
+    if(e.code==='ArrowDown' && p.direction!=='up') d='down';
+    if(e.code==='ArrowLeft' && p.direction!=='right') d='left';
+    if(e.code==='ArrowRight' && p.direction!=='left') d='right';
+    if(d) { p.nextDir = d; realtimeChannel.send({type:'broadcast', event:'move', payload:{pseudo:myPseudo, direction:d}}); }
+});
+</script>
+</body>
+</html>
