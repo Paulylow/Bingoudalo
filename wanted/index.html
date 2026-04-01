@@ -46,9 +46,9 @@
   .logo { font-family: 'Bebas Neue'; font-size: 70px; letter-spacing: 5px; color: var(--yellow); text-shadow: 0 5px 15px rgba(0,0,0,0.6); margin-bottom: 20px; text-align: center; line-height: 1;}
   
   .card { 
-    background: rgba(20, 20, 20, 0.6); 
-    backdrop-filter: blur(10px); 
-    -webkit-backdrop-filter: blur(10px);
+    background: rgba(20, 20, 30, 0.8); 
+    backdrop-filter: blur(15px); 
+    -webkit-backdrop-filter: blur(15px);
     border: 2px solid rgba(255, 255, 255, 0.1); 
     border-radius: 15px; 
     padding: 30px; 
@@ -57,15 +57,6 @@
     box-shadow: 0 15px 35px rgba(0,0,0,0.5); 
     text-align: center; 
   }
-
-  input[type="text"] { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 12px; font-size: 16px; color: white; outline: none; margin-bottom: 15px; text-align: center; transition: 0.3s;}
-  input[type="text"]:focus { border-color: var(--cyan); box-shadow: 0 0 15px rgba(0,255,255,0.3); background: rgba(0,0,0,0.8);}
-  
-  .avatar-selection { margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
-  .avatar-selection p { font-size: 13px; color: var(--yellow); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
-  .avatar-grid { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
-  .avatar-option { width: 45px; height: 45px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: 0.2s; object-fit: cover; background: #000; box-shadow: 0 5px 10px rgba(0,0,0,0.5);}
-  .avatar-option.selected { border-color: var(--cyan); transform: scale(1.15); box-shadow: 0 0 20px rgba(0,255,255,0.6); z-index: 2; }
 
   button { font-family: 'DM Sans'; font-weight: bold; text-transform: uppercase; border: none; border-radius: 8px; cursor: pointer; padding: 14px 24px; transition: 0.2s; width: 100%; margin-top: 10px; font-size: 15px; }
   .btn-primary { background: var(--cyan); color: #000; box-shadow: 0 5px 15px rgba(0,255,255,0.3); }
@@ -113,6 +104,9 @@
     .game-sidebar { width: 100%; }
   }
 
+  .loading-text { font-size: 20px; color: var(--yellow); font-weight: bold; margin-top: 20px; animation: blink 1s infinite alternate; }
+  @keyframes blink { from { opacity: 0.5; } to { opacity: 1; } }
+
 </style>
 </head>
 <body>
@@ -121,15 +115,8 @@
 
 <div class="screen active" id="screenJoin">
   <div class="logo">WANTED<br><span style="color:var(--cyan); font-size:45px;">DAYOUB</span></div>
-  <div class="card">
-    <input type="text" id="pseudoInput" placeholder="Ton pseudo..." maxlength="15" />
-    
-    <div class="avatar-selection">
-      <p>Choisis ton avatar :</p>
-      <div class="avatar-grid" id="avatarGrid"></div>
-    </div>
-
-    <button class="btn-primary" id="joinBtn" onclick="joinLobby()">Rejoindre la traque</button>
+  <div class="card" style="background: transparent; border: none; box-shadow: none;">
+    <div class="loading-text">Connexion au profil en cours...</div>
   </div>
 </div>
 
@@ -188,39 +175,28 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const GAME_ID = 'wanted_main_lobby';
 
-// --- IMAGES DU JEU ET AVATARS ---
-const AVATARS = [
-  '../bingoudalo/avatar/9k.png', '../bingoudalo/avatar/bbc.png', '../bingoudalo/avatar/christophe.jpg', 
-  '../bingoudalo/avatar/coudoux.png', '../bingoudalo/avatar/elian.jpg', '../bingoudalo/avatar/ellio.png', 
-  '../bingoudalo/avatar/epstein.png', '../bingoudalo/avatar/matheo.jpg', '../bingoudalo/avatar/paulin.jpg', 
-  '../bingoudalo/avatar/paulo1.jpg', '../bingoudalo/avatar/tom.png', '../bingoudalo/avatar/wilbaut_suss.png'
-];
-
+// --- IMAGES DU JEU ---
 const targetImg = new Image(); targetImg.src = '../bingoudalo/avatar/dayoub.png';
-
 const distractorSrcs = [
     '../bingoudalo/avatar/ellio.png',
     '../bingoudalo/avatar/paulin.png',
     '../bingoudalo/avatar/elian.png'
 ];
-
 const distractorImgs = distractorSrcs.map(src => {
     let img = new Image(); img.src = src; return img;
 });
 
 // --- VARIABLES GLOBALES ---
 let myPseudo = '';
-let myAvatar = AVATARS[0];
+let myAvatar = '';
 let isMaster = false;
 let dbSyncInterval = null;
 let currentPhase = 'lobby';
 
-// Variables Timer
 let roundEndTime = 0;
 let visualTimerInterval = null;
 let isEndingRound = false;
 
-// Variables Moteur de Jeu
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: false }); // Optimisation Mac
 ctx.imageSmoothingEnabled = false; 
@@ -229,21 +205,29 @@ let heads = [];
 let animFrame;
 let hasFound = false;
 
-// --- INITIALISATION ---
-function renderAvatarSelection() {
-  document.getElementById('avatarGrid').innerHTML = AVATARS.map(src => 
-    `<img src="${src}" class="avatar-option ${src === myAvatar ? 'selected' : ''}" onclick="selectAvatar('${src}')" onerror="this.src='https://via.placeholder.com/45/333/fff?text=?'">`
-  ).join('');
-}
+// --- INITIALISATION & AUTO-CONNEXION ---
+window.onload = async () => {
+    // 1. Vérifier si on a un compte actif
+    myPseudo = localStorage.getItem('cdsi_logged_user');
+    
+    if (!myPseudo) {
+        // Redirection vers le Hub si on n'est pas connecté
+        window.location.href = '../index.html'; 
+        return;
+    }
 
-function selectAvatar(src) { myAvatar = src; renderAvatarSelection(); }
+    // 2. Récupérer l'avatar depuis la vraie base de données des comptes
+    const { data, error } = await sb.from('cdsi_users').select('avatar').eq('pseudo', myPseudo).single();
+    
+    if (data && data.avatar) {
+        // On s'assure d'avoir le bon chemin relatif (vu qu'on est dans le dossier 'wanted')
+        myAvatar = '../' + data.avatar; 
+    } else {
+        myAvatar = '../bingoudalo/avatar/paulo1.jpg'; // Avatar de secours
+    }
 
-window.onload = () => {
-    const savedPseudo = localStorage.getItem('wanted_pseudo');
-    const savedAvatar = localStorage.getItem('wanted_avatar');
-    if (savedAvatar) myAvatar = savedAvatar;
-    if (savedPseudo) document.getElementById('pseudoInput').value = savedPseudo;
-    renderAvatarSelection();
+    // 3. Rejoindre automatiquement la salle d'attente Supabase du jeu
+    autoJoinLobby();
 };
 
 function showScreen(id){
@@ -251,7 +235,7 @@ function showScreen(id){
   document.getElementById(id).classList.add('active');
 }
 
-// --- BASE DE DONNÉES ---
+// --- BASE DE DONNÉES DU JEU ---
 async function fetchState() {
     try {
         const {data, error} = await sb.from('bingo_state').select('data').eq('id', GAME_ID).maybeSingle();
@@ -266,21 +250,11 @@ async function updateState(newState) {
     } catch (e) {}
 }
 
-async function joinLobby() {
-    myPseudo = document.getElementById('pseudoInput').value.trim();
-    if(!myPseudo) return alert("Choisis un pseudo !");
-    
-    const joinBtn = document.getElementById('joinBtn');
-    joinBtn.disabled = true;
-    joinBtn.innerText = "Connexion en cours...";
-
+async function autoJoinLobby() {
     try {
-        localStorage.setItem('wanted_pseudo', myPseudo);
-        localStorage.setItem('wanted_avatar', myAvatar);
-
         let state = await fetchState();
         if(!state || !state.players || typeof state.players !== 'object') {
-            state = { phase: 'lobby', master: myPseudo, round: 1, players: {}, roundWinners: [], roundEndTime: 0 };
+            state = { phase: 'lobby', master: myPseudo, round: 1, players: {}, roundWinners: [], roundEndTime: 0, gameEndedSaved: false };
         }
 
         isMaster = (state.master === myPseudo);
@@ -294,9 +268,8 @@ async function joinLobby() {
         showScreen('screenLobby');
         startSync();
     } catch (error) {
-        alert("Une erreur est survenue pendant la connexion. Réessaie !");
-        joinBtn.disabled = false;
-        joinBtn.innerText = "Rejoindre la traque";
+        alert("Erreur de connexion au serveur. Retour au Hub.");
+        window.location.href = '../index.html';
     }
 }
 
@@ -312,6 +285,7 @@ function startSync() {
 function updateUI(state) {
     if(!state || !state.players) return;
     isMaster = (state.master === myPseudo);
+    let playerCount = Object.keys(state.players).length;
 
     // LOBBY
     if(state.phase === 'lobby' && currentPhase !== 'lobby') {
@@ -330,9 +304,14 @@ function updateUI(state) {
 
         const ctrl = document.getElementById('lobbyControls');
         if(isMaster) {
-            ctrl.innerHTML = `<button class="btn-primary" onclick="startRound()">Démarrer Manche ${state.round}</button>`;
+            // VERIFICATION : Au moins 2 joueurs requis !
+            if (playerCount >= 2) {
+                ctrl.innerHTML = `<button class="btn-primary" onclick="startRound()">Démarrer Manche ${state.round}</button>`;
+            } else {
+                ctrl.innerHTML = `<p style="color:var(--yellow); font-size:16px; font-weight:bold; text-align:center;">Il faut au moins 2 joueurs pour lancer la partie !</p>`;
+            }
         } else {
-            ctrl.innerHTML = `<p style="color:var(--cyan); font-size:14px;">En attente que le maître démarre...</p>`;
+            ctrl.innerHTML = `<p style="color:var(--cyan); font-size:14px; text-align:center;">En attente que le maître démarre...</p>`;
         }
     }
 
@@ -394,10 +373,33 @@ function updateUI(state) {
 
         const ctrl = document.getElementById('scoreControls');
         if(isMaster) {
-            if(state.round > 5) ctrl.innerHTML = `<button class="btn-magenta" onclick="resetGame()">Nouvelle Partie</button>`;
-            else ctrl.innerHTML = `<button class="btn-primary" onclick="returnToLobby()">Manche Suivante</button>`;
+            if(state.round > 5) {
+                ctrl.innerHTML = `<button class="btn-magenta" onclick="resetGame()">Nouvelle Partie</button>`;
+                
+                // SAUVEGARDE DES VICTOIRES (EXÉCUTÉ 1 SEULE FOIS PAR LE MAITRE)
+                if (!state.gameEndedSaved) {
+                    state.gameEndedSaved = true;
+                    updateState(state); // On valide l'enregistrement pour éviter les doublons
+
+                    // Trouver le ou les premiers (égalité possible)
+                    let maxScore = sortedPlayers[0].score;
+                    let winners = sortedPlayers.filter(p => p.score === maxScore);
+                    
+                    winners.forEach(w => {
+                        // Récupérer les stats actuelles et faire +1
+                        sb.from('cdsi_users').select('wanted_wins').eq('pseudo', w.pseudo).single().then(({data}) => {
+                            if(data) {
+                                sb.from('cdsi_users').update({ wanted_wins: (data.wanted_wins || 0) + 1 }).eq('pseudo', w.pseudo).then();
+                            }
+                        });
+                    });
+                }
+
+            } else {
+                ctrl.innerHTML = `<button class="btn-primary" onclick="returnToLobby()">Manche Suivante</button>`;
+            }
         } else {
-            ctrl.innerHTML = `<p style="color:#bbb; font-size:14px;">En attente du maître...</p>`;
+            ctrl.innerHTML = `<p style="color:#bbb; font-size:14px; text-align:center;">En attente du maître...</p>`;
         }
     }
 }
@@ -446,7 +448,6 @@ function startVisualTimer() {
     }, 100);
 }
 
-// OPTIMISATION : Fonction pour pré-calculer et stocker les images dans des mini-canvases !
 function createPreRenderedSprite(img, size) {
     let offscreen = document.createElement('canvas');
     offscreen.width = size;
@@ -476,11 +477,10 @@ function initGameEngine(round) {
         let dImg = distractorImgs[Math.floor(Math.random() * distractorImgs.length)];
         let exactSize = (targetSize + (Math.random() * 20 - 10)) | 0;
         
-        // On génère le Sprite mis en cache (énorme gain de perf)
         let sprite = createPreRenderedSprite(dImg, exactSize);
 
         heads.push({
-            sprite: sprite, // On stocke le mini-canvas pré-rendu
+            sprite: sprite,
             x: Math.random() * (canvas.width - exactSize),
             y: Math.random() * (canvas.height - exactSize),
             size: exactSize,
@@ -510,11 +510,9 @@ function initGameEngine(round) {
 function gameLoop() {
     if(currentPhase !== 'playing' || hasFound) return;
     
-    // Remplissage uni beaucoup plus rapide que clearRect avec transparence
     ctx.fillStyle = '#0b0c10';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Boucle for classique (plus rapide que forEach)
     for (let i = 0; i < heads.length; i++) {
         let h = heads[i];
         h.x += h.vx;
@@ -523,7 +521,6 @@ function gameLoop() {
         if(h.x <= 0 || h.x + h.size >= canvas.width) h.vx *= -1;
         if(h.y <= 0 || h.y + h.size >= canvas.height) h.vy *= -1;
 
-        // Le GPU dessine directement le mini-canvas pré-rendu (VITESSE MAXIMUM)
         ctx.drawImage(h.sprite, h.x | 0, h.y | 0);
     }
 
