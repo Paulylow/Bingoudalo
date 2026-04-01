@@ -6,8 +6,7 @@
 <title>FRANCLICK 🏋️</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;700&display=swap" rel="stylesheet">
 <style>
-/* ─── CURSEUR HALTÈRE INCLINÉE ─────────────────────────────────────── */
-/* SVG inline, rotaté ~35°, cyan en normal, rouge en mode bourrine */
+/* ─── CURSEUR HALTÈRE ─────────────────────────────────────── */
 :root {
     --cur: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Cg transform='rotate(-35 18 18)'%3E%3Crect x='15' y='2' width='6' height='8' rx='2' fill='%2300FFFF' stroke='%23fff' stroke-width='1'/%3E%3Crect x='15' y='26' width='6' height='8' rx='2' fill='%2300FFFF' stroke='%23fff' stroke-width='1'/%3E%3Crect x='15.5' y='10' width='5' height='16' rx='1.5' fill='%23888'/%3E%3Crect x='2' y='6' width='13' height='5' rx='2' fill='%2300FFFF' stroke='%23fff' stroke-width='1'/%3E%3Crect x='21' y='6' width='13' height='5' rx='2' fill='%2300FFFF' stroke='%23fff' stroke-width='1'/%3E%3Crect x='2' y='25' width='13' height='5' rx='2' fill='%2300FFFF' stroke='%23fff' stroke-width='1'/%3E%3Crect x='21' y='25' width='13' height='5' rx='2' fill='%2300FFFF' stroke='%23fff' stroke-width='1'/%3E%3C/g%3E%3C/svg%3E") 18 18, crosshair;
     --cur-red: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Cg transform='rotate(-35 18 18)'%3E%3Crect x='15' y='2' width='6' height='8' rx='2' fill='%23ff2200' stroke='%23fff' stroke-width='1'/%3E%3Crect x='15' y='26' width='6' height='8' rx='2' fill='%23ff2200' stroke='%23fff' stroke-width='1'/%3E%3Crect x='15.5' y='10' width='5' height='16' rx='1.5' fill='%23ff8888'/%3E%3Crect x='2' y='6' width='13' height='5' rx='2' fill='%23ff2200' stroke='%23fff' stroke-width='1'/%3E%3Crect x='21' y='6' width='13' height='5' rx='2' fill='%23ff2200' stroke='%23fff' stroke-width='1'/%3E%3Crect x='2' y='25' width='13' height='5' rx='2' fill='%23ff2200' stroke='%23fff' stroke-width='1'/%3E%3Crect x='21' y='25' width='13' height='5' rx='2' fill='%23ff2200' stroke='%23fff' stroke-width='1'/%3E%3C/g%3E%3C/svg%3E") 18 18, crosshair;
@@ -15,772 +14,323 @@
 * { box-sizing:border-box; margin:0; padding:0; user-select:none; cursor:var(--cur) !important; }
 body.bourrine * { cursor:var(--cur-red) !important; }
 
-/* ─── LAYOUT DE BASE ────────────────────────────────────────────────── */
-body {
-    background:#0b0c10; color:#c5c6c7;
-    font-family:'DM Sans',sans-serif; height:100vh;
-    display:flex; flex-direction:column; overflow:hidden;
-    transition:background-color 0.4s;
-}
+body { background:#0b0c10; color:#c5c6c7; font-family:'DM Sans',sans-serif; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
 body.bourrine { background:#160000; }
 
-/* ─── RETOUR AU HUB ─────────────────────────────────────────────────── */
-#hub-link {
-    position:fixed; top:14px; left:16px; z-index:200;
-    display:flex; align-items:center; gap:6px;
-    color:#00FFFF; font-family:'Bebas Neue'; font-size:14px; letter-spacing:1.5px;
-    text-decoration:none; padding:5px 10px;
-    border:1px solid rgba(0,255,255,0.3); border-radius:5px;
-    background:rgba(0,0,0,0.55); backdrop-filter:blur(4px);
-    transition:background 0.2s, border-color 0.2s;
-}
-#hub-link:hover { background:rgba(0,255,255,0.12); border-color:#00FFFF; }
-#hub-link svg { flex-shrink:0; }
-body.bourrine #hub-link { color:#ff5500; border-color:rgba(255,80,0,0.4); }
+#bg-canvas, #fx-canvas { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; }
+#bg-canvas { z-index:0; opacity:0.09; }
+#fx-canvas { z-index:400; }
 
-/* ─── CANVAS FOND (léger, une seule couche) ─────────────────────────── */
-#bg-canvas {
-    position:fixed; top:0; left:0; width:100%; height:100%;
-    pointer-events:none; z-index:0; opacity:0.09;
-}
-/* Canvas particules clic */
-#fx-canvas {
-    position:fixed; top:0; left:0; width:100%; height:100%;
-    pointer-events:none; z-index:400;
-}
+header { text-align:center; padding:12px; background:rgba(0,0,0,0.65); border-bottom:2px solid #1f2833; z-index:10; }
+h1 { font-family:'Bebas Neue'; font-size:38px; letter-spacing:4px; background:linear-gradient(90deg,#00FFFF,#FF00FF); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
 
-/* ─── HEADER ────────────────────────────────────────────────────────── */
-header {
-    text-align:center; padding:12px 12px 12px 130px;
-    background:rgba(0,0,0,0.65); border-bottom:2px solid #1f2833;
-    position:relative; z-index:10; flex-shrink:0;
-    transition:background 0.4s, border-color 0.4s;
-}
-body.bourrine header { background:rgba(80,0,0,0.8); border-color:#ff2200; }
-h1 {
-    font-family:'Bebas Neue'; font-size:38px; letter-spacing:4px;
-    background:linear-gradient(90deg,#00FFFF,#FF00FF);
-    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-}
-body.bourrine h1 {
-    background:linear-gradient(90deg,#ff2200,#ff9900);
-    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-    animation:hShake 0.09s infinite;
-}
-@keyframes hShake{0%,100%{letter-spacing:4px}50%{letter-spacing:7px}}
-
-/* Bannière mode bourrine */
-#bourrine-banner {
-    display:none; text-align:center; padding:6px;
-    background:linear-gradient(90deg,#ff2200,#ff8800,#ff2200);
-    background-size:200%; animation:bScroll 1.2s linear infinite;
-    font-family:'Bebas Neue'; font-size:18px; letter-spacing:3px; color:#fff;
-    position:relative; z-index:10; flex-shrink:0;
-}
-body.bourrine #bourrine-banner { display:block; }
-@keyframes bScroll{0%{background-position:0%}100%{background-position:200%}}
-
-/* ─── LAYOUT 3 COLONNES ─────────────────────────────────────────────── */
 .game-container { display:flex; flex:1; overflow:hidden; position:relative; z-index:1; }
+.col-left { width:35%; border-right:2px solid #1f2833; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.col-center { width:40%; padding:16px; overflow-y:auto; display:flex; flex-direction:column; gap:12px; }
+.col-right { width:25%; border-left:2px solid #1f2833; background:#14141e; overflow-y:auto; padding:18px; }
 
-/* ─── COL GAUCHE ────────────────────────────────────────────────────── */
-.col-left {
-    width:30%; border-right:2px solid #1f2833;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    position:relative; overflow:hidden;
-    background:radial-gradient(ellipse at center, #12182a 0%, #0b0c10 100%);
-    transition:border-color 0.4s, background 0.4s;
-}
-body.bourrine .col-left { border-color:#ff2200; background:radial-gradient(ellipse at center,#2a0808 0%,#160000 100%); }
-
-/* Score */
-.score-container { text-align:center; margin-bottom:22px; position:relative; z-index:2; }
-.score-number {
-    font-family:'Bebas Neue'; font-size:62px; color:#fff;
-    text-shadow:0 0 18px #00FFFF; transition:text-shadow 0.3s, color 0.3s;
-}
+.score-number { font-family:'Bebas Neue'; font-size:62px; color:#fff; text-shadow:0 0 18px #00FFFF; }
 body.bourrine .score-number { text-shadow:0 0 18px #ff2200; color:#ffb090; }
-.score-bps { font-size:14px; color:#00FFFF; font-weight:bold; transition:color 0.3s; }
-body.bourrine .score-bps { color:#ff5500; }
 
-#multiplier-badge {
-    display:none; background:#cc1100; color:#fff;
-    font-family:'Bebas Neue'; font-size:18px; letter-spacing:2px;
-    padding:2px 12px; border-radius:20px; margin-top:6px;
-}
-body.bourrine #multiplier-badge { display:inline-block; }
+.francky-btn { width:240px; height:240px; border-radius:50%; border:4px solid #00FFFF; overflow:hidden; transition: transform 0.1s; }
+.francky-btn img { width:100%; height:100%; object-fit:cover; }
+.francky-btn:active { transform: scale(0.95); }
 
-/* Timer bourrine */
-#bourrine-timer {
-    display:none; width:190px; height:7px;
-    background:#2a0000; border-radius:4px; overflow:hidden; margin-top:8px;
-}
-body.bourrine #bourrine-timer { display:block; }
-#bourrine-timer-bar {
-    height:100%; width:100%;
-    background:linear-gradient(90deg,#ff2200,#ff9900); border-radius:4px;
-}
+.shop-item { background:rgba(0,0,0,0.4); border:2px solid #1f2833; border-radius:8px; padding:12px; margin-bottom:12px; display:flex; justify-content:space-between; cursor:pointer !important; }
+.shop-item.disabled { opacity:0.4; filter:grayscale(1); cursor: not-allowed !important; }
+.shop-icon { width:30px; height:30px; margin-right:10px; vertical-align: middle; }
 
-/* ─── CERCLE FRANCKY ────────────────────────────────────────────────── */
-.francky-wrapper {
-    position:relative; display:flex; align-items:center; justify-content:center; z-index:2;
-}
+/* Popups et Notifs */
+#notif { position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#FFFF00; color:#000; padding:10px 20px; border-radius:8px; display:none; z-index:1000; font-family:'Bebas Neue'; }
+#milestone-popup { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#0d0d1a; border:3px solid #FF00FF; padding:20px; text-align:center; z-index:2000; border-radius:15px; }
+#milestone-popup img { width:200px; border-radius:10px; margin: 10px 0; }
 
-/* Anneaux — juste 2, discrets */
-.ring {
-    position:absolute; border-radius:50%; border:2px solid rgba(0,255,255,0.5);
-    opacity:0; animation:rPulse 2.5s ease-out infinite; pointer-events:none;
-}
-.ring:nth-child(1){width:290px;height:290px;animation-delay:0s}
-.ring:nth-child(2){width:335px;height:335px;animation-delay:1.1s}
-body.bourrine .ring { border-color:rgba(255,60,0,0.6); }
-@keyframes rPulse{0%{opacity:0.7;transform:scale(0.88)}100%{opacity:0;transform:scale(1.06)}}
-
-/* Bouton — taille augmentée à 240px */
-.francky-btn {
-    width:240px; height:240px; border-radius:50%;
-    border:4px solid #00FFFF;
-    box-shadow:0 0 40px rgba(0,255,255,0.3), inset 0 0 20px rgba(0,0,0,0.6);
-    transition:transform 0.07s ease, border-color 0.4s, box-shadow 0.4s;
-    position:relative; z-index:2; overflow:hidden; background:#080c10;
-}
-.francky-btn img { width:100%; height:100%; object-fit:cover; border-radius:50%; display:block; pointer-events:none; }
-.francky-btn:hover { box-shadow:0 0 65px rgba(0,255,255,0.55), inset 0 0 20px rgba(0,0,0,0.6); transform:scale(1.03); }
-.francky-btn:active { transform:scale(0.91) rotate(-2deg) !important; }
-body.bourrine .francky-btn {
-    border-color:#ff3300;
-    box-shadow:0 0 55px rgba(255,50,0,0.55), inset 0 0 20px rgba(0,0,0,0.6);
-    animation:btnShake 0.11s infinite;
-}
-@keyframes btnShake{0%{transform:translate(0,0)}25%{transform:translate(-2px,1px)}50%{transform:translate(2px,-1px)}75%{transform:translate(-1px,2px)}100%{transform:translate(1px,-1px)}}
-
-/* ─── COL MILIEU ────────────────────────────────────────────────────── */
-.col-center { width:45%; padding:16px; overflow-y:auto; display:flex; flex-direction:column; gap:12px; }
-.visual-row {
-    border:1px solid #1f2833; border-radius:8px; padding:8px;
-    min-height:68px; display:flex; flex-wrap:wrap; gap:6px;
-    align-items:center; align-content:flex-start;
-    box-shadow:inset 0 0 14px rgba(0,0,0,0.7);
-}
-.visual-item {
-    width:44px; height:44px; border-radius:5px; background:#000;
-    display:flex; align-items:center; justify-content:center;
-    overflow:hidden; border:1px solid #333; animation:itemPop 0.25s ease;
-}
-.visual-item img { width:100%; height:100%; object-fit:cover; border-radius:3px; }
-@keyframes itemPop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
-
-/* ─── POPUP MILLIÈME CLIC ───────────────────────────────────────────── */
-#milestone-popup {
-    display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
-    background:#0d0d1a; border:3px solid #FF00FF;
-    box-shadow:0 0 40px rgba(255,0,255,0.4); border-radius:14px;
-    padding:20px 30px; text-align:center; z-index:800;
-    animation:popIn 0.4s cubic-bezier(0.17,0.89,0.32,1.28);
-    max-width:340px;
-}
-@keyframes popIn{0%{transform:translate(-50%,-50%) scale(0.3);opacity:0}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
-#milestone-popup h2 { font-family:'Bebas Neue'; font-size:26px; color:#FF00FF; letter-spacing:2px; margin-bottom:10px; }
-#milestone-popup img { width:160px; height:160px; object-fit:cover; border-radius:8px; border:2px solid #FF00FF; margin-bottom:10px; display:block; margin-left:auto; margin-right:auto; }
-#milestone-popup p { font-size:13px; color:#aaa; margin-bottom:14px; }
-#milestone-popup button {
-    background:#FF00FF; color:#fff; border:none; border-radius:6px;
-    font-family:'Bebas Neue'; font-size:18px; letter-spacing:1px;
-    padding:6px 22px;
-}
-
-/* ─── COL DROITE ────────────────────────────────────────────────────── */
-.col-right {
-    width:25%; border-left:2px solid #1f2833;
-    background:#14141e; overflow-y:auto; padding:18px;
-    transition:border-color 0.4s;
-}
-body.bourrine .col-right { border-color:#ff2200; }
-.shop-title {
-    font-family:'Bebas Neue'; font-size:26px; text-align:center;
-    margin-bottom:16px; color:#FF00FF; border-bottom:2px solid; padding-bottom:8px;
-}
-.shop-item {
-    background:rgba(0,0,0,0.4); border:2px solid #1f2833;
-    border-radius:8px; padding:12px; margin-bottom:12px;
-    transition:0.18s; display:flex; justify-content:space-between; align-items:center;
-}
-.shop-item:not(.disabled):hover { border-color:#FF00FF; background:rgba(255,0,255,0.08); }
-.shop-item.disabled { opacity:0.4; filter:grayscale(1); }
-.item-info h3 { font-size:14px; color:#fff; margin-bottom:4px; display:flex; align-items:center; gap:5px; }
-.item-info p { font-size:11px; color:#666; margin-left:34px; }
-.item-cost { font-weight:bold; color:#FF00FF; font-size:14px; margin-left:34px; margin-top:3px; }
-.item-count { font-family:'Bebas Neue'; font-size:28px; color:#444; }
-.shop-icon { width:26px; height:26px; object-fit:cover; border-radius:4px; border:1px solid #444; flex-shrink:0; }
-
-.reset-btn {
-    margin-top:24px; width:100%; padding:9px; background:transparent;
-    border:1px solid #cc0000; color:#cc0000; border-radius:5px;
-    font-family:'DM Sans'; font-weight:bold; text-transform:uppercase; font-size:12px;
-}
-.reset-btn:hover { background:#cc0000; color:#fff; }
-
-/* ─── BONUS ORB ─────────────────────────────────────────────────────── */
-#bonus-orb {
-    position:fixed; z-index:500; width:70px; height:70px; border-radius:50%;
-    background:radial-gradient(circle at 38% 38%,#fffde0,#ffcc00 55%,#ff8800);
-    border:3px solid rgba(255,255,255,0.8);
-    display:none; align-items:center; justify-content:center; flex-direction:column;
-    font-size:9px; font-weight:bold; color:#000; text-align:center; line-height:1.3;
-    animation:orbBob 2.5s ease-in-out infinite;
-    filter:drop-shadow(0 0 10px #ffcc00);
-}
-#bonus-orb .ob-icon { font-size:22px; }
-@keyframes orbBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
-
-/* ─── ÉVÉNEMENT FRAUDE ──────────────────────────────────────────────── */
-#fraude-orb {
-    position:fixed; z-index:501; width:72px; height:72px; border-radius:50%;
-    border:3px solid #ff0000;
-    display:none; align-items:center; justify-content:center; flex-direction:column;
-    font-size:9px; font-weight:bold; text-align:center; line-height:1.3;
-    overflow:hidden; background:#111;
-    filter:drop-shadow(0 0 8px #ff0000);
-}
-#fraude-orb img { width:100%; height:100%; object-fit:cover; display:block; }
-#fraude-orb .fraude-emoji { font-size:28px; }
-
-#fraude-msg {
-    display:none; position:fixed; bottom:30px; left:50%; transform:translateX(-50%);
-    background:rgba(180,0,0,0.92); color:#fff; font-family:'Bebas Neue';
-    font-size:18px; letter-spacing:2px; padding:8px 22px; border-radius:8px;
-    z-index:502; white-space:nowrap;
-    border:2px solid #ff0000;
-}
-
-#fraude-timer-bar-wrap {
-    display:none; position:fixed; bottom:76px; left:50%; transform:translateX(-50%);
-    width:220px; height:5px; background:#400; border-radius:3px; z-index:502; overflow:hidden;
-}
-#fraude-timer-bar { height:100%; width:100%; background:#ff3300; border-radius:3px; }
-
-/* ─── FLASH ÉCRAN ───────────────────────────────────────────────────── */
-#screen-flash { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:600; display:none; }
-
-/* ─── NOTIF ─────────────────────────────────────────────────────────── */
-#notif {
-    position:fixed; top:70px; left:50%; transform:translateX(-50%);
-    background:rgba(0,0,0,0.9); border:2px solid #FFFF00;
-    color:#FFFF00; font-family:'Bebas Neue'; font-size:18px;
-    letter-spacing:2px; padding:8px 24px; border-radius:8px;
-    z-index:700; display:none; white-space:nowrap;
-}
-
-::-webkit-scrollbar{width:5px}
-::-webkit-scrollbar-track{background:#0b0c10}
-::-webkit-scrollbar-thumb{background:#1f2833;border-radius:3px}
+/* Bonus & Fraude */
+#bonus-orb, #fraude-orb { position:fixed; width:70px; height:70px; border-radius:50%; display:none; align-items:center; justify-content:center; cursor:pointer !important; z-index:500; }
+#bonus-orb { background: radial-gradient(circle, #fff, #ffcc00); box-shadow: 0 0 20px #ffcc00; }
+#fraude-orb { background: #000; border: 3px solid red; color: white; font-size: 30px; }
 </style>
 </head>
 <body>
 
-<!-- FOND + FX -->
 <canvas id="bg-canvas"></canvas>
 <canvas id="fx-canvas"></canvas>
-
-<!-- RETOUR HUB -->
-<a id="hub-link" href="https://bingoudalo.vercel.app/index.html">
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-        <path d="M9 2L4 7L9 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    RETOUR AU HUB
-</a>
-
-<!-- FLASH -->
-<div id="screen-flash"></div>
-<!-- NOTIF -->
 <div id="notif"></div>
 
-<!-- BONUS ORB -->
-<div id="bonus-orb" onclick="activateBonus()">
-    <div class="ob-icon">⚡</div>
-    <div>BONUS<br>x2 !</div>
-</div>
-
-<!-- FRAUDE ORB -->
-<div id="fraude-orb" onclick="catchFraude()">
-    <!-- Pour mettre une vraie image : remplace le span par <img src="../ton/image.png"> -->
-    <span class="fraude-emoji">🕵️</span>
-</div>
-<div id="fraude-msg">🚨 CLIQUE SUR LA FRAUDE OU PERD 10% !</div>
-<div id="fraude-timer-bar-wrap"><div id="fraude-timer-bar"></div></div>
-
-<!-- POPUP MILLIÈME CLIC -->
 <div id="milestone-popup">
-    <h2>🎉 CLIC MILLIÈME !</h2>
-    <img id="milestone-img" src="" alt="">
-    <p id="milestone-caption"></p>
-    <button onclick="closeMilestone()">OK STYLÉ</button>
+    <h2 style="color:#FF00FF">🎉 MILESTONE !</h2>
+    <img id="milestone-img" src="" alt="Meme">
+    <p id="milestone-caption" style="color:white"></p>
+    <button onclick="closeMilestone()" style="margin-top:10px; padding:10px;">OK C'EST CARRÉ</button>
 </div>
 
-<header><h1>FRANCLICK</h1></header>
-<div id="bourrine-banner">🔥 MODE BOURRINE FRANCKY ! CLIQUE COMME UN MALADE ! 🔥</div>
+<div id="bonus-orb" onclick="activateBonus()">⚡<br>X2</div>
+<div id="fraude-orb" onclick="catchFraude()">🕵️</div>
+
+<header><h1>FRANCLICK CORRIGÉ</h1></header>
 
 <div class="game-container">
-
     <div class="col-left">
         <div class="score-container">
             <div class="score-number" id="scoreDisplay">0</div>
-            <div class="score-bps" id="bpsDisplay">0 pts / sec</div>
-            <div id="multiplier-badge">x2 POINTS !</div>
-            <div id="bourrine-timer"><div id="bourrine-timer-bar"></div></div>
+            <div id="bpsDisplay">0 pts / sec</div>
         </div>
-        <div class="francky-wrapper" id="franckyWrapper">
-            <div class="ring"></div>
-            <div class="ring"></div>
-            <div class="francky-btn" id="franckyBtn" onclick="clickFrancky(event)">
-                <img src="../bingoudalo/avatar/francky.jpg" alt="Francky"
-                     onerror="this.style.display='none'">
-            </div>
+        <div class="francky-btn" onclick="clickFrancky(event)">
+            <img src="../bingoudalo/avatar/francky.jpg" onerror="this.src='https://via.placeholder.com/240?text=Francky'">
         </div>
     </div>
 
-    <div class="col-center" id="visualCenter"></div>
+    <div class="col-center" id="visualCenter">
+        </div>
 
     <div class="col-right">
-        <div class="shop-title">MARCHÉ NOIR</div>
+        <h2 style="text-align:center; color:#FF00FF; margin-bottom:15px;">MARCHÉ NOIR</h2>
         <div id="shopContainer"></div>
-        <button class="reset-btn" onclick="resetGame()">Effacer la sauvegarde</button>
+        <button onclick="resetGame()" style="width:100%; margin-top:20px; color:red; background:none; border:1px solid red; padding:5px; cursor:pointer !important;">Reset la partie</button>
     </div>
 </div>
 
 <script>
-/* ================================================================
-   ANTI-TRICHE — protection localStorage + détection DevTools
-================================================================ */
-(function(){
-    // Surcharge console.log pour détecter ouverture DevTools
-    let devtoolsOpen = false;
-    const cheat = () => {
-        if(!devtoolsOpen){
-            devtoolsOpen = true;
-            setTimeout(()=>{
-                alert("🏋️ Vraiment ? Tu veux tricher sur le FRANCLICK ?\nReste digne !\n\n– Francky");
-                devtoolsOpen = false;
-            }, 200);
-        }
-    };
-    // Méthode fiable : timer qui détecte le ralentissement causé par DevTools
-    let t = performance.now();
-    setInterval(()=>{
-        const now = performance.now();
-        if(now - t > 250) cheat();
-        t = now;
-    }, 100);
-
-    // Bloquer F12, Ctrl+Shift+I/J/C/U
-    document.addEventListener('keydown', e => {
-        if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&['I','J','C'].includes(e.key))||(e.ctrlKey&&e.key==='U')){
-            e.preventDefault();
-            alert("🏋️ Vraiment ? Tu veux tricher sur le FRANCLICK ?\nReste digne !\n\n– Francky");
-        }
-    });
-
-    // Protéger le localStorage : score stocké en base64 + checksum simple
-    window._saveEncode = (data) => btoa(JSON.stringify(data));
-    window._saveDecode = (raw) => {
-        try { return JSON.parse(atob(raw)); }
-        catch(e){ return null; }
-    };
-})();
-
-/* ================================================================
-   CANVAS FOND — icônes flottantes, léger (requestAnimationFrame partagé)
-================================================================ */
-const bgCanvas = document.getElementById('bg-canvas');
-const bgCtx = bgCanvas.getContext('2d');
-const fxCanvas = document.getElementById('fx-canvas');
-const fxCtx = fxCanvas.getContext('2d');
-
-function resizeCanvases(){
-    bgCanvas.width = fxCanvas.width = window.innerWidth;
-    bgCanvas.height = fxCanvas.height = window.innerHeight;
-}
-resizeCanvases();
-window.addEventListener('resize', resizeCanvases);
-
-const BG_ICONS = ['🏋️','🐍','📚','💻','🔒','⚡','🏋️‍♂️','📖','🖥️'];
-// Pool réduit à 20 particules pour les perfs
-const bgParts = Array.from({length:20}, () => ({
-    x: Math.random()*window.innerWidth,
-    y: Math.random()*window.innerHeight,
-    icon: BG_ICONS[Math.floor(Math.random()*BG_ICONS.length)],
-    size: 14 + Math.random()*18,
-    vx: (Math.random()-0.5)*0.3,
-    vy: (Math.random()-0.5)*0.3,
-    rot: Math.random()*Math.PI*2,
-    rv: (Math.random()-0.5)*0.007
-}));
-
-// Particules FX clic — pool pré-alloué
-const FX_POOL_SIZE = 60;
-const fxPool = Array.from({length:FX_POOL_SIZE}, ()=>({active:false}));
-let fxPoolIdx = 0;
-
-function spawnFx(cx, cy){
-    const cols = isBourrine ? ['#ff3300','#ff8800','#ffdd00'] : ['#00FFFF','#FF00FF','#FFFF00'];
-    // 8 particules max par clic pour les perfs
-    for(let i=0;i<8;i++){
-        const p = fxPool[fxPoolIdx % FX_POOL_SIZE];
-        fxPoolIdx++;
-        const a = Math.random()*Math.PI*2;
-        const sp = 1.5 + Math.random()*4;
-        p.active=true; p.x=cx; p.y=cy;
-        p.vx=Math.cos(a)*sp; p.vy=Math.sin(a)*sp-1;
-        p.life=1; p.decay=0.04+Math.random()*0.03;
-        p.r=2+Math.random()*4;
-        p.color=cols[Math.floor(Math.random()*cols.length)];
-        p.text=null;
-    }
-    // +N flottant
-    const pt = fxPool[fxPoolIdx % FX_POOL_SIZE];
-    fxPoolIdx++;
-    pt.active=true; pt.x=cx; pt.y=cy-15;
-    pt.vx=(Math.random()-0.5); pt.vy=-2.5;
-    pt.life=1; pt.decay=0.025; pt.r=0;
-    pt.color=isBourrine?'#ff8800':'#00FFFF';
-    pt.text='+'+clickMultiplier; pt.fontSize=16;
-}
-
+/* --- VARIABLES --- */
+let score = 0;
+let scorePerSecond = 0;
+let clickMultiplier = 1;
+let totalClicks = 0;
 let isBourrine = false;
-let rafHandle = null;
-
-function mainLoop(){
-    // BG
-    bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
-    bgParts.forEach(p=>{
-        p.x+=p.vx; p.y+=p.vy; p.rot+=p.rv;
-        if(p.x<-40) p.x=bgCanvas.width+40;
-        if(p.x>bgCanvas.width+40) p.x=-40;
-        if(p.y<-40) p.y=bgCanvas.height+40;
-        if(p.y>bgCanvas.height+40) p.y=-40;
-        bgCtx.save();
-        bgCtx.translate(p.x,p.y); bgCtx.rotate(p.rot);
-        bgCtx.font=p.size+'px serif';
-        bgCtx.textAlign='center'; bgCtx.textBaseline='middle';
-        bgCtx.fillText(p.icon,0,0);
-        bgCtx.restore();
-    });
-    // FX
-    fxCtx.clearRect(0,0,fxCanvas.width,fxCanvas.height);
-    fxPool.forEach(p=>{
-        if(!p.active) return;
-        p.x+=p.vx; p.y+=p.vy; p.vy+=0.1; p.life-=p.decay;
-        if(p.life<=0){ p.active=false; return; }
-        fxCtx.save();
-        fxCtx.globalAlpha=Math.max(0,p.life);
-        if(p.text){
-            fxCtx.font=`bold ${p.fontSize}px 'Bebas Neue',sans-serif`;
-            fxCtx.fillStyle=p.color; fxCtx.textAlign='center';
-            fxCtx.fillText(p.text,p.x,p.y);
-        } else {
-            fxCtx.fillStyle=p.color;
-            fxCtx.beginPath(); fxCtx.arc(p.x,p.y,p.r,0,Math.PI*2); fxCtx.fill();
-        }
-        fxCtx.restore();
-    });
-    // Bourrine timer bar
-    if(isBourrine){
-        const elapsed=performance.now()-bourrine_start;
-        const pct=Math.max(0,(BOURRINE_DURATION-elapsed)/BOURRINE_DURATION*100);
-        document.getElementById('bourrine-timer-bar').style.width=pct+'%';
-        if(elapsed>=BOURRINE_DURATION) deactivateBourrine();
-    }
-    // Fraude mouvement
-    if(fraudeActive){
-        const now=performance.now();
-        fraudeX += fraudeVx;
-        fraudeY += fraudeVy;
-        if(fraudeX<40||fraudeX>window.innerWidth-100){ fraudeVx*=-1; fraudeX=Math.max(40,Math.min(window.innerWidth-100,fraudeX)); }
-        if(fraudeY<80||fraudeY>window.innerHeight-100){ fraudeVy*=-1; fraudeY=Math.max(80,Math.min(window.innerHeight-100,fraudeY)); }
-        const orb=document.getElementById('fraude-orb');
-        orb.style.left=fraudeX+'px'; orb.style.top=fraudeY+'px';
-        // Timer fraude
-        const elapsed=now-fraude_start;
-        const pct=Math.max(0,(FRAUDE_DURATION-elapsed)/FRAUDE_DURATION*100);
-        document.getElementById('fraude-timer-bar').style.width=pct+'%';
-        if(elapsed>=FRAUDE_DURATION) fraudePunish();
-    }
-    rafHandle = requestAnimationFrame(mainLoop);
-}
-mainLoop();
-
-/* ================================================================
-   JEU
-================================================================ */
-let score=0, scorePerSecond=0, clickMultiplier=1;
-let totalClicks=0;
-
-// ── Bourrine ──
-let bourrineModeActive=false, bourrine_start=0;
-const BOURRINE_DURATION=30000;
-
-// ── Bonus orb ──
-let bonusScheduled=false;
-let bonusDelay = 60+Math.floor(Math.random()*120); // 1-3 min premier
-let bonusTimer = 0;
-let bonusActive = false;
-
-// ── Fraude ──
-let fraudeActive=false, fraude_start=0;
-let fraudeX=200, fraudeY=200, fraudeVx=0, fraudeVy=0;
-const FRAUDE_DURATION=10000;
-let fraudeEventTimer=0;
-// Fraude se déclenche aléatoirement toutes les 2-5 minutes
-let fraudeDelay=120+Math.floor(Math.random()*180);
-
-/* ─── POOL IMAGES MILLIÈME CLIC ──────────────────────────────────
-   Comment brancher tes images :
-   1. Crée un dossier dans ton GitHub : bingoudalo/milestone/
-   2. Mets-y tes images : image1.jpg, image2.jpg, image3.jpg...
-   3. Ajoute leurs chemins dans le tableau ci-dessous
-   Exemple : '../bingoudalo/milestone/meme1.jpg'
-   La mécanique tire au sort une image du pool à chaque millième clic.
-─────────────────────────────────────────────────────────────────── */
-const MILESTONE_POOL = [
-    { src: '../bingoudalo/milestone/image1.jpg', caption: 'Image 1' },
-    { src: '../bingoudalo/milestone/image2.jpg', caption: 'Image 2' },
-    { src: '../bingoudalo/milestone/image3.jpg', caption: 'Image 3' },
-    // Ajoute autant d'objets { src, caption } que tu veux ici
-];
-
-/* ─── POOL IMAGE FRAUDE ───────────────────────────────────────────
-   Pour mettre une vraie image sur le rond fraude :
-   1. Crée bingoudalo/fraude/ dans ton GitHub
-   2. Mets-y ton image : fraude.png ou fraude.jpg
-   3. Dans le HTML ci-dessus, remplace la balise <span class="fraude-emoji">🕵️</span>
-      par : <img src="../bingoudalo/fraude/fraude.png" alt="">
-─────────────────────────────────────────────────────────────────── */
 
 const buildings = [
-    {id:'tom',      name:'Suce un peu',                  baseCost:15,    bps:1,   icon:'../bingoudalo/avatar/tom.png',           count:0, bg:'linear-gradient(90deg,rgba(20,10,40,.8),rgba(0,0,0,.5))'},
-    {id:'affronte', name:'Affronte mon regard',           baseCost:100,   bps:5,   icon:'../bingoudalo/avatar/affronte.png',      count:0, bg:'linear-gradient(90deg,rgba(0,40,40,.8),rgba(0,0,0,.5))'},
-    {id:'epstein',  name:"De l'argent contre votre fils", baseCost:1100,  bps:50,  icon:'../bingoudalo/avatar/epstein.png',       count:0, bg:'linear-gradient(90deg,rgba(50,0,0,.8),rgba(0,0,0,.5))'},
-    {id:'complexe', name:'Complexe cette bite',           baseCost:12000, bps:400, icon:'../bingoudalo/avatar/wilbaut_suss.png',  count:0, bg:'linear-gradient(90deg,rgba(50,50,0,.8),rgba(0,0,0,.5))'}
+    {id:'tom',      name:'Suce un peu',                  baseCost:15,    bps:1,   icon:'../bingoudalo/avatar/tom.png',           count:0},
+    {id:'affronte', name:'Affronte mon regard',           baseCost:100,   bps:5,   icon:'../bingoudalo/avatar/affronte.png',      count:0},
+    {id:'epstein',  name:"Argent vs Fils",                baseCost:1100,  bps:50,  icon:'../bingoudalo/avatar/epstein.png',       count:0},
+    {id:'complexe', name:'Complexe cette b***',           baseCost:12000, bps:400, icon:'../bingoudalo/avatar/wilbaut_suss.png',  count:0}
 ];
 
-function initGame(){
-    loadGame(); renderShop(); renderVisuals(); updateScoreUI();
-    setInterval(gameLoop, 100);
+const MILESTONE_POOL = [
+    { src: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXByeHh4Z3R4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/3o7TKMGpxxcaDzNfJC/giphy.gif', caption: '1000 CLICS ! TU ES UNE MACHINE !' }
+];
+
+/* --- LOGIQUE JEU --- */
+function initGame() {
+    loadGame();
+    renderShop();
+    renderVisuals();
+    updateScoreUI();
+    
+    // Boucle de gain auto
+    setInterval(() => {
+        score += scorePerSecond / 10;
+        updateScoreUI();
+        updateShopColors();
+    }, 100);
+
+    // Save auto
     setInterval(saveGame, 5000);
-    setInterval(secondTick, 1000);
+
+    // Events aléatoires
+    setInterval(() => {
+        if (Math.random() < 0.05) triggerBonus();
+        if (Math.random() < 0.03) triggerFraude();
+    }, 10000);
+
+    requestAnimationFrame(mainLoop);
 }
 
-function gameLoop(){
-    score += scorePerSecond / 10;
-    updateScoreUI(); updateShopColors();
-}
-
-function secondTick(){
-    bonusTimer++;
-    fraudeEventTimer++;
-    if(!bonusActive && bonusTimer >= bonusDelay){ triggerBonus(); }
-    if(!fraudeActive && fraudeEventTimer >= fraudeDelay){ triggerFraude(); }
-}
-
-/* ─── CLIC ─────────────────────────────────────────────────────── */
-function clickFrancky(event){
+function clickFrancky(event) {
     score += clickMultiplier;
     totalClicks++;
-    updateScoreUI(); updateShopColors();
-    spawnFx(event.clientX, event.clientY);
-    // Millième clic
-    if(totalClicks > 0 && totalClicks % 1000 === 0) triggerMilestone();
-}
-
-/* ─── BOUTIQUE ──────────────────────────────────────────────────── */
-function buyBuilding(index){
-    const b=buildings[index], cost=getCost(b);
-    if(score>=cost){
-        score-=cost; b.count++;
-        recalculateBPS(); renderShop(); renderVisuals(); updateScoreUI(); saveGame();
-    }
-}
-function getCost(b){ return Math.floor(b.baseCost*Math.pow(1.15,b.count)); }
-function recalculateBPS(){ scorePerSecond=0; buildings.forEach(b=>{ scorePerSecond+=b.count*b.bps; }); }
-function updateScoreUI(){
-    document.getElementById('scoreDisplay').textContent=Math.floor(score).toLocaleString('fr-FR');
-    document.getElementById('bpsDisplay').textContent=scorePerSecond+' pts / sec';
-}
-function updateShopColors(){
-    buildings.forEach((b,i)=>{
-        const el=document.getElementById('shop-item-'+i);
-        if(el) el.classList.toggle('disabled',score<getCost(b));
-    });
-}
-function renderShop(){
-    const c=document.getElementById('shopContainer');
-    c.innerHTML='';
-    buildings.forEach((b,i)=>{
-        const cost=getCost(b), dis=score>=cost?'':'disabled';
-        c.innerHTML+=`<div class="shop-item ${dis}" id="shop-item-${i}" onclick="buyBuilding(${i})">
-            <div class="item-info">
-                <h3><img src="${b.icon}" class="shop-icon" onerror="this.style.display='none'" alt="">${b.name}</h3>
-                <p>Génère ${b.bps} pts/s</p>
-                <div class="item-cost">${cost.toLocaleString('fr-FR')} pts</div>
-            </div>
-            <div class="item-count">${b.count}</div>
-        </div>`;
-    });
-}
-function renderVisuals(){
-    const vc=document.getElementById('visualCenter');
-    vc.innerHTML='';
-    buildings.forEach(b=>{
-        if(b.count>0){
-            let html=`<div class="visual-row" style="background:${b.bg};">`;
-            for(let i=0;i<b.count;i++) html+=`<div class="visual-item"><img src="${b.icon}" alt="" onerror="this.style.display='none'"></div>`;
-            html+='</div>';
-            vc.innerHTML+=html;
-        }
-    });
-}
-
-/* ─── BONUS ORB (rechargeable toutes les 1-3 min) ──────────────── */
-function triggerBonus(){
-    bonusActive=true;
-    const orb=document.getElementById('bonus-orb');
-    const m=90;
-    orb.style.left=(m+Math.random()*(window.innerWidth-m*2))+'px';
-    orb.style.top=(m+Math.random()*(window.innerHeight-m*2))+'px';
-    orb.style.display='flex';
-    showNotif('⚡ UN BONUS EST APPARU ! CLIQUE VITE !');
-    // Disparaît après 20s si pas cliqué
-    setTimeout(()=>{
-        if(bonusActive){
-            bonusActive=false;
-            orb.style.display='none';
-            showNotif('💨 Le bonus a disparu...');
-            scheduleNextBonus();
-        }
-    },20000);
-}
-function activateBonus(){
-    if(!bonusActive) return;
-    bonusActive=false;
-    document.getElementById('bonus-orb').style.display='none';
-    activateBourrine();
-    scheduleNextBonus();
-}
-function scheduleNextBonus(){
-    bonusTimer=0;
-    bonusDelay=60+Math.floor(Math.random()*120); // prochaine fois dans 1-3 min
-}
-
-/* ─── MODE BOURRINE ─────────────────────────────────────────────── */
-function activateBourrine(){
-    bourrineModeActive=true; bourrine_start=performance.now();
-    clickMultiplier=2; isBourrine=true;
-    document.body.classList.add('bourrine');
-    const fl=document.getElementById('screen-flash');
-    fl.style.background='rgba(255,20,0,0.45)'; fl.style.display='block';
-    fl.style.animation='none'; void fl.offsetWidth;
-    fl.style.transition='opacity 0.6s'; fl.style.opacity='0';
-    setTimeout(()=>{ fl.style.display='none'; fl.style.opacity=''; fl.style.transition=''; },650);
-    showNotif('🔥 BOURRINE FRANCKY ! x2 PENDANT 30 SEC ! 🔥');
-}
-function deactivateBourrine(){
-    bourrineModeActive=false; clickMultiplier=1; isBourrine=false;
-    document.body.classList.remove('bourrine');
-    document.getElementById('bourrine-timer-bar').style.width='100%';
-    showNotif('😤 Fin du mode BOURRINE... repose-toi !');
-}
-
-/* ─── FRAUDE ────────────────────────────────────────────────────── */
-function triggerFraude(){
-    fraudeActive=true; fraude_start=performance.now();
-    fraudeX=150+Math.random()*(window.innerWidth-300);
-    fraudeY=120+Math.random()*(window.innerHeight-250);
-    // Vitesse rapide
-    const angle=Math.random()*Math.PI*2;
-    const spd=4+Math.random()*3;
-    fraudeVx=Math.cos(angle)*spd; fraudeVy=Math.sin(angle)*spd;
-    const orb=document.getElementById('fraude-orb');
-    orb.style.left=fraudeX+'px'; orb.style.top=fraudeY+'px';
-    orb.style.display='flex';
-    document.getElementById('fraude-msg').style.display='block';
-    document.getElementById('fraude-timer-bar-wrap').style.display='block';
-    document.getElementById('fraude-timer-bar').style.width='100%';
-}
-function catchFraude(){
-    if(!fraudeActive) return;
-    fraudeActive=false;
-    document.getElementById('fraude-orb').style.display='none';
-    document.getElementById('fraude-msg').style.display='none';
-    document.getElementById('fraude-timer-bar-wrap').style.display='none';
-    showNotif('✅ Fraude attrapée ! Bien joué !');
-    scheduleFraude();
-}
-function fraudePunish(){
-    if(!fraudeActive) return;
-    fraudeActive=false;
-    document.getElementById('fraude-orb').style.display='none';
-    document.getElementById('fraude-msg').style.display='none';
-    document.getElementById('fraude-timer-bar-wrap').style.display='none';
-    const lost=Math.floor(score*0.1);
-    score=Math.max(0,score-lost);
-    // Flash rouge
-    const fl=document.getElementById('screen-flash');
-    fl.style.background='rgba(200,0,0,0.35)'; fl.style.display='block';
-    fl.style.transition='none'; fl.style.opacity='1';
-    setTimeout(()=>{ fl.style.transition='opacity 0.5s'; fl.style.opacity='0'; setTimeout(()=>{ fl.style.display='none'; fl.style.opacity=''; fl.style.transition=''; },520); },50);
-    showNotif(`❌ LA FRAUDE S'EST ÉCHAPPÉE ! -${lost.toLocaleString('fr-FR')} pts !`);
     updateScoreUI();
-    scheduleFraude();
-}
-function scheduleFraude(){
-    fraudeEventTimer=0;
-    fraudeDelay=120+Math.floor(Math.random()*180); // 2-5 min
+    spawnFx(event.clientX, event.clientY);
+    
+    if (totalClicks % 1000 === 0) triggerMilestone();
 }
 
-/* ─── MILLIÈME CLIC ─────────────────────────────────────────────── */
-function triggerMilestone(){
-    if(MILESTONE_POOL.length===0) return;
-    const item=MILESTONE_POOL[Math.floor(Math.random()*MILESTONE_POOL.length)];
-    document.getElementById('milestone-img').src=item.src;
-    document.getElementById('milestone-caption').textContent=item.caption||'';
-    document.getElementById('milestone-popup').style.display='block';
-    showNotif('🎉 CLIC MILLIONNAIRE ! UN TRUC SPÉCIAL EST APPARU !');
-}
-function closeMilestone(){
-    document.getElementById('milestone-popup').style.display='none';
-}
-
-/* ─── NOTIF ─────────────────────────────────────────────────────── */
-let notifTO=null;
-function showNotif(msg){
-    const n=document.getElementById('notif');
-    n.textContent=msg; n.style.display='block';
-    if(notifTO) clearTimeout(notifTO);
-    notifTO=setTimeout(()=>{ n.style.display='none'; },3500);
-}
-
-/* ─── SAVE / LOAD (encodé en base64) ────────────────────────────── */
-function saveGame(){
-    const data={ score, buildings:buildings.map(b=>b.count), totalClicks };
-    localStorage.setItem('fcs', window._saveEncode(data));
-}
-function loadGame(){
-    const raw=localStorage.getItem('fcs');
-    if(!raw) return;
-    const d=window._saveDecode(raw);
-    if(!d) return;
-    score=d.score||0;
-    totalClicks=d.totalClicks||0;
-    if(d.buildings) buildings.forEach((b,i)=>{ b.count=d.buildings[i]||0; });
-    recalculateBPS();
-}
-function resetGame(){
-    if(confirm("T'es sûr de vouloir tout effacer ? Tu vas retomber à 0 !")){
-        localStorage.removeItem('fcs'); location.reload();
+function buyBuilding(index) {
+    const b = buildings[index];
+    const cost = Math.floor(b.baseCost * Math.pow(1.15, b.count));
+    
+    if (score >= cost) {
+        score -= cost;
+        b.count++;
+        recalculateBPS();
+        renderShop();
+        renderVisuals();
     }
 }
 
-window.addEventListener('load', initGame);
+function recalculateBPS() {
+    scorePerSecond = buildings.reduce((acc, b) => acc + (b.count * b.bps), 0);
+}
+
+/* --- UI --- */
+function updateScoreUI() {
+    document.getElementById('scoreDisplay').textContent = Math.floor(score).toLocaleString('fr-FR');
+    document.getElementById('bpsDisplay').textContent = scorePerSecond.toFixed(1) + " pts / sec";
+}
+
+function renderShop() {
+    const container = document.getElementById('shopContainer');
+    container.innerHTML = '';
+    buildings.forEach((b, i) => {
+        const cost = Math.floor(b.baseCost * Math.pow(1.15, b.count));
+        const item = document.createElement('div');
+        item.className = `shop-item ${score < cost ? 'disabled' : ''}`;
+        item.id = `shop-i-${i}`;
+        item.onclick = () => buyBuilding(i);
+        item.innerHTML = `
+            <div>
+                <strong><img src="${b.icon}" class="shop-icon" onerror="this.style.display='none'"> ${b.name}</strong><br>
+                <small>Prix: ${cost} | +${b.bps} pts/s</small>
+            </div>
+            <div style="font-size:20px">${b.count}</div>
+        `;
+        container.appendChild(item);
+    });
+}
+
+function updateShopColors() {
+    buildings.forEach((b, i) => {
+        const cost = Math.floor(b.baseCost * Math.pow(1.15, b.count));
+        const el = document.getElementById(`shop-i-${i}`);
+        if (el) el.classList.toggle('disabled', score < cost);
+    });
+}
+
+function renderVisuals() {
+    const container = document.getElementById('visualCenter');
+    container.innerHTML = '';
+    buildings.forEach(b => {
+        if (b.count > 0) {
+            const row = document.createElement('div');
+            row.style.display = 'flex'; row.style.flexWrap = 'wrap'; row.style.gap = '5px'; row.style.marginBottom = '10px';
+            for(let j=0; j<Math.min(b.count, 50); j++) {
+                row.innerHTML += `<img src="${b.icon}" style="width:30px; height:30px; border-radius:5px;" onerror="this.style.display='none'">`;
+            }
+            container.appendChild(row);
+        }
+    });
+}
+
+/* --- EFFETS & CANVAS --- */
+const fxCanvas = document.getElementById('fx-canvas');
+const fxCtx = fxCanvas.getContext('2d');
+fxCanvas.width = window.innerWidth;
+fxCanvas.height = window.innerHeight;
+
+let particles = [];
+function spawnFx(x, y) {
+    for(let i=0; i<10; i++) {
+        particles.push({
+            x, y, 
+            vx: (Math.random()-0.5)*10, 
+            vy: (Math.random()-0.5)*10, 
+            life: 1, 
+            color: isBourrine ? 'red' : 'cyan'
+        });
+    }
+}
+
+function mainLoop() {
+    fxCtx.clearRect(0,0,fxCanvas.width, fxCanvas.height);
+    particles.forEach((p, i) => {
+        p.x += p.vx; p.y += p.vy; p.life -= 0.02;
+        if (p.life <= 0) particles.splice(i, 1);
+        fxCtx.fillStyle = p.color;
+        fxCtx.globalAlpha = p.life;
+        fxCtx.beginPath(); fxCtx.arc(p.x, p.y, 4, 0, Math.PI*2); fxCtx.fill();
+    });
+    requestAnimationFrame(mainLoop);
+}
+
+/* --- EVENTS --- */
+function triggerBonus() {
+    const orb = document.getElementById('bonus-orb');
+    orb.style.top = Math.random()*80 + "%";
+    orb.style.left = Math.random()*80 + "%";
+    orb.style.display = 'flex';
+    setTimeout(() => orb.style.display = 'none', 5000);
+}
+
+function activateBonus() {
+    isBourrine = true;
+    clickMultiplier = 2;
+    document.body.classList.add('bourrine');
+    document.getElementById('bonus-orb').style.display = 'none';
+    showNotif("MODE BOURRINE ACTIVÉ ! X2 !");
+    setTimeout(() => {
+        isBourrine = false;
+        clickMultiplier = 1;
+        document.body.classList.remove('bourrine');
+    }, 15000);
+}
+
+function triggerFraude() {
+    const orb = document.getElementById('fraude-orb');
+    orb.style.top = Math.random()*80 + "%";
+    orb.style.left = Math.random()*80 + "%";
+    orb.style.display = 'flex';
+    showNotif("ALERTE FRAUDE ! CLIQUE DESSUS !");
+    this.fraudeTimeout = setTimeout(() => {
+        if (orb.style.display === 'flex') {
+            score = Math.floor(score * 0.9);
+            orb.style.display = 'none';
+            showNotif("LA FRAUDE T'A VOLÉ 10% !");
+        }
+    }, 4000);
+}
+
+function catchFraude() {
+    document.getElementById('fraude-orb').style.display = 'none';
+    showNotif("FRAUDE STOPPÉE ! +50 pts");
+    score += 50;
+}
+
+function triggerMilestone() {
+    const item = MILESTONE_POOL[0];
+    document.getElementById('milestone-img').src = item.src;
+    document.getElementById('milestone-caption').textContent = item.caption;
+    document.getElementById('milestone-popup').style.display = 'block';
+}
+
+function closeMilestone() { document.getElementById('milestone-popup').style.display = 'none'; }
+
+function showNotif(msg) {
+    const n = document.getElementById('notif');
+    n.textContent = msg; n.style.display = 'block';
+    setTimeout(() => n.style.display = 'none', 3000);
+}
+
+/* --- SAVE / ANTI-CHEAT --- */
+function saveGame() {
+    const data = { score, totalClicks, buildings: buildings.map(b => b.count) };
+    localStorage.setItem('franclick_save', btoa(JSON.stringify(data)));
+}
+
+function loadGame() {
+    const saved = localStorage.getItem('franclick_save');
+    if (saved) {
+        const data = JSON.parse(atob(saved));
+        score = data.score;
+        totalClicks = data.totalClicks || 0;
+        data.buildings.forEach((count, i) => buildings[i].count = count);
+        recalculateBPS();
+    }
+}
+
+function resetGame() {
+    if(confirm("Tu veux vraiment tout effacer ?")) {
+        localStorage.removeItem('franclick_save');
+        location.reload();
+    }
+}
+
+// Anti-triche soft (Funny)
+window.addEventListener('keydown', e => {
+    if(e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+        showNotif("🏋️ RESTE DIGNE, NE TRICHE PAS !");
+    }
+});
+
+window.onload = initGame;
 </script>
 </body>
 </html>
