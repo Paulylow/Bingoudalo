@@ -37,65 +37,48 @@
   button { font-family: 'DM Sans'; font-weight: bold; text-transform: uppercase; border: none; border-radius: 8px; cursor: pointer; padding: 15px 24px; transition: 0.2s; width: 100%; font-size: 16px; margin-top: 10px;}
   .btn-gold { background: var(--gold); color: #000; box-shadow: 0 0 15px rgba(255,215,0,0.4); }
   .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 0 25px rgba(255,215,0,0.6); }
+  button:disabled { background: #555; color: #888; box-shadow: none; cursor: not-allowed; transform: none; }
 
   /* --- LAYOUT DU JEU --- */
-  .game-layout {
-      display: flex;
-      flex-direction: row;
-      gap: 30px;
-      width: 100%;
-      justify-content: center;
-      align-items: center;
-  }
+  .game-layout { display: flex; flex-direction: row; gap: 30px; width: 100%; justify-content: center; align-items: center; }
   
-  /* LE PLATEAU RÉDUIT */
+  /* LE PLATEAU */
   .board-container {
-      width: 100%;
-      max-width: 650px; /* Réduit pour éviter le scroll */
-      aspect-ratio: 1 / 1;
-      background: var(--board-bg);
-      border: 4px solid #111;
-      display: grid;
-      grid-template-columns: 100px repeat(5, 1fr) 100px; /* Coins plus petits */
+      width: 100%; max-width: 650px; aspect-ratio: 1 / 1;
+      background: var(--board-bg); border: 4px solid #111; display: grid;
+      grid-template-columns: 100px repeat(5, 1fr) 100px;
       grid-template-rows: 100px repeat(5, 1fr) 100px;
-      padding: 5px;
-      gap: 2px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+      padding: 5px; gap: 2px; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
   }
 
   .square {
-      background: #fff;
-      border: 2px solid #000;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      font-size: 9px;
-      text-align: center;
-      font-weight: bold;
-      color: #000;
+      background: #fff; border: 2px solid #000; display: flex; flex-direction: column;
+      align-items: center; justify-content: flex-start; font-size: 9px; text-align: center;
+      font-weight: bold; color: #000; position: relative; padding-top: 2px;
   }
   
-  .corner { grid-column: span 1; grid-row: span 1; justify-content: center; font-size: 12px;}
+  .corner { grid-column: span 1; grid-row: span 1; justify-content: center; font-size: 12px; padding-top: 5px;}
   
-  /* LE CENTRE FIXÉ */
+  /* ZONE DES PIONS */
+  .players-zone {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; 
+      width: 100%; margin-top: auto; padding-bottom: 2px;
+  }
+  .token { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 5px rgba(0,0,0,0.8); object-fit: cover; z-index: 10; transition: all 0.3s ease-in-out;}
+
   .center-logo {
-      grid-column: 2 / 7;
-      grid-row: 2 / 7;
-      background: var(--board-bg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: none;
+      grid-column: 2 / 7; grid-row: 2 / 7; background: var(--board-bg);
+      display: flex; align-items: center; justify-content: center; border: none; position: relative;
   }
   
-  .center-logo h1 {
-      font-family: 'Bebas Neue';
-      font-size: 55px;
-      color: #c0392b;
-      transform: rotate(-45deg); /* Seul le texte tourne ! */
-      text-shadow: 2px 2px 0px #fff;
-      margin: 0;
+  .center-logo h1 { font-family: 'Bebas Neue'; font-size: 55px; color: #c0392b; transform: rotate(-45deg); text-shadow: 2px 2px 0px #fff; margin: 0; }
+  
+  /* JOURNAL DES ACTIONS */
+  .action-log {
+      position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.8); color: var(--gold); padding: 10px 20px; border-radius: 10px;
+      font-family: 'Bebas Neue'; font-size: 20px; letter-spacing: 1px; border: 1px solid var(--gold);
+      box-shadow: 0 0 15px rgba(255,215,0,0.3); text-align: center; width: 80%;
   }
 
   .color-bar { width: 100%; height: 20%; border-bottom: 2px solid #000; }
@@ -104,19 +87,14 @@
   .rouge { background-color: #c0392b; }
   .bleu { background-color: #2980b9; }
 
-  /* PANNEAU LATÉRAL (DÉS ET ACTIONS) */
-  .side-panel {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      width: 250px;
-  }
+  /* PANNEAU LATÉRAL */
+  .side-panel { display: flex; flex-direction: column; gap: 20px; width: 250px; }
+  @media (max-width: 950px) { .game-layout { flex-direction: column; } }
+  
+  .dice-display { font-size: 60px; text-align: center; margin-bottom: 10px; display: flex; justify-content: center; gap: 10px;}
+  .die { background: white; border-radius: 10px; width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; color: black; font-size: 30px; font-weight: bold; box-shadow: inset 0 0 10px rgba(0,0,0,0.2), 0 5px 10px rgba(0,0,0,0.5); border: 1px solid #ccc;}
 
-  /* Responsive pour les petits écrans */
-  @media (max-width: 950px) {
-      .game-layout { flex-direction: column; }
-  }
-
+  .turn-indicator { font-family: 'Bebas Neue'; font-size: 28px; color: var(--gold); text-align: center; margin-bottom: 15px; border-bottom: 2px solid rgba(255,215,0,0.3); padding-bottom: 5px;}
 </style>
 </head>
 <body>
@@ -145,59 +123,64 @@
     
     <div class="game-layout">
         
-        <!-- LE PLATEAU -->
+        <!-- LE PLATEAU (AVEC LES IDs POUR LES PIONS) -->
         <div class="board-container">
-            <!-- Ligne du Haut (7 cases) -->
-            <div class="square corner" style="grid-column: 1; grid-row: 1;">PARC<br>GRATUIT</div>
-            <div class="square" style="grid-column: 2; grid-row: 1;"><div class="color-bar rouge"></div>IUT DE MAUBEUGE</div>
-            <div class="square" style="grid-column: 3; grid-row: 1;">CAISSE DE<br>COMMU</div>
-            <div class="square" style="grid-column: 4; grid-row: 1;"><div class="color-bar rouge"></div>MAISON DE CORINNE</div>
-            <div class="square" style="grid-column: 5; grid-row: 1;">GARE DE<br>LOUVROIL</div>
-            <div class="square" style="grid-column: 6; grid-row: 1;"><div class="color-bar bleu"></div>ZOO DE MAUBEUGE</div>
-            <div class="square corner" style="grid-column: 7; grid-row: 1;">ALLEZ EN<br>PRISON</div>
+            
+            <!-- Ligne Haut -->
+            <div class="square corner" id="cell-12" style="grid-column: 1; grid-row: 1;">PARC<br>GRATUIT<div class="players-zone"></div></div>
+            <div class="square" id="cell-13" style="grid-column: 2; grid-row: 1;"><div class="color-bar rouge"></div>IUT DE MAUBEUGE<div class="players-zone"></div></div>
+            <div class="square" id="cell-14" style="grid-column: 3; grid-row: 1;">CAISSE DE<br>COMMU<div class="players-zone"></div></div>
+            <div class="square" id="cell-15" style="grid-column: 4; grid-row: 1;"><div class="color-bar rouge"></div>MAISON CORINNE<div class="players-zone"></div></div>
+            <div class="square" id="cell-16" style="grid-column: 5; grid-row: 1;">GARE DE<br>LOUVROIL<div class="players-zone"></div></div>
+            <div class="square" id="cell-17" style="grid-column: 6; grid-row: 1;"><div class="color-bar bleu"></div>ZOO DE MAUBEUGE<div class="players-zone"></div></div>
+            <div class="square corner" id="cell-18" style="grid-column: 7; grid-row: 1;">ALLEZ EN<br>PRISON<div class="players-zone"></div></div>
 
-            <!-- Colonne de Droite (5 cases au milieu) -->
-            <div class="square" style="grid-column: 7; grid-row: 2; flex-direction: row;"><div class="color-bar bleu" style="height:100%; width:20%; border-bottom:none; border-right:2px solid #000;"></div><span style="transform: rotate(90deg);">CLAIR DE LUNE</span></div>
-            <div class="square" style="grid-column: 7; grid-row: 3;"><span style="transform: rotate(90deg); margin: auto;">CHANCE</span></div>
-            <div class="square" style="grid-column: 7; grid-row: 4;"><span style="transform: rotate(90deg); margin: auto;">STIBUS</span></div>
-            <div class="square" style="grid-column: 7; grid-row: 5; flex-direction: row;"><div class="color-bar vert" style="height:100%; width:20%; border-bottom:none; border-right:2px solid #000;"></div><span style="transform: rotate(90deg);">BASIC FIT</span></div>
-            <div class="square" style="grid-column: 7; grid-row: 6; flex-direction: row;"><div class="color-bar vert" style="height:100%; width:20%; border-bottom:none; border-right:2px solid #000;"></div><span style="transform: rotate(90deg);">O'TACOS</span></div>
+            <!-- Colonne Droite -->
+            <div class="square" id="cell-19" style="grid-column: 7; grid-row: 2; flex-direction: row;"><div class="color-bar bleu" style="height:100%; width:20%; border-bottom:none; border-right:2px solid #000;"></div><span style="transform: rotate(90deg);">CLAIR DE LUNE</span><div class="players-zone" style="flex-direction: column; width: auto; margin: auto 2px auto auto;"></div></div>
+            <div class="square" id="cell-20" style="grid-column: 7; grid-row: 3;"><span style="transform: rotate(90deg); margin: auto;">CHANCE</span><div class="players-zone" style="flex-direction: column; width: auto; margin: auto 2px auto auto;"></div></div>
+            <div class="square" id="cell-21" style="grid-column: 7; grid-row: 4;"><span style="transform: rotate(90deg); margin: auto;">STIBUS</span><div class="players-zone" style="flex-direction: column; width: auto; margin: auto 2px auto auto;"></div></div>
+            <div class="square" id="cell-22" style="grid-column: 7; grid-row: 5; flex-direction: row;"><div class="color-bar vert" style="height:100%; width:20%; border-bottom:none; border-right:2px solid #000;"></div><span style="transform: rotate(90deg);">BASIC FIT</span><div class="players-zone" style="flex-direction: column; width: auto; margin: auto 2px auto auto;"></div></div>
+            <div class="square" id="cell-23" style="grid-column: 7; grid-row: 6; flex-direction: row;"><div class="color-bar vert" style="height:100%; width:20%; border-bottom:none; border-right:2px solid #000;"></div><span style="transform: rotate(90deg);">O'TACOS</span><div class="players-zone" style="flex-direction: column; width: auto; margin: auto 2px auto auto;"></div></div>
 
-            <!-- Le Centre (Texte tourné, mais pas le fond) -->
+            <!-- Le Centre -->
             <div class="square center-logo">
                 <h1>MAUBEUGOPOLY</h1>
+                <div class="action-log" id="actionLog">La partie va commencer !</div>
             </div>
 
-            <!-- Colonne de Gauche (5 cases au milieu) -->
-            <div class="square" style="grid-column: 1; grid-row: 2; flex-direction: row-reverse;"><div class="color-bar marron" style="height:100%; width:20%; border-bottom:none; border-left:2px solid #000;"></div><span style="transform: rotate(-90deg);">GARAGE À BITE</span></div>
-            <div class="square" style="grid-column: 1; grid-row: 3;"><span style="transform: rotate(-90deg); margin: auto;">CHANCE</span></div>
-            <div class="square" style="grid-column: 1; grid-row: 4; flex-direction: row-reverse;"><div class="color-bar marron" style="height:100%; width:20%; border-bottom:none; border-left:2px solid #000;"></div><span style="transform: rotate(-90deg);">APPART. ELIAN</span></div>
-            <div class="square" style="grid-column: 1; grid-row: 5;"><span style="transform: rotate(-90deg); margin: auto;">GARE D'HAUTMONT</span></div>
-            <div class="square" style="grid-column: 1; grid-row: 6;"><span style="transform: rotate(-90deg); margin: auto;">RADAR N2<br>(Payez 50)</span></div>
+            <!-- Colonne Gauche -->
+            <div class="square" id="cell-11" style="grid-column: 1; grid-row: 2; flex-direction: row-reverse;"><div class="color-bar marron" style="height:100%; width:20%; border-bottom:none; border-left:2px solid #000;"></div><span style="transform: rotate(-90deg);">GARAGE À BITE</span><div class="players-zone" style="flex-direction: column; width: auto; margin: auto auto auto 2px;"></div></div>
+            <div class="square" id="cell-10" style="grid-column: 1; grid-row: 3;"><span style="transform: rotate(-90deg); margin: auto;">CHANCE</span><div class="players-zone" style="flex-direction: column; width: auto; margin: auto auto auto 2px;"></div></div>
+            <div class="square" id="cell-9" style="grid-column: 1; grid-row: 4; flex-direction: row-reverse;"><div class="color-bar marron" style="height:100%; width:20%; border-bottom:none; border-left:2px solid #000;"></div><span style="transform: rotate(-90deg);">APPART. ELIAN</span><div class="players-zone" style="flex-direction: column; width: auto; margin: auto auto auto 2px;"></div></div>
+            <div class="square" id="cell-8" style="grid-column: 1; grid-row: 5;"><span style="transform: rotate(-90deg); margin: auto;">GARE HAUTMONT</span><div class="players-zone" style="flex-direction: column; width: auto; margin: auto auto auto 2px;"></div></div>
+            <div class="square" id="cell-7" style="grid-column: 1; grid-row: 6;"><span style="transform: rotate(-90deg); margin: auto;">RADAR N2<br>(Payez 50)</span><div class="players-zone" style="flex-direction: column; width: auto; margin: auto auto auto 2px;"></div></div>
 
-            <!-- Ligne du Bas (7 cases) -->
-            <div class="square corner" style="grid-column: 1; grid-row: 7;">PRISON</div>
-            <div class="square" style="grid-column: 2; grid-row: 7; justify-content: flex-end;"><span style="margin-bottom: 5px;">TAXE</span></div>
-            <div class="square" style="grid-column: 3; grid-row: 7; justify-content: flex-end;"><span style="margin-bottom: 5px;">RUE X</span></div>
-            <div class="square" style="grid-column: 4; grid-row: 7; justify-content: flex-end;"><span style="margin-bottom: 5px;">CAISSE DE<br>COMMU</span></div>
-            <div class="square" style="grid-column: 5; grid-row: 7; justify-content: flex-end;"><span style="margin-bottom: 5px;">RUE Y</span></div>
-            <div class="square" style="grid-column: 6; grid-row: 7; justify-content: flex-end;"><span style="margin-bottom: 5px;">GARE SNCF</span></div>
-            <div class="square corner" style="grid-column: 7; grid-row: 7; background: #ffcccc;">DÉPART<br>Recevez 200</div>
+            <!-- Ligne Bas -->
+            <div class="square corner" id="cell-6" style="grid-column: 1; grid-row: 7;">PRISON<div class="players-zone"></div></div>
+            <div class="square" id="cell-5" style="grid-column: 2; grid-row: 7; justify-content: flex-end;"><div class="players-zone" style="margin-top: 0; margin-bottom: auto;"></div><span style="margin-bottom: 5px;">TAXE</span></div>
+            <div class="square" id="cell-4" style="grid-column: 3; grid-row: 7; justify-content: flex-end;"><div class="players-zone" style="margin-top: 0; margin-bottom: auto;"></div><span style="margin-bottom: 5px;">RUE X</span></div>
+            <div class="square" id="cell-3" style="grid-column: 4; grid-row: 7; justify-content: flex-end;"><div class="players-zone" style="margin-top: 0; margin-bottom: auto;"></div><span style="margin-bottom: 5px;">CAISSE DE<br>COMMU</span></div>
+            <div class="square" id="cell-2" style="grid-column: 5; grid-row: 7; justify-content: flex-end;"><div class="players-zone" style="margin-top: 0; margin-bottom: auto;"></div><span style="margin-bottom: 5px;">RUE Y</span></div>
+            <div class="square" id="cell-1" style="grid-column: 6; grid-row: 7; justify-content: flex-end;"><div class="players-zone" style="margin-top: 0; margin-bottom: auto;"></div><span style="margin-bottom: 5px;">GARE SNCF</span></div>
+            <div class="square corner" id="cell-0" style="grid-column: 7; grid-row: 7; background: #ffcccc;">DÉPART<br>Recevez 200<div class="players-zone"></div></div>
         </div>
 
-        <!-- PANNEAU LATÉRAL DROIT (ACTIONS ET DÉS) -->
+        <!-- PANNEAU LATÉRAL -->
         <div class="side-panel">
             <div class="card" style="padding: 20px;">
-                <h3 style="font-family: 'Bebas Neue'; font-size: 24px; color: var(--gold); margin-bottom: 10px; text-align: center;">TES ACTIONS</h3>
+                <div class="turn-indicator" id="turnDisplay">TOUR DE : ...</div>
                 
-                <div style="font-size: 60px; text-align: center; margin-bottom: 10px;">🎲</div>
+                <div class="dice-display">
+                    <div class="die" id="die1">-</div>
+                    <div class="die" id="die2">-</div>
+                </div>
                 
-                <button class="btn-gold" style="margin-top: 0;" onclick="alert('C\'est pour bientôt mon grand !')">LANCER LES DÉS</button>
+                <button class="btn-gold" id="btnRoll" onclick="rollDice()" disabled>LANCER LES DÉS</button>
             </div>
             
             <div class="card" style="padding: 20px; text-align: center;">
                 <h3 style="font-family: 'Bebas Neue'; font-size: 24px; color: #fff; margin-bottom: 5px;">TON COMPTE</h3>
-                <div style="font-family: 'Bebas Neue'; font-size: 40px; color: #27ae60;">1500 M$</div>
+                <div style="font-family: 'Bebas Neue'; font-size: 40px; color: #27ae60;" id="moneyDisplay">1500 M$</div>
             </div>
         </div>
 
@@ -215,45 +198,38 @@ let myPseudo = '';
 let myAvatar = '';
 let isMaster = false;
 let dbSyncInterval = null; 
+let gameStateLocal = null;
 
+// INIT
 window.onload = async () => {
     try {
         myPseudo = localStorage.getItem('cdsi_logged_user');
-        
-        if (!myPseudo || myPseudo === 'null') {
-            window.location.href = '../index.html'; 
-            return;
-        }
+        if (!myPseudo || myPseudo === 'null') { window.location.href = '../index.html'; return; }
 
         const { data, error } = await sb.from('cdsi_users').select('avatar').eq('pseudo', myPseudo).maybeSingle();
-        
-        if (data && data.avatar) {
-            myAvatar = data.avatar.startsWith('../') ? data.avatar : '../' + data.avatar; 
-        } else {
-            myAvatar = '../bingoudalo/avatar/paulo1.jpg';
-        }
+        myAvatar = (data && data.avatar) ? (data.avatar.startsWith('../') ? data.avatar : '../' + data.avatar) : '../bingoudalo/avatar/paulo1.jpg';
 
         await autoJoinLobby();
-
     } catch (e) {
         document.getElementById('loadingMsg').innerHTML = "ERREUR RÉSEAU<br><button class='btn-gold' onclick='window.location.href=\"../index.html\"'>RETOUR</button>";
     }
 };
 
-async function fetchLobbyState() {
+async function fetchState() {
     const {data} = await sb.from('bingo_state').select('data').eq('id', GAME_ID).maybeSingle();
     return data?.data || null;
 }
 
-async function updateLobbyState(newState) {
+async function updateState(newState) {
     await sb.from('bingo_state').upsert({ id: GAME_ID, data: newState, updated_at: new Date().toISOString() }, { onConflict: 'id' });
 }
 
+// LOBBY LOGIC
 async function autoJoinLobby() {
-    let state = await fetchLobbyState();
+    let state = await fetchState();
     
     if(!state || !state.players) {
-        state = { phase: 'lobby', master: myPseudo, players: {} };
+        state = { phase: 'lobby', master: myPseudo, players: {}, turnOrder: [], currentTurnIndex: 0, log: "En attente de joueurs..." };
     } else if (!state.players[state.master] && Object.keys(state.players).length > 0) {
         state.master = Object.keys(state.players)[0];
     } else if (!state.master) {
@@ -261,9 +237,7 @@ async function autoJoinLobby() {
     }
 
     if(Object.keys(state.players).length >= 4 && !state.players[myPseudo]) {
-        alert("La partie est pleine !");
-        window.location.href = '../index.html';
-        return;
+        alert("La partie est pleine !"); window.location.href = '../index.html'; return;
     }
 
     if(!state.players[myPseudo]) {
@@ -272,46 +246,136 @@ async function autoJoinLobby() {
         state.players[myPseudo].avatar = myAvatar; 
     }
     
-    await updateLobbyState(state);
+    await updateState(state);
     
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
     document.getElementById('screenLobby').classList.add('active');
     
     dbSyncInterval = setInterval(async () => {
-        const s = await fetchLobbyState();
-        if(s) updateLobbyUI(s);
-    }, 1500);
+        const s = await fetchState();
+        if(s) processState(s);
+    }, 1000);
 }
 
-function updateLobbyUI(state) {
+// GAME ENGINE LOGIC
+function processState(state) {
+    gameStateLocal = state;
     isMaster = (state.master === myPseudo);
-    
-    document.getElementById('playersList').innerHTML = Object.values(state.players).map(p => `
-        <div class="player-row">
-            <img src="${p.avatar}" class="player-avatar" onerror="this.onerror=null; this.src='../bingoudalo/avatar/paulo1.jpg';">
-            <span>${p.pseudo}</span>
-            ${state.master === p.pseudo ? '<span class="badge-master">Banquier</span>' : ''}
-        </div>
-    `).join('');
 
-    if(state.phase === 'lobby' && isMaster) {
-        document.getElementById('lobbyControls').innerHTML = `<button class="btn-gold" onclick="startGame()">OUVRIR LE PLATEAU</button>`;
-    } else if(state.phase === 'playing') {
-        clearInterval(dbSyncInterval);
+    if (state.phase === 'lobby') {
+        // MAJ LOBBY
+        document.getElementById('playersList').innerHTML = Object.values(state.players).map(p => `
+            <div class="player-row"><img src="${p.avatar}" class="player-avatar" onerror="this.src='../bingoudalo/avatar/paulo1.jpg';"><span>${p.pseudo}</span>
+            ${state.master === p.pseudo ? '<span class="badge-master">Banquier</span>' : ''}</div>
+        `).join('');
+
+        if(isMaster) {
+            document.getElementById('lobbyControls').innerHTML = `<button class="btn-gold" onclick="startGame()">LANCER LA PARTIE</button>`;
+        }
+    } 
+    else if (state.phase === 'playing') {
+        // TRANSITION VERS LE PLATEAU
         document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
         document.getElementById('screenGame').classList.add('active');
+        
+        updateBoardUI(state);
     }
 }
 
 async function startGame() {
-    let state = await fetchLobbyState();
+    let state = await fetchState();
     state.phase = 'playing';
-    await updateLobbyState(state);
+    state.turnOrder = Object.keys(state.players); // Ordre aléatoire ou d'arrivée
+    state.currentTurnIndex = 0;
+    state.log = `C'est à ${state.turnOrder[0]} de commencer !`;
+    await updateState(state);
 }
 
+// METTRE A JOUR LE PLATEAU VISUELLEMENT
+function updateBoardUI(state) {
+    // 1. Vider toutes les zones de pions
+    for(let i=0; i<24; i++) {
+        const cell = document.getElementById(`cell-${i}`);
+        if(cell) cell.querySelector('.players-zone').innerHTML = '';
+    }
+
+    // 2. Placer chaque joueur sur sa case
+    for(let pseudo in state.players) {
+        const p = state.players[pseudo];
+        const cell = document.getElementById(`cell-${p.position}`);
+        if(cell) {
+            cell.querySelector('.players-zone').innerHTML += `<img src="${p.avatar}" class="token" title="${pseudo}" onerror="this.src='../bingoudalo/avatar/paulo1.jpg';">`;
+        }
+    }
+
+    // 3. Mettre à jour le panneau latéral
+    const activePlayer = state.turnOrder[state.currentTurnIndex];
+    document.getElementById('turnDisplay').innerText = `TOUR DE : ${activePlayer}`;
+    document.getElementById('turnDisplay').style.color = (activePlayer === myPseudo) ? "#27ae60" : "var(--gold)";
+    
+    document.getElementById('moneyDisplay').innerText = `${state.players[myPseudo].money} M$`;
+    document.getElementById('actionLog').innerText = state.log;
+
+    if(state.lastDice) {
+        document.getElementById('die1').innerText = state.lastDice[0];
+        document.getElementById('die2').innerText = state.lastDice[1];
+    }
+
+    // 4. Activer/Désactiver le bouton selon le tour
+    const btn = document.getElementById('btnRoll');
+    if (activePlayer === myPseudo) {
+        btn.disabled = false;
+        btn.innerText = "LANCER LES DÉS";
+    } else {
+        btn.disabled = true;
+        btn.innerText = "ATTENDS TON TOUR";
+    }
+}
+
+// LANCEMENT DES DÉS
+async function rollDice() {
+    // Sécurité front-end
+    const btn = document.getElementById('btnRoll');
+    btn.disabled = true; 
+
+    // Lancer de 2 dés (1 à 6)
+    const d1 = Math.floor(Math.random() * 6) + 1;
+    const d2 = Math.floor(Math.random() * 6) + 1;
+    const total = d1 + d2;
+
+    // Récupérer le state le plus frais
+    let state = await fetchState();
+    
+    // Mettre à jour la position du joueur (24 cases au total, de 0 à 23)
+    let p = state.players[myPseudo];
+    let oldPos = p.position;
+    p.position = (p.position + total) % 24;
+    
+    // Si passage par la case départ (0)
+    if(oldPos + total >= 24) {
+        p.money += 200;
+        state.log = `${myPseudo} a fait ${total} et passe par la case Départ (+200 M$) !`;
+    } else {
+        state.log = `${myPseudo} a fait ${total} !`;
+    }
+
+    state.lastDice = [d1, d2];
+
+    // Gérer le changement de tour (si pas de double)
+    if (d1 !== d2) {
+        state.currentTurnIndex = (state.currentTurnIndex + 1) % state.turnOrder.length;
+        state.log += ` Tour de ${state.turnOrder[state.currentTurnIndex]}.`;
+    } else {
+        state.log += ` DOUBLE ! Rejoue.`;
+    }
+
+    // Envoyer la mise à jour à Supabase
+    await updateState(state);
+}
+
+// NETTOYAGE SI LE CHEF QUITTE LE LOBBY
 window.addEventListener("beforeunload", async () => {
-    let state = await fetchLobbyState();
-    if (state && state.phase === 'lobby' && isMaster) {
+    if (gameStateLocal && gameStateLocal.phase === 'lobby' && isMaster) {
         await sb.from('bingo_state').delete().eq('id', GAME_ID);
     }
 });
