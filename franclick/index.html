@@ -233,28 +233,95 @@ body.bourrine .col-right { border-color:#ff2200; }
 }
 .reset-btn:hover { background:#cc0000; color:#fff; }
 
+/* ── ONGLETS HEADER DROITE ── */
+#header-tabs {
+    position:fixed; top:10px; right:16px; z-index:200;
+    display:flex; gap:8px;
+}
+.htab {
+    font-family:'Bebas Neue'; font-size:13px; letter-spacing:1.5px;
+    color:#00FFFF; padding:5px 14px;
+    border:1px solid rgba(0,255,255,.35); border-radius:5px;
+    background:rgba(0,0,0,.6); transition:.2s;
+}
+.htab:hover { background:rgba(0,255,255,.1); border-color:#00FFFF; }
+body.bourrine .htab, body.mega .htab { color:#ff9900; border-color:rgba(255,150,0,.4); }
+
+/* ── PANNEAUX SUCCÈS / CURSEURS ── */
+.side-panel {
+    display:none; position:fixed; top:0; right:0; width:360px; height:100vh;
+    background:#0d0d1a; border-left:2px solid #1f2833;
+    z-index:900; overflow-y:auto; padding:20px;
+    flex-direction:column; gap:14px;
+}
+.side-panel.open { display:flex; }
+.side-panel h2 { font-family:'Bebas Neue'; font-size:24px; color:#FF00FF; letter-spacing:2px; margin-bottom:4px; }
+.panel-close {
+    position:absolute; top:14px; right:16px;
+    font-family:'Bebas Neue'; font-size:18px; color:#888;
+    background:none; border:none;
+}
+.panel-close:hover { color:#fff; }
+
+.succes-item {
+    background:rgba(255,255,255,.04); border:1px solid #1f2833;
+    border-radius:8px; padding:12px 14px;
+    display:flex; align-items:center; gap:12px;
+}
+.succes-item.unlocked { border-color:#00FFFF; background:rgba(0,255,255,.06); }
+.succes-lock { font-size:20px; flex-shrink:0; }
+.succes-info { flex:1; }
+.succes-info strong { font-size:13px; color:#fff; display:block; margin-bottom:2px; }
+.succes-info span { font-size:11px; color:#666; }
+.succes-item.unlocked .succes-info span { color:#00FFFF; }
+.succes-progress { font-size:10px; color:#555; margin-top:3px; }
+
+.cursor-item {
+    background:rgba(255,255,255,.04); border:1px solid #1f2833;
+    border-radius:8px; padding:10px 14px;
+    display:flex; align-items:center; justify-content:space-between;
+}
+.cursor-item.locked { opacity:.35; filter:grayscale(1); }
+.cursor-item.active-cursor { border-color:#FFFF00; background:rgba(255,255,0,.06); }
+.cursor-pick { font-family:'Bebas Neue'; font-size:12px; letter-spacing:1px;
+    color:#00FFFF; border:1px solid rgba(0,255,255,.4); border-radius:4px;
+    padding:2px 10px; background:transparent; }
+.cursor-pick:hover { background:rgba(0,255,255,.15); }
+
 /* ── BONUS ORB ── */
 #bonus-orb {
-    position:fixed; z-index:500; width:70px; height:70px; border-radius:50%;
+    position:fixed; z-index:500; width:70px; height:70px;
+    display:none; align-items:center; justify-content:center;
+    background:transparent; border:none;
+}
+#bonus-orb-inner {
+    width:70px; height:70px; border-radius:50%;
     background:radial-gradient(circle at 38% 38%,#fffde0,#ffcc00 55%,#ff8800);
     border:3px solid rgba(255,255,255,.8);
-    display:none; align-items:center; justify-content:center; flex-direction:column;
+    display:flex; align-items:center; justify-content:center; flex-direction:column;
     font-size:9px; font-weight:bold; color:#000; text-align:center; line-height:1.3;
-    animation:orbBob 2.5s ease-in-out infinite;
-    filter:drop-shadow(0 0 10px #ffcc00);
+    animation:orbBob 2.5s ease-in-out infinite; filter:drop-shadow(0 0 10px #ffcc00);
+    pointer-events:none;
 }
 #bonus-orb .ob-icon { font-size:22px; }
 @keyframes orbBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
 
 /* ── MEGA BONUS ORB ── */
+/* Mega-orb : le wrapper est fixe (position stable pour le clic),
+       l'inner fait l'animation visuelle */
 #mega-orb {
-    position:fixed; z-index:502; width:90px; height:90px; border-radius:50%;
+    position:fixed; z-index:502; width:90px; height:90px;
+    display:none; align-items:center; justify-content:center;
+    background:transparent; border:none;
+}
+#mega-orb-inner {
+    width:90px; height:90px; border-radius:50%;
     background:radial-gradient(circle at 38% 38%,#ffffff,#aa00ff 50%,#5500cc);
     border:3px solid #fff;
-    display:none; align-items:center; justify-content:center; flex-direction:column;
+    display:flex; align-items:center; justify-content:center; flex-direction:column;
     font-size:9px; font-weight:bold; color:#fff; text-align:center; line-height:1.3;
     animation:orbBob 1.5s ease-in-out infinite, megaGlow .6s ease-in-out infinite alternate;
-    filter:drop-shadow(0 0 16px #aa00ff);
+    pointer-events:none; /* le clic passe au wrapper parent */
 }
 #mega-orb .mo-icon { font-size:28px; }
 @keyframes megaGlow{0%{filter:drop-shadow(0 0 8px #aa00ff)}100%{filter:drop-shadow(0 0 32px #ff88ff)}}
@@ -341,18 +408,32 @@ body.mega #mega-timer { display:block; }
     RETOUR AU HUB
 </a>
 
+<div id="header-tabs">
+    <button class="htab" onclick="togglePanel('succes-panel')">🏆 SUCCÈS</button>
+    <button class="htab" onclick="togglePanel('cursor-panel')">🖱️ CURSEURS</button>
+</div>
+
+<div id="succes-panel" class="side-panel">
+    <button class="panel-close" onclick="togglePanel('succes-panel')">✕</button>
+    <h2>🏆 SUCCÈS</h2>
+    <div id="succes-list"></div>
+</div>
+
+<div id="cursor-panel" class="side-panel">
+    <button class="panel-close" onclick="togglePanel('cursor-panel')">✕</button>
+    <h2>🖱️ CURSEURS</h2>
+    <p style="font-size:11px;color:#555;margin-bottom:8px;">Déverouille des succès pour débloquer des curseurs.</p>
+    <div id="cursor-list"></div>
+</div>
+
 <div id="screen-flash"></div>
 <div id="notif"></div>
 
 <div id="mega-orb" onclick="activateMegaBonus()">
-    <div class="mo-icon">💜</div>
-    <div>MEGA<br>x5 !</div>
+    <div id="mega-orb-inner"><div class="mo-icon">💜</div><div>MEGA<br>x5 !</div></div>
 </div>
 
-<div id="bonus-orb" onclick="activateBonus()">
-    <div class="ob-icon">⚡</div>
-    <div>BONUS<br>x2 !</div>
-</div>
+<div id="bonus-orb" onclick="activateBonus()"><div id="bonus-orb-inner"><div class="ob-icon">⚡</div><div>BONUS<br>x2 !</div></div></div>
 
 <div id="fraude-orb" onclick="catchFraude()">
     <img src="fraude/Bouzaidi_Mohamed_Amine.webp" alt="La Fraude" style="width:100%;height:100%;object-fit:cover;display:block;">
@@ -491,6 +572,45 @@ const BOURRINE_MS = 30000;
 let bpsMultiplier = 1;
 
 let bonusOn=false, bonusSecTimer=0, bonusDelay=30+Math.floor(Math.random()*150);
+let fraudeEscapeCount=0; // compteur de fraudes ratées
+let bonusCollectedCount=0; // compteur de bonus collectés
+let milestoneCollectedSet=new Set(); // memes vus
+
+/* ── SUCCÈS : définition ── */
+const SUCCES = [
+    {
+        id:'bps1k', label:'1 000 pts/s', desc:'Atteins 1 000 pts par seconde',
+        check: ()=> bps * bpsMultiplier >= 1000,
+        cursor: 'biceps',
+        cursorCSS: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%92%AA%3C/text%3E%3C/svg%3E") 16 16, auto`
+    },
+    {
+        id:'score1m', label:'1 000 000 pts', desc:'Accumule un score global de 1 000 000 pts',
+        check: ()=> score >= 1000000,
+        cursor: 'haltere-or',
+        cursorCSS: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Cg transform='rotate(-35 18 18)'%3E%3Crect x='15' y='2' width='6' height='8' rx='2' fill='%23FFD700' stroke='%23fff' stroke-width='1'/%3E%3Crect x='15' y='26' width='6' height='8' rx='2' fill='%23FFD700' stroke='%23fff' stroke-width='1'/%3E%3Crect x='15.5' y='10' width='5' height='16' rx='1.5' fill='%23DAA520'/%3E%3Crect x='2' y='6' width='13' height='5' rx='2' fill='%23FFD700' stroke='%23fff' stroke-width='1'/%3E%3Crect x='21' y='6' width='13' height='5' rx='2' fill='%23FFD700' stroke='%23fff' stroke-width='1'/%3E%3Crect x='2' y='25' width='13' height='5' rx='2' fill='%23FFD700' stroke='%23fff' stroke-width='1'/%3E%3Crect x='21' y='25' width='13' height='5' rx='2' fill='%23FFD700' stroke='%23fff' stroke-width='1'/%3E%3C/g%3E%3C/svg%3E") 18 18, crosshair`
+    },
+    {
+        id:'fraude10', label:'Chasseur de fraude', desc:'Fais fuir 10 fois la fraude',
+        check: ()=> fraudeEscapeCount >= 10,
+        cursor: 'fraude',
+        cursorCSS: `url("fraude/Bouzaidi_Mohamed_Amine.webp") 16 16, auto`
+    },
+    {
+        id:'allMemes', label:'Collectionneur de mèmes', desc:'Obtiens tous les mèmes du millième clic',
+        check: ()=> milestoneCollectedSet.size >= MILESTONE.length,
+        cursor: 'flingue',
+        cursorCSS: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%94%AB%3C/text%3E%3C/svg%3E") 16 16, auto`
+    },
+    {
+        id:'allBonus', label:'Collecteur de bonus', desc:'Collecte 20 bonus (x2 ou MEGA)',
+        check: ()=> bonusCollectedCount >= 20,
+        cursor: 'flingue-or',
+        cursorCSS: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%8F%86%3C/text%3E%3C/svg%3E") 16 16, auto`
+    },
+];
+let unlockedSucces = new Set();
+let activeCursor = null; // id du curseur actif
 // Mega bonus
 let megaOn=false, mega_t0=0, megaSecTimer=0;
 let megaDelay=300+Math.floor(Math.random()*300); // 5-10 min
@@ -517,26 +637,26 @@ const MILESTONE = [
    puis remplace icon:'images/monfichier.png'
 ================================================================ */
 const buildings = [
-    /* 1 */ { id:'feuille',   name:'Signe sur la feuille de présence', baseCost:14,          bps:0,       clickBonus:0.1,  icon:'images/feuille.png',    count:0, bg:'linear-gradient(90deg,rgba(10,30,10,.85),rgba(0,0,0,.5))' },
-    /* 2 */ { id:'cafe',      name:'Prends un café MaxiCoffee',         baseCost:90,         bps:1,       clickBonus:0,    icon:'images/cafe.png',       count:0, bg:'linear-gradient(90deg,rgba(40,20,5,.85),rgba(0,0,0,.5))' },
-    /* 3 */ { id:'module',    name:'Choisis ton module polytechnique',   baseCost:990,        bps:8,       clickBonus:0,    icon:'images/module.png',     count:0, bg:'linear-gradient(90deg,rgba(10,10,40,.85),rgba(0,0,0,.5))' },
-    /* 4 */ { id:'regard',    name:'Affronte mon regard',                baseCost:10800,       bps:47,      clickBonus:0,    icon:'images/regard.png',     count:0, bg:'linear-gradient(90deg,rgba(0,35,40,.85),rgba(0,0,0,.5))' },
-    /* 5 */ { id:'ds',        name:'Conduis la DS autonome',             baseCost:117000,      bps:260,     clickBonus:0,    icon:'images/ds.png',         count:0, bg:'linear-gradient(90deg,rgba(5,25,45,.85),rgba(0,0,0,.5))' },
-    /* 6 */ { id:'smartcity', name:'Balade toi dans la Smart City',      baseCost:1260000,     bps:1400,    clickBonus:0,    icon:'images/smartcity.png',  count:0, bg:'linear-gradient(90deg,rgba(0,40,30,.85),rgba(0,0,0,.5))' },
-    /* 7 */ { id:'rsa',       name:'Démonte le RSA avec Moa',            baseCost:18000000,    bps:7800,    clickBonus:0,    icon:'images/rsa.png',        count:0, bg:'linear-gradient(90deg,rgba(40,0,40,.85),rgba(0,0,0,.5))' },
-    /* 8 */ { id:'shuttle',   name:'Lance le shuttle de Biaou toi-même', baseCost:297000000,   bps:44000,   clickBonus:0,    icon:'images/shuttle.png',    count:0, bg:'linear-gradient(90deg,rgba(5,5,50,.85),rgba(0,0,0,.5))' },
-    /* 9 */ { id:'meta',      name:'Complexifie cette métaheuristique',  baseCost:4590000000,  bps:260000,  clickBonus:0,    icon:'images/meta.png',       count:0, bg:'linear-gradient(90deg,rgba(30,0,50,.85),rgba(0,0,0,.5))' },
-    /*10 */ { id:'jerome',    name:'Jérôme regarde de travers et intimide', baseCost:67500000000, bps:1600000, clickBonus:0, icon:'images/jerome.png',    count:0, bg:'linear-gradient(90deg,rgba(50,10,0,.85),rgba(0,0,0,.5))' },
-    /*11 */ { id:'scapy',     name:'Code un client/serveur Python Scapy', baseCost:900000000000,       bps:10000000,clickBonus:0,    icon:'images/scapy.png',      count:0, bg:'linear-gradient(90deg,rgba(0,40,10,.85),rgba(0,0,0,.5))' },
-    /*12 */ { id:'arduino',   name:'Utilise un arduino non fonctionnel', baseCost:1.35e+13,      bps:65000000,clickBonus:0,    icon:'images/arduino.png',    count:0, bg:'linear-gradient(90deg,rgba(0,20,40,.85),rgba(0,0,0,.5))' },
-    /*13 */ { id:'android',   name:'Sécurise une application Android',   baseCost:1.89e+14,      bps:430000000,clickBonus:0,   icon:'images/android.png',    count:0, bg:'linear-gradient(90deg,rgba(20,40,0,.85),rgba(0,0,0,.5))' },
-    /*14 */ { id:'balaye',    name:"Balaye le drôle de l'INSA",              baseCost:2.61e+15,      bps:2900000000,clickBonus:0,  icon:'images/balaye.png',     count:0, bg:'linear-gradient(90deg,rgba(40,30,0,.85),rgba(0,0,0,.5))' },
-    /*15 */ { id:'ebios',     name:'Analyse ton risque avec Ebios RM',   baseCost:3.69e+16,      bps:2e10,    clickBonus:0,    icon:'images/ebios.png',      count:0, bg:'linear-gradient(90deg,rgba(30,0,30,.85),rgba(0,0,0,.5))' },
-    /*16 */ { id:'cloud',     name:'Exporte ton plug en cloud',           baseCost:4.95e+17,      bps:1.5e11,  clickBonus:0,    icon:'images/cloud.png',      count:0, bg:'linear-gradient(90deg,rgba(0,10,50,.85),rgba(0,0,0,.5))' },
-    /*17 */ { id:'lan',       name:'Scan de LAN (local area network)',    baseCost:6.8e+18,      bps:1.1e12,  clickBonus:0,    icon:'images/lan.png',        count:0, bg:'linear-gradient(90deg,rgba(0,35,35,.85),rgba(0,0,0,.5))' },
-    /*18 */ { id:'dayoub',    name:'Dayoub scam une vieille',             baseCost:9.0e+19,        bps:8e12,    clickBonus:0,    icon:'images/dayoub.png',     count:0, bg:'linear-gradient(90deg,rgba(50,5,5,.85),rgba(0,0,0,.5))' },
-    /*19 */ { id:'jury',      name:'Le jury est avec toi (3 mois après)', baseCost:1.4e+21,     bps:6e13,    clickBonus:0,    icon:'images/jury.png',       count:0, bg:'linear-gradient(90deg,rgba(40,40,0,.85),rgba(0,0,0,.5))' },
-    /*20 */ { id:'moine',     name:'Week-end avec le moine Costermans',   baseCost:1.8e+22,        bps:5e14,    clickBonus:0,    icon:'images/moine.png',      count:0, bg:'linear-gradient(90deg,rgba(10,40,40,.85),rgba(0,0,0,.5))' },
+    /* 1 */ { id:'feuille',   name:'Signe sur la feuille de présence', baseCost:8,          bps:0,       clickBonus:0.1,  icon:'images/feuille.png',    count:0, bg:'linear-gradient(90deg,rgba(10,30,10,.85),rgba(0,0,0,.5))' },
+    /* 2 */ { id:'cafe',      name:'Prends un café MaxiCoffee',         baseCost:54,         bps:1.4,       clickBonus:0,    icon:'images/cafe.png',       count:0, bg:'linear-gradient(90deg,rgba(40,20,5,.85),rgba(0,0,0,.5))' },
+    /* 3 */ { id:'module',    name:'Choisis ton module polytechnique',   baseCost:594,        bps:11.2,       clickBonus:0,    icon:'images/module.png',     count:0, bg:'linear-gradient(90deg,rgba(10,10,40,.85),rgba(0,0,0,.5))' },
+    /* 4 */ { id:'regard',    name:'Affronte mon regard',                baseCost:6480,       bps:65.8,      clickBonus:0,    icon:'images/regard.png',     count:0, bg:'linear-gradient(90deg,rgba(0,35,40,.85),rgba(0,0,0,.5))' },
+    /* 5 */ { id:'ds',        name:'Conduis la DS autonome',             baseCost:70200,      bps:364.0,     clickBonus:0,    icon:'images/ds.png',         count:0, bg:'linear-gradient(90deg,rgba(5,25,45,.85),rgba(0,0,0,.5))' },
+    /* 6 */ { id:'smartcity', name:'Balade toi dans la Smart City',      baseCost:756000,     bps:1960,    clickBonus:0,    icon:'images/smartcity.png',  count:0, bg:'linear-gradient(90deg,rgba(0,40,30,.85),rgba(0,0,0,.5))' },
+    /* 7 */ { id:'rsa',       name:'Démonte le RSA avec Moa',            baseCost:10800000,    bps:10920,    clickBonus:0,    icon:'images/rsa.png',        count:0, bg:'linear-gradient(90deg,rgba(40,0,40,.85),rgba(0,0,0,.5))' },
+    /* 8 */ { id:'shuttle',   name:'Lance le shuttle de Biaou toi-même', baseCost:178200000,   bps:61600,   clickBonus:0,    icon:'images/shuttle.png',    count:0, bg:'linear-gradient(90deg,rgba(5,5,50,.85),rgba(0,0,0,.5))' },
+    /* 9 */ { id:'meta',      name:'Complexifie cette métaheuristique',  baseCost:2754000000,  bps:364000,  clickBonus:0,    icon:'images/meta.png',       count:0, bg:'linear-gradient(90deg,rgba(30,0,50,.85),rgba(0,0,0,.5))' },
+    /*10 */ { id:'jerome',    name:'Jérôme regarde de travers et intimide', baseCost:40500000000, bps:2240000, clickBonus:0, icon:'images/jerome.png',    count:0, bg:'linear-gradient(90deg,rgba(50,10,0,.85),rgba(0,0,0,.5))' },
+    /*11 */ { id:'scapy',     name:'Code un client/serveur Python Scapy', baseCost:540000000000,       bps:14000000,clickBonus:0,    icon:'images/scapy.png',      count:0, bg:'linear-gradient(90deg,rgba(0,40,10,.85),rgba(0,0,0,.5))' },
+    /*12 */ { id:'arduino',   name:'Utilise un arduino non fonctionnel', baseCost:8100000000000,      bps:91000000,clickBonus:0,    icon:'images/arduino.png',    count:0, bg:'linear-gradient(90deg,rgba(0,20,40,.85),rgba(0,0,0,.5))' },
+    /*13 */ { id:'android',   name:'Sécurise une application Android',   baseCost:113400000000000,      bps:602000000,clickBonus:0,   icon:'images/android.png',    count:0, bg:'linear-gradient(90deg,rgba(20,40,0,.85),rgba(0,0,0,.5))' },
+    /*14 */ { id:'balaye',    name:"Balaye le drôle de l'INSA",              baseCost:1.6e+15,      bps:4060000000,clickBonus:0,  icon:'images/balaye.png',     count:0, bg:'linear-gradient(90deg,rgba(40,30,0,.85),rgba(0,0,0,.5))' },
+    /*15 */ { id:'ebios',     name:'Analyse ton risque avec Ebios RM',   baseCost:2.2e+16,      bps:28000000000,    clickBonus:0,    icon:'images/ebios.png',      count:0, bg:'linear-gradient(90deg,rgba(30,0,30,.85),rgba(0,0,0,.5))' },
+    /*16 */ { id:'cloud',     name:'Exporte ton plug en cloud',           baseCost:3.0e+17,      bps:210000000000,  clickBonus:0,    icon:'images/cloud.png',      count:0, bg:'linear-gradient(90deg,rgba(0,10,50,.85),rgba(0,0,0,.5))' },
+    /*17 */ { id:'lan',       name:'Scan de LAN (local area network)',    baseCost:4.1e+18,      bps:1.54e+12,  clickBonus:0,    icon:'images/lan.png',        count:0, bg:'linear-gradient(90deg,rgba(0,35,35,.85),rgba(0,0,0,.5))' },
+    /*18 */ { id:'dayoub',    name:'Dayoub scam une vieille',             baseCost:5.4e+19,        bps:1.12e+13,    clickBonus:0,    icon:'images/dayoub.png',     count:0, bg:'linear-gradient(90deg,rgba(50,5,5,.85),rgba(0,0,0,.5))' },
+    /*19 */ { id:'jury',      name:'Le jury est avec toi (3 mois après)', baseCost:8.4e+20,     bps:8.40e+13,    clickBonus:0,    icon:'images/jury.png',       count:0, bg:'linear-gradient(90deg,rgba(40,40,0,.85),rgba(0,0,0,.5))' },
+    /*20 */ { id:'moine',     name:'Week-end avec le moine Costermans',   baseCost:1.1e+22,        bps:7.00e+14,    clickBonus:0,    icon:'images/moine.png',      count:0, bg:'linear-gradient(90deg,rgba(10,40,40,.85),rgba(0,0,0,.5))' },
 ];
 
 /* ================================================================
@@ -704,12 +824,16 @@ function recalcBPS() {
     const feuille = buildings[0];
     const clickBoostTotal = feuille.count * feuille.clickBonus * getRowMultiplier(feuille);
     baseClickMult = parseFloat((1 + clickBoostTotal).toFixed(4));
-    // Si bourrine active, on garde le x2 sur la nouvelle base
-    clickMult = isBourrine ? baseClickMult * 2 : baseClickMult;
+    // Conserver le bon multiplicateur selon le mode actif
+    if (typeof megaOn !== "undefined" && megaOn) clickMult = baseClickMult * 5;
+    else if (isBourrine) clickMult = baseClickMult * 2;
+    else clickMult = baseClickMult;
 }
 function updateScoreUI() {
     document.getElementById('scoreDisplay').textContent = Math.floor(score).toLocaleString('fr-FR');
-    document.getElementById('bpsDisplay').textContent = bps + ' pts / sec';
+    const displayBps = Math.floor(bps * bpsMultiplier);
+    document.getElementById('bpsDisplay').textContent = displayBps.toLocaleString('fr-FR') + ' pts / sec' + (bpsMultiplier > 1 ? ' (x'+bpsMultiplier+')' : '');
+    checkSucces();
 }
 function updateShopColors() {
     buildings.forEach((b,i) => {
@@ -820,6 +944,7 @@ function triggerBonus() {
 function activateBonus() {
     if (!bonusOn) return;
     bonusOn = false;
+    bonusCollectedCount++; checkSucces();
     document.getElementById('bonus-orb').style.display = 'none';
     activateBourrine();
     scheduleBonus();
@@ -871,6 +996,7 @@ function triggerMegaBonus() {
 function activateMegaBonus() {
     if (!megaOn) return;
     megaOn = false;
+    bonusCollectedCount++; checkSucces();
     document.getElementById('mega-orb').style.display = 'none';
     activateMega();
     scheduleMega();
@@ -928,6 +1054,8 @@ function fraudePunish() {
     const lost = Math.floor(score*.1);
     score = Math.max(0, score-lost);
     flash('rgba(200,0,0,.3)');
+    fraudeEscapeCount++;
+    checkSucces();
     showNotif(`❌ LA FRAUDE S'EST ÉCHAPPÉE ! -${lost.toLocaleString('fr-FR')} pts !`);
     updateScoreUI();
     scheduleFraude();
@@ -942,6 +1070,8 @@ function triggerMilestone() {
     const item = MILESTONE[Math.floor(Math.random()*MILESTONE.length)];
     document.getElementById('milestone-img').src = item.src;
     document.getElementById('milestone-popup').style.display = 'block';
+    milestoneCollectedSet.add(item.src);
+    checkSucces();
 }
 function closeMilestone() {
     document.getElementById('milestone-popup').style.display = 'none';
@@ -966,7 +1096,7 @@ function showNotif(msg) {
 
 /* ── SAUVEGARDE & SYNCHRONISATION DB ── */
 function saveGame() {
-    localStorage.setItem('fc5', _enc({ score, bc:buildings.map(b=>b.count), tc:totalClicks }));
+    localStorage.setItem('fc5', _enc({ score, bc:buildings.map(b=>b.count), tc:totalClicks, su:[...unlockedSucces], ac:activeCursor, fec:fraudeEscapeCount, bcc:bonusCollectedCount, mcs:[...milestoneCollectedSet] }));
 }
 
 function loadGame() {
@@ -977,6 +1107,11 @@ function loadGame() {
     score = d.score || 0;
     totalClicks = d.tc || 0;
     if (d.bc) buildings.forEach((b,i) => { b.count = d.bc[i]||0; });
+    if (d.su) d.su.forEach(id => unlockedSucces.add(id));
+    if (d.ac !== undefined) activeCursor = d.ac;
+    if (d.fec) fraudeEscapeCount = d.fec;
+    if (d.bcc) bonusCollectedCount = d.bcc;
+    if (d.mcs) d.mcs.forEach(s => milestoneCollectedSet.add(s));
     recalcBPS();
 }
 
@@ -1003,6 +1138,95 @@ async function resetGame() {
     location.reload();
 }
 
+/* ── SUCCÈS & CURSEURS ── */
+function checkSucces() {
+    let newUnlock = false;
+    SUCCES.forEach(s => {
+        if (!unlockedSucces.has(s.id) && s.check()) {
+            unlockedSucces.add(s.id);
+            newUnlock = true;
+            showNotif('🏆 SUCCÈS DÉVERROUILLÉ : ' + s.label + ' !');
+        }
+    });
+    if (newUnlock) { renderSucces(); renderCursors(); saveGame(); }
+}
+
+function renderSucces() {
+    const el = document.getElementById('succes-list');
+    if (!el) return;
+    el.innerHTML = '';
+    SUCCES.forEach(s => {
+        const unlocked = unlockedSucces.has(s.id);
+        el.innerHTML += `<div class="succes-item ${unlocked ? 'unlocked' : ''}">
+            <div class="succes-lock">${unlocked ? '✅' : '🔒'}</div>
+            <div class="succes-info">
+                <strong>${s.label}</strong>
+                <span>${s.desc}</span>
+            </div>
+        </div>`;
+    });
+}
+
+function renderCursors() {
+    const el = document.getElementById('cursor-list');
+    if (!el) return;
+    el.innerHTML = '';
+    // Curseur par défaut
+    const defActive = activeCursor === null ? 'active-cursor' : '';
+    el.innerHTML += `<div class="cursor-item ${defActive}">
+        <span style="font-size:13px;color:#aaa;">🏋️ Haltère cyan (défaut)</span>
+        <button class="cursor-pick" onclick="pickCursor(null)">CHOISIR</button>
+    </div>`;
+    SUCCES.forEach(s => {
+        const unlocked = unlockedSucces.has(s.id);
+        const active = activeCursor === s.id ? 'active-cursor' : '';
+        el.innerHTML += `<div class="cursor-item ${unlocked ? '' : 'locked'} ${active}">
+            <span style="font-size:13px;color:${unlocked ? '#fff' : '#444'};">${unlocked ? '✅' : '🔒'} ${s.label}</span>
+            ${unlocked ? `<button class="cursor-pick" onclick="pickCursor('${s.id}')">CHOISIR</button>` : '<span style="font-size:11px;color:#444;">Verrouillé</span>'}
+        </div>`;
+    });
+}
+
+function pickCursor(id) {
+    activeCursor = id;
+    applyCursor();
+    renderCursors();
+    saveGame();
+}
+
+function applyCursor() {
+    let css;
+    if (activeCursor === null) {
+        // Curseur haltère cyan par défaut
+        css = document.documentElement.style.getPropertyValue('--cur-n') || '';
+        // Réinitialiser via la feuille de style
+        document.documentElement.style.removeProperty('--active-cursor');
+        document.querySelectorAll('*').forEach(el => el.style.cursor = '');
+        return;
+    }
+    const s = SUCCES.find(x => x.id === activeCursor);
+    if (!s) return;
+    // Injecter le curseur custom via une règle dynamique
+    let sheet = document.getElementById('cursor-sheet');
+    if (!sheet) {
+        sheet = document.createElement('style');
+        sheet.id = 'cursor-sheet';
+        document.head.appendChild(sheet);
+    }
+    sheet.textContent = `* { cursor: ${s.cursorCSS} !important; }`;
+}
+
+function togglePanel(id) {
+    const panel = document.getElementById(id);
+    const isOpen = panel.classList.contains('open');
+    document.querySelectorAll('.side-panel').forEach(p => p.classList.remove('open'));
+    if (!isOpen) {
+        panel.classList.add('open');
+        renderSucces();
+        renderCursors();
+    }
+}
+
 /* ── INIT SÉCURISÉE ── */
 window.addEventListener('load', () => {
     myPseudo = localStorage.getItem('cdsi_logged_user');
@@ -1015,6 +1239,8 @@ window.addEventListener('load', () => {
 
     resizeAll(); 
     loadGame(); 
+    applyCursor();
+    checkSucces();
     renderShop(); 
     renderVisuals(); 
     updateScoreUI();
