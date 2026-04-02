@@ -73,7 +73,6 @@
     </div>
 
     <div class="market-grid" id="marketGrid">
-        <!-- Rempli en JS -->
         <p style="color: #aaa;">Chargement des marchés...</p>
     </div>
 </div>
@@ -102,14 +101,29 @@
         </div>
 
         <div class="bet-controls">
+            <!-- COLONNE OUI -->
             <div>
-                <h3 class="yes-text" style="text-align: center; margin-bottom: 10px;">OUI (<span id="detailYesPct">50</span>%)</h3>
-                <input type="number" id="betYesAmount" class="input-bet" placeholder="Mise en M$">
+                <h3 class="yes-text" style="text-align: center; margin-bottom: 5px;">OUI (<span id="detailYesPct">50</span>%)</h3>
+                <div style="text-align: center; color: #aaa; margin-bottom: 10px; font-size: 14px;">
+                    Cote actuelle : <span id="detailYesCote" style="color: #fff; font-weight: bold;">2.00</span>
+                </div>
+                
+                <input type="number" id="betYesAmount" class="input-bet" placeholder="Mise en M$" oninput="calcPotential('yes')">
+                <div style="text-align: center; color: #2ecc71; margin-bottom: 10px; font-size: 13px; min-height: 18px;" id="potentialYes"></div>
+                
                 <button class="btn-green" style="width: 100%;" onclick="placeBet('yes')">PARIER OUI</button>
             </div>
+
+            <!-- COLONNE NON -->
             <div>
-                <h3 class="no-text" style="text-align: center; margin-bottom: 10px;">NON (<span id="detailNoPct">50</span>%)</h3>
-                <input type="number" id="betNoAmount" class="input-bet" placeholder="Mise en M$">
+                <h3 class="no-text" style="text-align: center; margin-bottom: 5px;">NON (<span id="detailNoPct">50</span>%)</h3>
+                <div style="text-align: center; color: #aaa; margin-bottom: 10px; font-size: 14px;">
+                    Cote actuelle : <span id="detailNoCote" style="color: #fff; font-weight: bold;">2.00</span>
+                </div>
+
+                <input type="number" id="betNoAmount" class="input-bet" placeholder="Mise en M$" oninput="calcPotential('no')">
+                <div style="text-align: center; color: #e74c3c; margin-bottom: 10px; font-size: 13px; min-height: 18px;" id="potentialNo"></div>
+                
                 <button class="btn-red" style="width: 100%;" onclick="placeBet('no')">PARIER NON</button>
             </div>
         </div>
@@ -145,7 +159,6 @@ window.onload = async () => {
     await fetchUserWallet();
     await loadMarkets();
     
-    // Auto-refresh léger toutes les 3 secondes pour voir les courbes bouger
     setInterval(loadMarkets, 3000);
 };
 
@@ -172,7 +185,6 @@ async function loadMarkets() {
     marketsData = state.markets || {};
     renderMarketGrid();
     
-    // Mettre à jour le modal détaillé s'il est ouvert
     if (currentMarketId && marketsData[currentMarketId]) {
         updateDetailModalData(marketsData[currentMarketId]);
     }
@@ -228,7 +240,7 @@ async function createMarket() {
         resolved: false,
         winner: null,
         history: [{ time: new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'}), yesPct: 50 }],
-        bets: {} // Pour traquer qui a misé quoi
+        bets: {} 
     };
 
     await saveMarketState(state);
@@ -237,7 +249,7 @@ async function createMarket() {
     loadMarkets();
 }
 
-// --- LE DÉTAIL DU PARI (MODAL & GRAPHIQUE) ---
+// --- LE DÉTAIL DU PARI ---
 function openDetailModal(id) {
     currentMarketId = id;
     const m = marketsData[id];
@@ -245,7 +257,6 @@ function openDetailModal(id) {
     document.getElementById('detailModal').style.display = 'flex';
     document.getElementById('detailTitle').innerText = m.title;
     
-    // Afficher le panel Admin si c'est Paulo (Ajuste l'orthographe exacte de ton pseudo administrateur ici !)
     if (myPseudo.toLowerCase() === 'paulo') {
         document.getElementById('adminPanel').style.display = 'block';
     } else {
@@ -260,6 +271,11 @@ function closeDetailModal() {
     document.getElementById('detailModal').style.display = 'none';
     currentMarketId = null;
     if (chartInstance) chartInstance.destroy();
+    
+    document.getElementById('betYesAmount').value = "";
+    document.getElementById('betNoAmount').value = "";
+    document.getElementById('potentialYes').innerHTML = "";
+    document.getElementById('potentialNo').innerHTML = "";
 }
 
 function updateDetailModalData(m) {
@@ -267,15 +283,59 @@ function updateDetailModalData(m) {
     let yesPct = totalPool === 0 ? 50 : Math.round((m.poolYes / totalPool) * 100);
     let noPct = 100 - yesPct;
     
+    // Calcul des cotes actuelles
+    let coteYes = totalPool === 0 ? 2.00 : (m.poolYes === 0 ? 0 : totalPool / m.poolYes);
+    let coteNo = totalPool === 0 ? 2.00 : (m.poolNo === 0 ? 0 : totalPool / m.poolNo);
+    
     document.getElementById('detailYesPct').innerText = yesPct;
     document.getElementById('detailNoPct').innerText = noPct;
 
-    // Maj du graph si ouvert
+    // Affichage des cotes (Si pool = 0, on met Max)
+    document.getElementById('detailYesCote').innerText = (totalPool === 0) ? "2.00" : (m.poolYes === 0 ? "Max" : coteYes.toFixed(2));
+    document.getElementById('detailNoCote').innerText = (totalPool === 0) ? "2.00" : (m.poolNo === 0 ? "Max" : coteNo.toFixed(2));
+
+    // Mettre à jour les calculs de gains potentiels en direct si le champ est rempli
+    calcPotential('yes');
+    calcPotential('no');
+
     if (chartInstance) {
         chartInstance.data.labels = m.history.map(h => h.time);
         chartInstance.data.datasets[0].data = m.history.map(h => h.yesPct);
-        chartInstance.update('none'); // Update sans animation lourde
+        chartInstance.update('none'); 
     }
+}
+
+// --- CALCUL DU GAIN POTENTIEL EN TEMPS RÉEL ---
+function calcPotential(choice) {
+    const inputId = choice === 'yes' ? 'betYesAmount' : 'betNoAmount';
+    const displayId = choice === 'yes' ? 'potentialYes' : 'potentialNo';
+    const amount = parseFloat(document.getElementById(inputId).value);
+    
+    const displayEl = document.getElementById(displayId);
+    
+    if (!amount || amount <= 0 || isNaN(amount)) {
+        displayEl.innerHTML = "";
+        return;
+    }
+    
+    let m = marketsData[currentMarketId];
+    if (!m) return;
+    
+    let currentTotal = m.poolYes + m.poolNo;
+    let currentYes = m.poolYes;
+    let currentNo = m.poolNo;
+    
+    // Simulation de l'ajout de la mise dans le pool
+    let newTotal = currentTotal + amount;
+    let newPool = choice === 'yes' ? (currentYes + amount) : (currentNo + amount);
+    
+    // Part du gâteau = (Ma mise / Nouveau Pool) * Nouveau Total
+    let potentialWin = (amount / newPool) * newTotal;
+    
+    // La cote finale que j'obtiens réellement (elle baisse car j'ajoute ma mise au pool)
+    let effCote = newTotal / newPool;
+    
+    displayEl.innerHTML = `Gain potentiel : <strong>${potentialWin.toFixed(2)} M$</strong><br><span style="font-size:11px; color:#888;">(Cote finale estimée : ${effCote.toFixed(2)})</span>`;
 }
 
 function initChart(historyData) {
@@ -293,8 +353,8 @@ function initChart(historyData) {
                 backgroundColor: 'rgba(39, 174, 96, 0.1)',
                 borderWidth: 2,
                 fill: true,
-                tension: 0.3, // Courbe douce
-                pointRadius: 0, // Cache les points pour faire propre
+                tension: 0.3,
+                pointRadius: 0,
                 pointHoverRadius: 5
             }]
         },
@@ -319,12 +379,10 @@ async function placeBet(choice) {
     if (!amount || amount <= 0) return alert("Mise invalide !");
     if (amount > myWallet) return alert("Tu n'as pas assez d'argent sur ton compte !");
 
-    // 1. Retirer l'argent du joueur
     const newWallet = myWallet - amount;
     await sb.from('cdsi_users').update({ wallet: newWallet }).eq('pseudo', myPseudo);
-    await fetchUserWallet(); // Refresh UI
+    await fetchUserWallet(); 
 
-    // 2. Mettre à jour le marché global
     let state = await fetchMarketState();
     let m = state.markets[currentMarketId];
     
@@ -333,11 +391,9 @@ async function placeBet(choice) {
     if (choice === 'yes') m.poolYes += amount;
     else m.poolNo += amount;
 
-    // Enregistrer le pari du joueur
     if (!m.bets[myPseudo]) m.bets[myPseudo] = { yes: 0, no: 0 };
     m.bets[myPseudo][choice] += amount;
 
-    // Enregistrer le point d'historique pour la courbe
     let totalPool = m.poolYes + m.poolNo;
     let yesPct = Math.round((m.poolYes / totalPool) * 100);
     m.history.push({ time: new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'}), yesPct: yesPct });
@@ -345,7 +401,8 @@ async function placeBet(choice) {
     await saveMarketState(state);
     
     document.getElementById(inputId).value = "";
-    loadMarkets(); // Refresh
+    document.getElementById(choice === 'yes' ? 'potentialYes' : 'potentialNo').innerHTML = "";
+    loadMarkets(); 
 }
 
 // --- PAULO : RÉSOUDRE LE PARI ET PAYER ---
@@ -363,19 +420,15 @@ async function resolveMarket(winningChoice) {
     let totalPool = m.poolYes + m.poolNo;
     let winningPool = winningChoice === 'yes' ? m.poolYes : m.poolNo;
 
-    // Si personne n'a parié sur le choix gagnant, l'argent est perdu (ou on pourrait rembourser, mais gardons la banque riche)
     if (winningPool > 0) {
-        // Distribution
         for (let playerPseudo in m.bets) {
             let playerBet = m.bets[playerPseudo];
             let betOnWinner = winningChoice === 'yes' ? playerBet.yes : playerBet.no;
             
             if (betOnWinner > 0) {
-                // Règle du pari mutuel : Part du gâteau = (Ma mise / Pool Gagnant) * Total Pool
                 let sharePercentage = betOnWinner / winningPool;
                 let payout = totalPool * sharePercentage;
                 
-                // On va chercher le solde actuel du gagnant et on lui ajoute ses gains
                 const { data } = await sb.from('cdsi_users').select('wallet').eq('pseudo', playerPseudo).single();
                 if (data) {
                     let updatedWallet = parseFloat(data.wallet) + payout;
@@ -388,7 +441,7 @@ async function resolveMarket(winningChoice) {
     await saveMarketState(state);
     closeDetailModal();
     loadMarkets();
-    await fetchUserWallet(); // Maj du solde de Paulo au cas où il a joué
+    await fetchUserWallet(); 
     alert(`Marché résolu ! Les gains de ${Math.floor(totalPool)} M$ ont été distribués aux gagnants.`);
 }
 </script>
