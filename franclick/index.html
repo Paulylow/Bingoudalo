@@ -227,11 +227,56 @@ body.bourrine .col-right { border-color:#ff2200; }
 .shop-item:not(.disabled):hover { border-color:#FF00FF; background:rgba(255,0,255,.06); }
 
 .reset-btn {
-    margin-top:24px; width:100%; padding:9px; background:transparent;
-    border:1px solid #cc0000; color:#cc0000; border-radius:5px;
-    font-family:'DM Sans'; font-weight:bold; text-transform:uppercase; font-size:12px;
+    margin-top:24px; width:100%; padding:10px; background:linear-gradient(135deg,rgba(255,180,0,.15),rgba(255,100,0,.15));
+    border:2px solid #ffaa00; color:#ffaa00; border-radius:8px;
+    font-family:'Bebas Neue'; letter-spacing:2px; font-size:14px;
+    transition:.2s;
 }
-.reset-btn:hover { background:#cc0000; color:#fff; }
+.reset-btn:hover { background:linear-gradient(135deg,rgba(255,180,0,.3),rgba(255,100,0,.3)); border-color:#ffdd00; color:#ffdd00; }
+
+/* Badge prestige affiché en haut de la colonne droite */
+#prestige-badge {
+    display:none; background:linear-gradient(135deg,rgba(255,160,0,.2),rgba(255,80,0,.15));
+    border:1px solid #ffaa00; border-radius:8px; padding:8px 12px;
+    margin-bottom:14px; text-align:center;
+}
+#prestige-badge .pb-count { font-family:'Bebas Neue'; font-size:22px; color:#ffdd00; letter-spacing:2px; }
+#prestige-badge .pb-label { font-size:11px; color:#aa7700; margin-top:2px; }
+#prestige-badge .pb-bonus { font-size:13px; color:#ffaa00; font-weight:bold; margin-top:4px; }
+
+/* Modal prestige */
+#prestige-modal {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,.75);
+    z-index:1000; align-items:center; justify-content:center;
+}
+#prestige-modal.open { display:flex; }
+#prestige-box {
+    background:#0d0d1a; border:2px solid #ffaa00;
+    box-shadow:0 0 50px rgba(255,160,0,.35);
+    border-radius:16px; padding:32px 36px; text-align:center;
+    max-width:420px; width:90%;
+    animation:popIn .4s cubic-bezier(.17,.89,.32,1.28);
+}
+#prestige-box h2 { font-family:'Bebas Neue'; font-size:28px; color:#ffdd00; letter-spacing:3px; margin-bottom:6px; }
+#prestige-box .pm-sub { font-size:13px; color:#888; margin-bottom:18px; }
+#prestige-box .pm-gain { font-family:'Bebas Neue'; font-size:36px; color:#ffaa00; letter-spacing:2px; margin-bottom:4px; }
+#prestige-box .pm-detail { font-size:12px; color:#666; margin-bottom:6px; }
+#prestige-box .pm-total { font-size:14px; color:#ffdd00; margin-bottom:24px; font-weight:bold; }
+.pm-btns { display:flex; gap:12px; justify-content:center; }
+.pm-btn-yes {
+    background:linear-gradient(135deg,#ff9900,#ffcc00); color:#000;
+    border:none; border-radius:8px; font-family:'Bebas Neue';
+    font-size:18px; letter-spacing:2px; padding:10px 28px;
+    transition:.15s;
+}
+.pm-btn-yes:hover { transform:scale(1.04); }
+.pm-btn-no {
+    background:transparent; color:#666; border:1px solid #333;
+    border-radius:8px; font-family:'Bebas Neue';
+    font-size:18px; letter-spacing:2px; padding:10px 28px;
+    transition:.15s;
+}
+.pm-btn-no:hover { border-color:#888; color:#aaa; }
 
 /* ── ONGLETS HEADER DROITE ── */
 #header-tabs {
@@ -478,7 +523,13 @@ body.mega #mega-timer { display:block; }
     <div class="col-right">
         <div class="shop-title">MARCHÉ NOIR</div>
         <div id="shopContainer"></div>
-        <button class="reset-btn" onclick="resetGame()">Effacer la sauvegarde</button>
+        <!-- Badge prestige -->
+        <div id="prestige-badge">
+            <div class="pb-count" id="prestige-count">✨ 0 PRESTIGE</div>
+            <div class="pb-label">runs effectuées</div>
+            <div class="pb-bonus" id="prestige-bonus-label">+0% gains permanents</div>
+        </div>
+        <button class="reset-btn" onclick="openPrestigeModal()">⭐ RESET ET GAGNE + !</button>
     </div>
 </div>
 
@@ -569,6 +620,24 @@ function spawnFx(cx, cy) {
 
 /* ── Variables jeu ── */
 let score=0, bps=0, clickMult=1, baseClickMult=1, totalClicks=0;
+// Prestige : tokens accumulés sur toutes les runs, bonus permanent
+let prestigeTokens=0;   // total tokens
+let prestigeRuns=0;     // nombre de resets
+// Formule bonus : chaque token = +0.5% sur tous les gains (clic + bps)
+// Token gagnés par run = floor(log10(max_score_de_la_run)) - 5  (min 0)
+// Ex: score 1M (1e6) → log10=6 → 6-5=1 token | score 1B → 4 tokens | score 1T → 7 tokens
+function calcPrestigeBonus() {
+    // +0.5% par token, plafonné à +200% (400 tokens max utiles)
+    return Math.min(prestigeTokens * 0.005, 2.0);
+}
+function calcPrestigeMultiplier() {
+    return 1 + calcPrestigeBonus();
+}
+function calcTokensForRun() {
+    // Basé sur le score actuel : log10(score) - 5, min 1 si score > 100k
+    if (score < 100000) return 0;
+    return Math.max(1, Math.floor(Math.log10(score)) - 5);
+}
 let isBourrine=false, bourrine_t0=0;
 const BOURRINE_MS = 30000;
 // Multiplicateur BPS actif (1 = normal, 2 = bourrine, 5 = mega)
@@ -750,7 +819,7 @@ function gameTick() {
     const now = performance.now();
     const dt = (now - lastTick) / 1000; // secondes réelles écoulées
     lastTick = now;
-    score += bps * bpsMultiplier * dt;
+    score += bps * bpsMultiplier * calcPrestigeMultiplier() * dt;
     updateScoreUI(); updateShopColors();
 }
 
@@ -781,7 +850,7 @@ setInterval(saveGame, 5000);
    MÉCANIQUES
 ================================================================ */
 function clickFrancky(e) {
-    score += clickMult;
+    score += clickMult * calcPrestigeMultiplier();
     totalClicks++;
     updateScoreUI(); updateShopColors();
     spawnFx(e.clientX, e.clientY);
@@ -834,8 +903,9 @@ function recalcBPS() {
 }
 function updateScoreUI() {
     document.getElementById('scoreDisplay').textContent = Math.floor(score).toLocaleString('fr-FR');
-    const displayBps = Math.floor(bps * bpsMultiplier);
-    document.getElementById('bpsDisplay').textContent = displayBps.toLocaleString('fr-FR') + ' pts / sec' + (bpsMultiplier > 1 ? ' (x'+bpsMultiplier+')' : '');
+    const displayBps = Math.floor(bps * bpsMultiplier * calcPrestigeMultiplier());
+    const bonusLabel = bpsMultiplier > 1 ? ' (x'+bpsMultiplier+')' : '';
+    document.getElementById('bpsDisplay').textContent = displayBps.toLocaleString('fr-FR') + ' pts / sec' + bonusLabel;
     checkSucces();
 }
 function updateShopColors() {
@@ -1100,9 +1170,51 @@ function showNotif(msg) {
     notifTO = setTimeout(() => { n.style.display='none'; }, 3500);
 }
 
+/* ── PRESTIGE ── */
+function openPrestigeModal() {
+    const tokens = calcTokensForRun();
+    const newTotal = prestigeTokens + tokens;
+    const bonusPct = Math.round(calcPrestigeBonus() * 100);
+    const newBonusPct = Math.round(Math.min(newTotal * 0.005, 2.0) * 100);
+    document.getElementById('pm-tokens').textContent = '+' + tokens + ' ✨';
+    document.getElementById('pm-detail').textContent =
+        tokens === 0
+        ? 'Atteins 100 000 pts pour gagner des tokens !'
+        : 'tokens gagnés cette run (basé sur ton score actuel)';
+    document.getElementById('pm-total').textContent =
+        'Total après : ' + newTotal + ' tokens → +' + newBonusPct + '% gains permanents';
+    document.getElementById('prestige-modal').classList.add('open');
+}
+function closePrestigeModal() {
+    document.getElementById('prestige-modal').classList.remove('open');
+}
+async function confirmPrestige() {
+    const tokens = calcTokensForRun();
+    prestigeTokens += tokens;
+    prestigeRuns++;
+    closePrestigeModal();
+    // Reset la run
+    score = 0; totalClicks = 0;
+    buildings.forEach(b => { b.count = 0; });
+    recalcBPS(); renderShop(); renderVisuals(); updateScoreUI();
+    updatePrestigeBadge();
+    if (myPseudo) {
+        try { await sb.from('cdsi_users').update({ franclick_score: 0 }).eq('pseudo', myPseudo); } catch(e){}
+    }
+    saveGame();
+    showNotif('⭐ PRESTIGE ! +' + tokens + ' tokens — bonus total : +' + Math.round(calcPrestigeBonus()*100) + '% !');
+}
+function updatePrestigeBadge() {
+    const badge = document.getElementById('prestige-badge');
+    if (prestigeRuns === 0) { badge.style.display='none'; return; }
+    badge.style.display = 'block';
+    document.getElementById('prestige-count').textContent = '✨ ' + prestigeRuns + ' PRESTIGE' + (prestigeRuns > 1 ? 'S' : '');
+    document.getElementById('prestige-bonus-label').textContent = '+' + Math.round(calcPrestigeBonus()*100) + '% gains permanents';
+}
+
 /* ── SAUVEGARDE & SYNCHRONISATION DB ── */
 function saveGame() {
-    localStorage.setItem('fc5', _enc({ score, bc:buildings.map(b=>b.count), tc:totalClicks, su:[...unlockedSucces], ac:activeCursor, fec:fraudeEscapeCount, bcc:bonusCollectedCount, mcs:[...milestoneCollectedSet] }));
+    localStorage.setItem('fc5', _enc({ score, bc:buildings.map(b=>b.count), tc:totalClicks, su:[...unlockedSucces], ac:activeCursor, fec:fraudeEscapeCount, bcc:bonusCollectedCount, mcs:[...milestoneCollectedSet], pt:prestigeTokens, pr:prestigeRuns }));
 }
 
 function loadGame() {
@@ -1118,6 +1230,8 @@ function loadGame() {
     if (d.fec) fraudeEscapeCount = d.fec;
     if (d.bcc) bonusCollectedCount = d.bcc;
     if (d.mcs) d.mcs.forEach(s => milestoneCollectedSet.add(s));
+    if (d.pt) prestigeTokens = d.pt;
+    if (d.pr) prestigeRuns = d.pr;
     recalcBPS();
 }
 
@@ -1128,21 +1242,7 @@ async function syncScoreToDB() {
     } catch(e) { console.error("Erreur de synchro score", e); }
 }
 
-async function resetGame() {
-    const ok = confirm("T'es sûr de vouloir tout effacer ? Tu vas retomber à 0 !");
-    if (!ok) return;
-    // Reset local immédiat
-    localStorage.removeItem('fc5');
-    score = 0; totalClicks = 0;
-    buildings.forEach(b => { b.count = 0; });
-    recalcBPS(); renderShop(); renderVisuals(); updateScoreUI();
-    // Sync DB en arrière-plan, puis reload
-    if (myPseudo) {
-        try { await sb.from('cdsi_users').update({ franclick_score: 0 }).eq('pseudo', myPseudo); } catch(e){}
-    }
-    saveGame();
-    location.reload();
-}
+// resetGame remplacé par le système prestige (openPrestigeModal)
 
 /* ── SUCCÈS & CURSEURS ── */
 function checkSucces() {
@@ -1243,6 +1343,7 @@ window.addEventListener('load', () => {
     loadGame(); 
     applyCursor();
     checkSucces();
+    updatePrestigeBadge();
     renderShop(); 
     renderVisuals(); 
     updateScoreUI();
@@ -1252,5 +1353,20 @@ window.addEventListener('load', () => {
     setInterval(syncScoreToDB, 5 * 60 * 1000);
 });
 </script>
+
+<!-- MODAL PRESTIGE -->
+<div id="prestige-modal">
+    <div id="prestige-box">
+        <h2>⭐ PRESTIGE</h2>
+        <p class="pm-sub">Veux-tu vraiment repartir de 0 et gagner + ?</p>
+        <div class="pm-gain" id="pm-tokens">+0 ✨</div>
+        <div class="pm-detail" id="pm-detail">tokens gagnés cette run</div>
+        <div class="pm-total" id="pm-total">Total après : 0 tokens → +0% gains</div>
+        <div class="pm-btns">
+            <button class="pm-btn-yes" onclick="confirmPrestige()">OUI, JE PRESTIGE !</button>
+            <button class="pm-btn-no" onclick="closePrestigeModal()">NON, CONTINUER</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
