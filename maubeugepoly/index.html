@@ -25,7 +25,6 @@
   .player-row { display: flex; align-items: center; gap: 15px; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,215,0,0.3); border-radius: 8px; font-weight: bold; margin-bottom: 10px;}
   .player-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold); background: #111;}
   .badge-master { background: rgba(255,215,0,0.2); color: var(--gold); padding: 4px 8px; border-radius: 4px; font-size: 11px; text-transform: uppercase; margin-left: auto; border: 1px solid var(--gold);}
-  .badge-dead { background: rgba(255,0,0,0.2); color: #ff4444; padding: 4px 8px; border-radius: 4px; font-size: 11px; text-transform: uppercase; margin-left: auto; border: 1px solid #ff4444;}
   
   button { font-family: 'DM Sans'; font-weight: bold; text-transform: uppercase; border: none; border-radius: 8px; cursor: pointer; padding: 15px 24px; transition: 0.2s; width: 100%; font-size: 16px; margin-top: 10px;}
   .btn-gold { background: var(--gold); color: #000; box-shadow: 0 0 15px rgba(255,215,0,0.4); }
@@ -156,7 +155,7 @@
                     <div class="die" id="die1">-</div>
                     <div class="die" id="die2">-</div>
                 </div>
-                <button class="btn-gold" id="btnRoll" onclick="rollDice()" disabled>LANCER LES DÉS</button>
+                <button class="btn-gold" id="btnRoll" onclick="handleTurnAction()" disabled>LANCER LES DÉS</button>
             </div>
             
             <div class="card" style="padding: 20px; text-align: center;">
@@ -260,10 +259,10 @@ const BOARD_DATA = {
 const CHANCE_CARDS = [
     { text: "Tu reçois une bourse du CROUS, encaisse 150 M$.", effect: (p) => p.money += 150 },
     { text: "T'as grillé les 12 feux de l'avenue, paie 50 M$.", effect: (p) => p.money -= 50 },
-    { text: "Dayoub a vu ton brouille, file direct en prison.", effect: (p) => p.position = 6 },
+    { text: "Dayoub a vu ton brouille, file direct en prison.", effect: (p) => { p.position = 6; p.prisonTurns = 2; } },
     { text: "Tu gagnes le concours de développé couché au Basic Fit, encaisse 100 M$.", effect: (p) => p.money += 100 },
-    { text: "Tu viens d'écouter l'EP de Matteo, va en prison sans passer par la case départ.", effect: (p) => p.position = 6 },
-    { text: "Le fou de l'IUT te parle pendant 3 jours, va en prison pour fuir.", effect: (p) => p.position = 6 },
+    { text: "Tu viens d'écouter l'EP de Matteo, va en prison sans passer par la case départ.", effect: (p) => { p.position = 6; p.prisonTurns = 2; } },
+    { text: "Le fou de l'IUT te parle pendant 3 jours, va en prison pour fuir.", effect: (p) => { p.position = 6; p.prisonTurns = 2; } },
     { text: "Bar-mitsva d'Étienne, lâche 50 M$ pour le cadeau.", effect: (p) => p.money -= 50 },
     { text: "Erreur de la banque de Maubeuge en ta faveur, reçois 60 M$.", effect: (p) => p.money += 60 },
     { text: "T'as vomi devant le O'Tacos, paie 30 M$ de nettoyage.", effect: (p) => p.money -= 30 },
@@ -296,7 +295,7 @@ async function autoJoinLobby() {
 
     if(!state.players[myPseudo]) {
         if(Object.keys(state.players).length >= 4) { alert("Plein !"); window.location.href = '../index.html'; return; }
-        state.players[myPseudo] = { pseudo: myPseudo, avatar: myAvatar, money: 1500, position: 0, bankrupt: false };
+        state.players[myPseudo] = { pseudo: myPseudo, avatar: myAvatar, money: 1500, position: 0, bankrupt: false, prisonTurns: 0 };
     } else state.players[myPseudo].avatar = myAvatar; 
     
     await updateState(state);
@@ -319,14 +318,9 @@ async function processState(state) {
         if (!state.turnOrder || state.turnOrder.length === 0) { if (isMaster) startGame(); return; }
         if (!state.properties) state.properties = {}; if (!state.houses) state.houses = {}; 
         
-        // CHECK VICTORY CONDITION
         let survivors = state.turnOrder.filter(p => !state.players[p].bankrupt);
-        if (survivors.length === 1 && state.turnOrder.length > 1) {
-            triggerVictory(survivors[0]);
-            return;
-        }
+        if (survivors.length === 1 && state.turnOrder.length > 1) { triggerVictory(survivors[0]); return; }
 
-        // SI JE SUIS MORT, J'AFFICHE JUSTE LE PLATEAU GRISÉ
         if (state.players[myPseudo].bankrupt) {
             document.getElementById('btnRoll').disabled = true;
             document.getElementById('btnRoll').innerText = "T'ES RUINÉ 💀";
@@ -367,7 +361,6 @@ async function updateBoardUI(state) {
     for (let pseudo in state.players) if (visualPositions[pseudo] === undefined) visualPositions[pseudo] = state.players[pseudo].position;
 
     let activePlayer = state.turnOrder[state.currentTurnIndex];
-    // Sauter les morts
     if (state.players[activePlayer].bankrupt && isMaster) {
         state.currentTurnIndex = (state.currentTurnIndex + 1) % state.turnOrder.length;
         await updateState(state); return;
@@ -382,7 +375,12 @@ async function updateBoardUI(state) {
 
     const btn = document.getElementById('btnRoll');
     if (activePlayer === myPseudo && !isAnimating && !state.players[myPseudo].bankrupt) {
-        btn.disabled = false; btn.innerText = "LANCER LES DÉS";
+        btn.disabled = false; 
+        if (state.players[myPseudo].prisonTurns > 0) {
+            btn.innerText = `PRISON (${state.players[myPseudo].prisonTurns}) - PASSER`;
+        } else {
+            btn.innerText = "LANCER LES DÉS";
+        }
     } else if (!state.players[myPseudo].bankrupt) {
         btn.disabled = true; btn.innerText = "ATTENDS TON TOUR";
     }
@@ -430,7 +428,7 @@ function renderTokens(hoppingPseudo = null) {
     for(let i=0; i<24; i++) { const cell = document.getElementById(`cell-${i}`); if(cell) cell.querySelector('.players-zone').innerHTML = ''; }
     for(let pseudo in visualPositions) {
         let pos = visualPositions[pseudo]; let pData = gameStateLocal.players[pseudo];
-        if(!pData || pData.bankrupt) continue; // Les morts disparaissent du plateau
+        if(!pData || pData.bankrupt) continue; 
         let cell = document.getElementById(`cell-${pos}`);
         if(cell) {
             let hopClass = (pseudo === hoppingPseudo) ? 'hop' : '';
@@ -439,11 +437,24 @@ function renderTokens(hoppingPseudo = null) {
     }
 }
 
-// ACTION DU JOUEUR
-async function rollDice() {
+// ACTION DU JOUEUR (Bouton Principal)
+async function handleTurnAction() {
     document.getElementById('btnRoll').disabled = true; 
+    let state = await fetchState();
+    let p = state.players[myPseudo];
+
+    // GESTION PRISON
+    if (p.prisonTurns > 0) {
+        p.prisonTurns--;
+        state.log = `👮 ${myPseudo} purge sa peine (${p.prisonTurns} tour(s) restant(s)).`;
+        state.currentTurnIndex = (state.currentTurnIndex + 1) % state.turnOrder.length;
+        await updateState(state);
+        return;
+    }
+
+    // GESTION LANCER NORMAL
     const d1 = Math.floor(Math.random() * 6) + 1; const d2 = Math.floor(Math.random() * 6) + 1; const total = d1 + d2;
-    let state = await fetchState(); let p = state.players[myPseudo]; let oldPos = p.position;
+    let oldPos = p.position;
     
     p.position = (p.position + total) % 24;
     if(oldPos + total >= 24) { p.money += 200; state.log = `${myPseudo} fait ${total} et passe par DÉPART (+200 M$) !`; } 
@@ -485,7 +496,9 @@ async function handleCellAction(state, pos) {
     }
     
     if (cellData.type === 'go_prison') {
-        state.players[myPseudo].position = 6; state.log = `👮 ${myPseudo} va directement en prison !`;
+        state.players[myPseudo].position = 6;
+        state.players[myPseudo].prisonTurns = 2;
+        state.log = `👮 ${myPseudo} va directement en prison pour 2 tours !`;
         return endTurn(state);
     }
 
@@ -549,13 +562,12 @@ async function answerBuild(build) {
 
 // FIN DE TOUR & BANQUEROUTE
 async function endTurn(state) {
-    // Check elimination
     if (state.players[myPseudo].money < 0 && !state.players[myPseudo].bankrupt) {
         state.players[myPseudo].bankrupt = true;
         state.log = `💀 ${myPseudo} EST RUINÉ ! Ses propriétés retournent à la banque.`;
         for(let prop in state.properties) { if(state.properties[prop] === myPseudo) delete state.properties[prop]; }
     } else {
-        if (state.lastDice[0] === state.lastDice[1] && BOARD_DATA[state.players[myPseudo].position]?.type !== 'go_prison') {
+        if (state.lastDice[0] === state.lastDice[1] && BOARD_DATA[state.players[myPseudo].position]?.type !== 'go_prison' && state.players[myPseudo].prisonTurns === 0) {
             state.log += ` DOUBLE ! ${myPseudo} rejoue.`;
             await updateState(state); return;
         }
