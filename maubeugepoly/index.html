@@ -1,496 +1,273 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CDSI GAMES - Hub</title>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        /* COULEUR UNIQUE : ORANGE/JAUNE */
-        :root { --orange: #f39c12; --yellow: #f1c40f; --text: #ffffff; }
-        
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-        
-        body { 
-            background: linear-gradient(-45deg, #1a0509, #4a1010, #80231c, #9c3f00);
-            background-size: 400% 400%; animation: fondChaud 15s ease infinite;
-            color: var(--text); font-family: 'DM Sans', sans-serif; 
-            min-height: 100vh; overflow-x: hidden; display: flex;
-        }
-        @keyframes fondChaud { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAUBEUGOPOLY 🎲</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+  :root {
+    --gold: #ffd700; --dark-green: #0b2e13; --board-bg: #d7e6d0;
+    --text: #ffffff;
+  }
+  body { 
+    background: radial-gradient(circle, #2a2a2a, #111);
+    color: var(--text); font-family: 'DM Sans', sans-serif; 
+    min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px;
+  }
+  
+  .hub-link { position: absolute; top: 20px; left: 20px; color: var(--gold); text-decoration: none; font-weight: bold; z-index: 10; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s;}
+  .hub-link:hover { color: #fff; text-shadow: 0 0 10px var(--gold); }
 
-        /* VUES */
-        #authView, #appView { width: 100%; display: none; flex-direction: column; align-items: center; }
-        #authView.active { display: flex; justify-content: center; height: 100vh; }
-        #appView.active { display: flex; }
+  .screen { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 900px; margin-top: 40px; }
+  .screen.active { display: flex; animation: fadeIn 0.3s; }
+  @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
-        /* AUTHENTIFICATION */
-        .auth-card {
-            background: rgba(20, 20, 30, 0.8); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 40px; width: 100%; max-width: 400px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8); text-align: center;
-        }
-        .auth-logo-img { max-width: 250px; margin-bottom: 25px; filter: drop-shadow(0 0 15px rgba(243, 156, 18, 0.7)); }
-        
-        .auth-input { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 15px; color: white; margin-bottom: 15px; font-size: 16px; outline: none; transition: 0.3s; text-align: center;}
-        .auth-input:focus { border-color: var(--orange); box-shadow: 0 0 15px rgba(243, 156, 18, 0.3); }
-        
-        .auth-btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; cursor: pointer; transition: 0.2s; font-size: 16px; margin-bottom: 10px; }
-        
-        .btn-solid { background: var(--orange); color: black; box-shadow: 0 5px 15px rgba(243, 156, 18, 0.3); }
-        .btn-solid:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(243, 156, 18, 0.6); }
-        
-        .btn-outline { background: transparent; border: 2px solid var(--orange); color: var(--orange); }
-        .btn-outline:hover { background: var(--orange); color: white; box-shadow: 0 0 20px rgba(243, 156, 18, 0.5); }
-        
-        .error-msg { color: #ff4444; font-size: 14px; margin-bottom: 15px; min-height: 20px; font-weight: bold; }
+  .logo { font-family: 'Bebas Neue'; font-size: 80px; letter-spacing: 5px; color: var(--gold); text-shadow: 0 5px 15px rgba(255, 215, 0, 0.4); margin-bottom: 10px; text-align: center;}
+  
+  /* LOBBY STYLES */
+  .card { background: rgba(20, 20, 20, 0.8); border: 2px solid var(--gold); border-radius: 15px; padding: 30px; width: 100%; max-width: 500px; box-shadow: 0 0 30px rgba(255, 215, 0, 0.2); }
+  .player-row { display: flex; align-items: center; gap: 15px; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,215,0,0.3); border-radius: 8px; font-weight: bold; margin-bottom: 10px;}
+  .player-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold); }
+  .badge-master { background: rgba(255,215,0,0.2); color: var(--gold); padding: 4px 8px; border-radius: 4px; font-size: 11px; text-transform: uppercase; margin-left: auto; border: 1px solid var(--gold);}
+  
+  button { font-family: 'DM Sans'; font-weight: bold; text-transform: uppercase; border: none; border-radius: 8px; cursor: pointer; padding: 15px 24px; transition: 0.2s; width: 100%; font-size: 16px; margin-top: 10px;}
+  .btn-gold { background: var(--gold); color: #000; box-shadow: 0 0 15px rgba(255,215,0,0.4); }
+  .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 0 25px rgba(255,215,0,0.6); }
 
-        /* BOUTONS FLOTTANTS (PROFIL & LEADERBOARD) */
-        #floatingControls {
-            display: none; position: absolute; top: 30px; right: 40px; gap: 20px; z-index: 50; flex-direction: row;
-        }
-        .floating-btn {
-            width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--orange); cursor: pointer;
-            box-shadow: 0 0 20px rgba(243, 156, 18, 0.5); transition: 0.3s; background: rgba(0,0,0,0.8);
-            display: flex; align-items: center; justify-content: center; font-size: 30px;
-        }
-        .floating-btn:hover { transform: scale(1.1); box-shadow: 0 0 30px rgba(243, 156, 18, 0.8); }
-        .floating-btn img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+  /* LE PLATEAU DE JEU (PHASE 1) */
+  .board-container {
+      width: 100%;
+      max-width: 800px;
+      aspect-ratio: 1 / 1;
+      background: var(--board-bg);
+      border: 4px solid #111;
+      display: grid;
+      /* Grille 7x7 pour faire 24 cases sur les bords */
+      grid-template-columns: 120px repeat(5, 1fr) 120px;
+      grid-template-rows: 120px repeat(5, 1fr) 120px;
+      padding: 5px;
+      gap: 2px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+  }
 
-        /* APP VIEW */
-        .main-container { display: flex; width: 100%; max-width: 1400px; margin: 0 auto; padding: 20px; flex-direction: column; align-items: center; }
-        .main-logo { max-width: 400px; margin-bottom: 50px; margin-top: 30px; filter: drop-shadow(0 0 20px rgba(243, 156, 18, 0.8)); }
-        
-        .games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; width: 100%; max-width: 1200px; margin-bottom: 50px; }
-        .game-card { background: rgba(20, 20, 20, 0.6); border-radius: 15px; overflow: hidden; text-decoration: none; color: white; border: 2px solid rgba(255, 255, 255, 0.1); transition: 0.3s; backdrop-filter: blur(5px); }
-        .game-card:hover { transform: translateY(-10px); border-color: var(--yellow); box-shadow: 0 15px 30px rgba(243, 156, 18, 0.5); }
-        .game-thumbnail { width: 100%; height: 180px; object-fit: cover; border-bottom: 2px solid rgba(243, 156, 18, 0.6); }
-        .game-info { padding: 15px; text-align: center; }
-        .game-info h2 { margin: 0 0 5px 0; font-family: 'Bebas Neue'; font-size: 28px; color: var(--yellow); letter-spacing: 1px;}
-        .game-info span { font-size: 13px; color: #aaa; }
+  .square {
+      background: #fff;
+      border: 2px solid #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      font-size: 10px;
+      text-align: center;
+      font-weight: bold;
+      color: #000;
+  }
+  
+  .corner { grid-column: span 1; grid-row: span 1; justify-content: center; font-size: 14px;}
+  .center-logo {
+      grid-column: 2 / 7;
+      grid-row: 2 / 7;
+      background: var(--board-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Bebas Neue';
+      font-size: 60px;
+      color: #c0392b;
+      transform: rotate(-45deg);
+      text-shadow: 2px 2px 0px #fff;
+      border: none;
+  }
 
-        /* MODALS COMMUNS */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .modal-content { 
-            background: rgba(20, 20, 30, 0.9); border: 2px solid var(--orange); border-radius: 20px; padding: 30px; 
-            width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 0 50px rgba(243, 156, 18, 0.3);
-            position: relative;
-        }
-        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 30px; cursor: pointer; color: #aaa; transition: 0.2s; }
-        .close-btn:hover { color: red; }
-        .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        @media (max-width: 600px) { .modal-grid { grid-template-columns: 1fr; } }
+  .color-bar { width: 100%; height: 20%; border-bottom: 2px solid #000; }
+  .marron { background-color: #8b4513; }
+  .vert { background-color: #27ae60; }
+  .rouge { background-color: #c0392b; }
+  .bleu { background-color: #2980b9; }
 
-        /* MODAL PROFIL */
-        .modal-header { display: flex; flex-direction: column; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; margin-bottom: 20px; }
-        .modal-avatar { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--orange); object-fit: cover; margin-bottom: 10px;}
-        .modal-pseudo { font-family: 'Bebas Neue'; font-size: 40px; color: white; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
-
-        .stats-section { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); }
-        .stats-section h3 { font-family: 'Bebas Neue'; color: var(--orange); margin-bottom: 15px; font-size: 24px; letter-spacing: 1px; text-align: center; text-shadow: 0 0 10px rgba(243, 156, 18, 0.5);}
-        .stat-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding: 8px 0; }
-        .stat-row:last-child { border-bottom: none; }
-        .stat-label { font-size: 13px; color: #bbb; text-transform: uppercase; }
-        .stat-value { font-family: 'Bebas Neue'; font-size: 24px; color: var(--yellow); }
-
-        .edit-section { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); }
-        .edit-section h3 { font-family: 'Bebas Neue'; color: var(--yellow); margin-bottom: 15px; font-size: 24px; letter-spacing: 1px; text-align: center; text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);}
-        .edit-input { width: 100%; background: #000; border: 1px solid #333; border-radius: 5px; padding: 10px; color: white; margin-bottom: 10px; font-size: 14px; text-align: center; }
-        .edit-input:focus { border-color: var(--yellow); outline: none; box-shadow: 0 0 10px rgba(241, 196, 15, 0.2); }
-
-        .avatar-picker { margin-top: 20px; text-align: center; }
-        .avatar-grid-container { display: none; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 10px; margin-top: 15px; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);}
-        .avatar-option { width: 60px; height: 60px; border-radius: 50%; cursor: pointer; object-fit: cover; border: 2px solid transparent; transition: 0.2s; }
-        .avatar-option:hover { transform: scale(1.1); border-color: var(--orange); }
-        .avatar-option.selected { border-color: var(--yellow); box-shadow: 0 0 15px var(--yellow); }
-        .logout-btn { margin-top: 20px; width: 100%; padding: 12px; background: rgba(255,0,0,0.05); border: 1px solid #ff4444; color: #ff4444; border-radius: 5px; cursor: pointer; text-transform: uppercase; font-weight: bold; transition: 0.2s; }
-        .logout-btn:hover { background: #ff4444; color: white; box-shadow: 0 0 15px rgba(255,68,68,0.5);}
-
-        /* MODAL LEADERBOARD */
-        .lb-section { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); }
-        .lb-section h3 { font-family: 'Bebas Neue'; color: var(--orange); margin-bottom: 15px; font-size: 26px; text-align: center; border-bottom: 1px solid rgba(243,156,18,0.3); padding-bottom: 5px; letter-spacing: 1px;}
-        .lb-list { display: flex; flex-direction: column; gap: 8px; }
-        .lb-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; background: rgba(255,255,255,0.05); border-radius: 8px; }
-        .lb-row.first { background: rgba(241,196,15,0.15); border: 1px solid var(--yellow); box-shadow: 0 0 10px rgba(241, 196, 15, 0.2); }
-        .lb-player { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 14px;}
-        .lb-player img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid #555;}
-        .lb-row.first .lb-player img { border-color: var(--yellow); }
-        .lb-score { font-family: 'Bebas Neue'; font-size: 20px; color: var(--text); }
-        .lb-row.first .lb-score { color: var(--yellow); }
-
-    </style>
+</style>
 </head>
 <body>
 
-    <div id="floatingControls">
-        <div class="floating-btn" onclick="openLeaderboardModal()" title="Classement Général">
-            🏆
-        </div>
-        <div class="floating-btn" onclick="openProfileModal()" title="Mon Profil">
-            <img id="floatingAvatarSrc" src="" alt="Profil">
-        </div>
+<a href="../index.html" class="hub-link">← Retour au Hub</a>
+
+<!-- ÉCRAN DE CHARGEMENT -->
+<div class="screen active" id="screenLoading">
+  <div class="logo">MAUBEUGOPOLY</div>
+  <div style="color: var(--gold); font-weight: bold;" id="loadingMsg">VÉRIFICATION DU COMPTE...</div>
+</div>
+
+<!-- LOBBY -->
+<div class="screen" id="screenLobby">
+  <div class="logo">MAUBEUGOPOLY</div>
+  <div style="color: #aaa; margin-bottom: 20px; text-transform: uppercase; font-weight: bold;" id="lobbySubtitle">En attente des investisseurs...</div>
+  
+  <div class="card">
+    <div id="playersList"></div>
+    <div id="lobbyControls"></div>
+  </div>
+</div>
+
+<!-- LE PLATEAU (EN DÉVELOPPEMENT) -->
+<div class="screen" id="screenGame">
+    <div class="board-container">
+        
+        <!-- Ligne du Haut (7 cases) -->
+        <div class="square corner" style="grid-column: 1; grid-row: 1;">PARC<br>GRATUIT</div>
+        <div class="square" style="grid-column: 2; grid-row: 1;"><div class="color-bar rouge"></div>IUT DE MAUBEUGE</div>
+        <div class="square" style="grid-column: 3; grid-row: 1;">CAISSE DE<br>COMMU</div>
+        <div class="square" style="grid-column: 4; grid-row: 1;"><div class="color-bar rouge"></div>MAISON DE CORINNE</div>
+        <div class="square" style="grid-column: 5; grid-row: 1;">GARE DE<br>LOUVROIL</div>
+        <div class="square" style="grid-column: 6; grid-row: 1;"><div class="color-bar bleu"></div>ZOO DE MAUBEUGE</div>
+        <div class="square corner" style="grid-column: 7; grid-row: 1;">ALLEZ EN<br>PRISON</div>
+
+        <!-- Colonne de Droite (5 cases au milieu) -->
+        <div class="square" style="grid-column: 7; grid-row: 2; flex-direction: row;"><div class="color-bar bleu" style="height:100%; width:20%; border-bottom:none; border-right:2px solid #000;"></div><span style="transform: rotate(90deg);">CLAIR DE LUNE</span></div>
+        <div class="square" style="grid-column: 7; grid-row: 3;"><span style="transform: rotate(90deg); margin: auto;">CHANCE</span></div>
+        <div class="square" style="grid-column: 7; grid-row: 4;"><span style="transform: rotate(90deg); margin: auto;">STIBUS</span></div>
+        <div class="square" style="grid-column: 7; grid-row: 5; flex-direction: row;"><div class="color-bar vert" style="height:100%; width:20%; border-bottom:none; border-right:2px solid #000;"></div><span style="transform: rotate(90deg);">BASIC FIT</span></div>
+        <div class="square" style="grid-column: 7; grid-row: 6; flex-direction: row;"><div class="color-bar vert" style="height:100%; width:20%; border-bottom:none; border-right:2px solid #000;"></div><span style="transform: rotate(90deg);">O'TACOS</span></div>
+
+        <!-- Le Centre -->
+        <div class="square center-logo">MAUBEUGOPOLY</div>
+
+        <!-- Colonne de Gauche (5 cases au milieu) -->
+        <div class="square" style="grid-column: 1; grid-row: 2; flex-direction: row-reverse;"><div class="color-bar marron" style="height:100%; width:20%; border-bottom:none; border-left:2px solid #000;"></div><span style="transform: rotate(-90deg);">GARAGE À BITE</span></div>
+        <div class="square" style="grid-column: 1; grid-row: 3;"><span style="transform: rotate(-90deg); margin: auto;">CHANCE</span></div>
+        <div class="square" style="grid-column: 1; grid-row: 4; flex-direction: row-reverse;"><div class="color-bar marron" style="height:100%; width:20%; border-bottom:none; border-left:2px solid #000;"></div><span style="transform: rotate(-90deg);">APPART. ELIAN</span></div>
+        <div class="square" style="grid-column: 1; grid-row: 5;"><span style="transform: rotate(-90deg); margin: auto;">GARE D'HAUTMONT</span></div>
+        <div class="square" style="grid-column: 1; grid-row: 6;"><span style="transform: rotate(-90deg); margin: auto;">RADAR N2<br>(Payez 50)</span></div>
+
+        <!-- Ligne du Bas (7 cases) -->
+        <div class="square corner" style="grid-column: 1; grid-row: 7;">PRISON</div>
+        <div class="square" style="grid-column: 2; grid-row: 7; justify-content: flex-end;"><span style="margin-bottom: 5px;">TAXE</span></div>
+        <div class="square" style="grid-column: 3; grid-row: 7; justify-content: flex-end;"><span style="margin-bottom: 5px;">RUE X</span></div>
+        <div class="square" style="grid-column: 4; grid-row: 7; justify-content: flex-end;"><span style="margin-bottom: 5px;">CAISSE DE<br>COMMU</span></div>
+        <div class="square" style="grid-column: 5; grid-row: 7; justify-content: flex-end;"><span style="margin-bottom: 5px;">RUE Y</span></div>
+        <div class="square" style="grid-column: 6; grid-row: 7; justify-content: flex-end;"><span style="margin-bottom: 5px;">GARE SNCF</span></div>
+        <div class="square corner" style="grid-column: 7; grid-row: 7; background: #ffcccc;">DÉPART<br>Recevez 200</div>
+
     </div>
-
-    <div id="authView" class="screen active">
-        <div class="auth-card">
-            <img src="images/cdsi-games-logo.png" alt="CDSI GAMES" class="auth-logo-img">
-            <p style="color: #aaa; margin-bottom: 20px; font-size: 14px;">Connecte-toi pour sauvegarder tes stats</p>
-            
-            <div id="errorMsg" class="error-msg"></div>
-            
-            <input type="text" id="pseudoInput" class="auth-input" placeholder="Pseudo" maxlength="15">
-            <input type="password" id="passwordInput" class="auth-input" placeholder="Mot de passe">
-            
-            <button class="auth-btn btn-solid" onclick="login()">Se Connecter</button>
-            <button class="auth-btn btn-outline" onclick="register()">Créer un compte</button>
-        </div>
-    </div>
-
-    <div id="appView" class="screen">
-        <div class="main-container">
-            
-            <img src="images/cdsi-games-logo.png" alt="CDSI GAMES" class="main-logo" onerror="this.src='https://via.placeholder.com/400x150/111/f1c40f?text=CDSI+GAMES'">
-            
-            <div class="games-grid">
-                <a href="bingoudalo/index.html" class="game-card">
-                    <img src="images/bingoudalo-vignette.png" class="game-thumbnail" onerror="this.src='https://via.placeholder.com/400x190/111/fff?text=BINGOUDALO'">
-                    <div class="game-info"><h2>Bingoudalo</h2><span>Jeu multijoueur</span></div>
-                </a>
-                <a href="kavale/index.html" class="game-card">
-                    <img src="images/kavale-vignette.png" class="game-thumbnail" onerror="this.src='https://via.placeholder.com/400x190/111/fff?text=KAVALE'">
-                    <div class="game-info"><h2>Kavale</h2><span>Arène multijoueur</span></div>
-                </a>
-                <a href="franclick/index.html" class="game-card">
-                    <img src="images/franclick-vignette.png" class="game-thumbnail" onerror="this.src='https://via.placeholder.com/400x190/111/fff?text=FRANCLICK'">
-                    <div class="game-info"><h2>Franclick</h2><span>Clicker Solo</span></div>
-                </a>
-                <a href="wanted/index.html" class="game-card">
-                    <img src="images/wanted-vignette.jpg" class="game-thumbnail" onerror="this.src='https://via.placeholder.com/400x190/111/fff?text=WANTED'">
-                    <div class="game-info"><h2>Wanted Dayoub</h2><span>Réflexe Multijoueur</span></div>
-                </a>
-                
-                <!-- NOUVEAU JEU : MAUBEUGOPOLY AJOUTÉ ICI -->
-                <a href="maubeugepoly/index.html" class="game-card">
-                    <img src="images/maubeugepoly-vignette.png" class="game-thumbnail" onerror="this.src='https://via.placeholder.com/400x190/111/fff?text=MAUBEUGOPOLY'">
-                    <div class="game-info"><h2>Maubeugopoly</h2><span>Jeu de Plateau - 4 Joueurs</span></div>
-                </a>
-            </div>
-
-        </div>
-    </div>
-
-    <div id="profileModal" class="modal" onclick="if(event.target === this) closeProfileModal()">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeProfileModal()">&times;</span>
-            
-            <div class="modal-header">
-                <img src="" id="modalAvatar" class="modal-avatar">
-                <div class="modal-pseudo" id="modalPseudo">PSEUDO</div>
-            </div>
-
-            <div class="modal-grid">
-                <div class="stats-section">
-                    <h3>Palmarès</h3>
-                    <div class="stat-row"><span class="stat-label">Kavale</span><span class="stat-value" id="statKavale">0</span></div>
-                    <div class="stat-row"><span class="stat-label">Bingoudalo</span><span class="stat-value" id="statBingo">0</span></div>
-                    <div class="stat-row"><span class="stat-label">Wanted</span><span class="stat-value" id="statWanted">0</span></div>
-                    <div class="stat-row"><span class="stat-label">Maubeugopoly</span><span class="stat-value" id="statMaubeuge" style="color:var(--yellow);">0</span></div>
-                    <div class="stat-row"><span class="stat-label">Franclick</span><span class="stat-value" id="statFranclick" style="color:var(--yellow);">0</span></div>
-                </div>
-
-                <div class="edit-section">
-                    <h3>Modifier Profil</h3>
-                    <input type="text" id="editPseudo" class="edit-input" placeholder="Nouveau Pseudo">
-                    <input type="password" id="editPassword" class="edit-input" placeholder="Nouveau Mot de passe (optionnel)">
-                    <button class="auth-btn btn-solid" style="font-size: 13px; padding: 10px;" onclick="saveProfileChanges()">Enregistrer</button>
-                </div>
-            </div>
-
-            <div class="avatar-picker">
-                <button class="auth-btn btn-outline" style="font-size: 13px; padding: 10px; width: auto;" onclick="toggleAvatarGrid()">Changer d'avatar de profil</button>
-                <div class="avatar-grid-container" id="avatarGridContainer">
-                    </div>
-            </div>
-
-            <button class="logout-btn" onclick="logout()">Déconnexion</button>
-        </div>
-    </div>
-
-    <div id="leaderboardModal" class="modal" onclick="if(event.target === this) closeLeaderboardModal()">
-        <div class="modal-content" style="max-width: 700px;">
-            <span class="close-btn" onclick="closeLeaderboardModal()">&times;</span>
-            
-            <h2 style="font-family: 'Bebas Neue'; font-size: 50px; color: var(--yellow); text-align: center; margin-bottom: 30px; text-shadow: 0 0 15px rgba(241,196,15,0.5); letter-spacing: 2px;">CLASSEMENT GÉNÉRAL</h2>
-
-            <div class="modal-grid">
-                <div class="lb-section">
-                    <h3>Bingoudalo</h3>
-                    <div id="lb-bingo" class="lb-list">Chargement...</div>
-                </div>
-                <div class="lb-section">
-                    <h3>Kavale</h3>
-                    <div id="lb-kavale" class="lb-list">Chargement...</div>
-                </div>
-                <div class="lb-section">
-                    <h3>Wanted Dayoub</h3>
-                    <div id="lb-wanted" class="lb-list">Chargement...</div>
-                </div>
-                <div class="lb-section">
-                    <h3>Franclick</h3>
-                    <div id="lb-franclick" class="lb-list">Chargement...</div>
-                </div>
-            </div>
-        </div>
-    </div>
+    
+    <!-- Bouton temporaire pour le dev -->
+    <button class="btn-gold" style="max-width: 300px; margin-top: 30px;" onclick="alert('Bientôt...')">LANCER LES DÉS</button>
+</div>
 
 <script>
-    // --- CONFIGURATION SUPABASE ---
-    const SUPABASE_URL = 'https://pdybshweyfvxzvngnuxe.supabase.co'; 
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkeWJzaHdleWZ2eHp2bmdudXhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDg2MDAsImV4cCI6MjA5MDUyNDYwMH0.u442X28Mhs-4T-tydabnMm8now8VfAEeNU-Sicuipq4'; 
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// --- CONFIGURATION SUPABASE ---
+const SUPABASE_URL = 'https://pdybshweyfvxzvngnuxe.supabase.co'; 
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkeWJzaHdleWZ2eHp2bmdudXhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDg2MDAsImV4cCI6MjA5MDUyNDYwMH0.u442X28Mhs-4T-tydabnMm8now8VfAEeNU-Sicuipq4'; 
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const GAME_ID = 'maubeugopoly_main_lobby';
 
-    let currentUser = null;
-    let tempSelectedAvatar = null;
+let myPseudo = '';
+let myAvatar = '';
+let isMaster = false;
+let dbSyncInterval = null; 
 
-    // TOUTES LES PHOTOS CONNUES
-    const AVATARS = [
-        'bingoudalo/avatar/9k.png', 'bingoudalo/avatar/bbc.png', 'bingoudalo/avatar/christophe.jpg', 
-        'bingoudalo/avatar/coudoux.png', 'bingoudalo/avatar/elian.jpg', 'bingoudalo/avatar/elian.png',
-        'bingoudalo/avatar/ellio.png', 'bingoudalo/avatar/epstein.jpg', 'bingoudalo/avatar/epstein.png',
-        'bingoudalo/avatar/matheo.jpg', 'bingoudalo/avatar/paulin.jpg', 'bingoudalo/avatar/paulin.png',
-        'bingoudalo/avatar/paulo1.jpg', 'bingoudalo/avatar/tom.jpg', 'bingoudalo/avatar/tom.png',
-        'bingoudalo/avatar/wilbaut_suss.jpg', 'bingoudalo/avatar/wilbaut_suss.png', 'bingoudalo/avatar/francky.jpg',
-        'bingoudalo/avatar/affronte.jpg', 'bingoudalo/avatar/dayoub.jpg', 'bingoudalo/avatar/dayoub.png'
-    ];
+window.onload = async () => {
+    try {
+        myPseudo = localStorage.getItem('cdsi_logged_user');
+        
+        if (!myPseudo || myPseudo === 'null') {
+            window.location.href = '../index.html'; 
+            return;
+        }
 
-    // --- FONCTION DE HASHAGE (SHA-256) ---
-    async function hashPassword(password) {
-        const msgBuffer = new TextEncoder().encode(password);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    // --- INITIALISATION ---
-    window.onload = () => {
-        const savedPseudo = localStorage.getItem('cdsi_logged_user');
-        if(savedPseudo) {
-            loadUserProfile(savedPseudo);
+        const { data, error } = await sb.from('cdsi_users').select('avatar').eq('pseudo', myPseudo).maybeSingle();
+        
+        if (data && data.avatar) {
+            myAvatar = data.avatar.startsWith('../') ? data.avatar : '../' + data.avatar; 
         } else {
-            showView('authView');
-        }
-        
-        document.getElementById('avatarGridContainer').innerHTML = AVATARS.map(src => 
-            `<img src="${src}" class="avatar-option" onclick="selectTempAvatar('${src}', this)" onerror="this.style.display='none'">`
-        ).join('');
-    };
-
-    function showView(id) {
-        document.getElementById('authView').classList.remove('active');
-        document.getElementById('appView').classList.remove('active');
-        document.getElementById(id).classList.add('active');
-    }
-
-    function showError(msg) {
-        document.getElementById('errorMsg').innerText = msg;
-    }
-
-    // --- AUTHENTIFICATION ---
-    async function login() {
-        const pseudo = document.getElementById('pseudoInput').value.trim();
-        const pwd = document.getElementById('passwordInput').value;
-        if(!pseudo || !pwd) return showError("Remplis tous les champs.");
-
-        // On hash le mot de passe avant de le comparer
-        const hashedPwd = await hashPassword(pwd);
-
-        const { data, error } = await sb.from('cdsi_users').select('*').eq('pseudo', pseudo).single();
-        
-        if(error || !data) return showError("Ce pseudo n'existe pas.");
-        
-        // Comparaison avec le hash en base de données
-        if(data.password !== hashedPwd) return showError("Mot de passe incorrect.");
-
-        localStorage.setItem('cdsi_logged_user', pseudo);
-        currentUser = data;
-        onLoginSuccess();
-    }
-
-    async function register() {
-        const pseudo = document.getElementById('pseudoInput').value.trim();
-        const pwd = document.getElementById('passwordInput').value;
-        if(!pseudo || !pwd) return showError("Remplis tous les champs.");
-
-        const { data: existing } = await sb.from('cdsi_users').select('pseudo').eq('pseudo', pseudo).maybeSingle();
-        if(existing) return showError("Ce pseudo est déjà pris !");
-
-        // On hash le mot de passe avant la création
-        const hashedPwd = await hashPassword(pwd);
-
-        const newUser = {
-            pseudo: pseudo, 
-            password: hashedPwd, // Enregistrement sécurisé
-            avatar: 'bingoudalo/avatar/paulo1.jpg', 
-            kavale_wins: 0, bingoudalo_wins: 0, wanted_wins: 0, franclick_score: 0, maubeugopoly_wins: 0
-        };
-
-        const { error } = await sb.from('cdsi_users').insert([newUser]);
-        if(error) return showError("Erreur lors de la création.");
-
-        localStorage.setItem('cdsi_logged_user', pseudo);
-        currentUser = newUser;
-        onLoginSuccess();
-    }
-
-    function onLoginSuccess() {
-        document.getElementById('floatingControls').style.display = 'flex';
-        updateDashboardUI();
-        showView('appView');
-    }
-
-    function logout() {
-        localStorage.removeItem('cdsi_logged_user');
-        currentUser = null;
-        document.getElementById('pseudoInput').value = '';
-        document.getElementById('passwordInput').value = '';
-        document.getElementById('floatingControls').style.display = 'none';
-        closeProfileModal();
-        closeLeaderboardModal();
-        showError("");
-        showView('authView');
-    }
-
-    async function loadUserProfile(pseudo) {
-        const { data, error } = await sb.from('cdsi_users').select('*').eq('pseudo', pseudo).single();
-        if(error || !data) {
-            logout();
-        } else {
-            currentUser = data;
-            onLoginSuccess();
-        }
-    }
-
-    // --- GESTION DU PROFIL (MODAL) ---
-    function updateDashboardUI() {
-        if(!currentUser) return;
-        
-        document.getElementById('floatingAvatarSrc').src = currentUser.avatar || 'https://via.placeholder.com/70';
-        
-        document.getElementById('modalAvatar').src = currentUser.avatar || 'https://via.placeholder.com/100';
-        document.getElementById('modalPseudo').innerText = currentUser.pseudo;
-        
-        document.getElementById('editPseudo').value = currentUser.pseudo;
-        // On vide le mot de passe par sécurité
-        document.getElementById('editPassword').value = '';
-        document.getElementById('editPassword').placeholder = "Nouveau Mot de passe (optionnel)";
-        tempSelectedAvatar = currentUser.avatar;
-
-        document.getElementById('statKavale').innerText = currentUser.kavale_wins || 0;
-        document.getElementById('statBingo').innerText = currentUser.bingoudalo_wins || 0;
-        document.getElementById('statWanted').innerText = currentUser.wanted_wins || 0;
-        document.getElementById('statMaubeuge').innerText = currentUser.maubeugopoly_wins || 0;
-        document.getElementById('statFranclick').innerText = Math.floor(currentUser.franclick_score || 0);
-    }
-
-    function openProfileModal() {
-        updateDashboardUI();
-        document.getElementById('profileModal').style.display = 'flex';
-        document.getElementById('avatarGridContainer').style.display = 'none';
-    }
-
-    function closeProfileModal() {
-        document.getElementById('profileModal').style.display = 'none';
-    }
-
-    function toggleAvatarGrid() {
-        const grid = document.getElementById('avatarGridContainer');
-        grid.style.display = grid.style.display === 'grid' ? 'none' : 'grid';
-    }
-
-    function selectTempAvatar(src, imgElement) {
-        tempSelectedAvatar = src;
-        document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected'));
-        imgElement.classList.add('selected');
-    }
-
-    async function saveProfileChanges() {
-        let newPseudo = document.getElementById('editPseudo').value.trim();
-        let newPassInput = document.getElementById('editPassword').value;
-
-        if(!newPseudo) return alert("Le pseudo ne peut pas être vide.");
-
-        if(newPseudo !== currentUser.pseudo) {
-             const { data: existing } = await sb.from('cdsi_users').select('pseudo').eq('pseudo', newPseudo).maybeSingle();
-             if(existing) return alert("Ce pseudo est déjà pris par quelqu'un d'autre !");
+            myAvatar = '../bingoudalo/avatar/paulo1.jpg';
         }
 
-        let updateData = {
-             pseudo: newPseudo, 
-             avatar: tempSelectedAvatar
-        };
+        await autoJoinLobby();
 
-        // Si l'utilisateur change son mot de passe, on le hash avant de l'envoyer
-        if(newPassInput) {
-            updateData.password = await hashPassword(newPassInput);
-        }
+    } catch (e) {
+        document.getElementById('loadingMsg').innerHTML = "ERREUR RÉSEAU<br><button class='btn-gold' onclick='window.location.href=\"../index.html\"'>RETOUR</button>";
+    }
+};
 
-        const { error } = await sb.from('cdsi_users').update(updateData).eq('pseudo', currentUser.pseudo);
+async function fetchLobbyState() {
+    const {data} = await sb.from('bingo_state').select('data').eq('id', GAME_ID).maybeSingle();
+    return data?.data || null;
+}
 
-        if(error) return alert("Erreur lors de la sauvegarde.");
+async function updateLobbyState(newState) {
+    await sb.from('bingo_state').upsert({ id: GAME_ID, data: newState, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+}
 
-        currentUser.pseudo = newPseudo;
-        if(newPassInput) currentUser.password = updateData.password;
-        currentUser.avatar = tempSelectedAvatar;
-        localStorage.setItem('cdsi_logged_user', newPseudo);
-
-        alert("Profil mis à jour avec succès !");
-        updateDashboardUI();
-        document.getElementById('avatarGridContainer').style.display = 'none';
+async function autoJoinLobby() {
+    let state = await fetchLobbyState();
+    
+    if(!state || !state.players) {
+        state = { phase: 'lobby', master: myPseudo, players: {} };
+    } else if (!state.players[state.master] && Object.keys(state.players).length > 0) {
+        state.master = Object.keys(state.players)[0];
+    } else if (!state.master) {
+        state.master = myPseudo;
     }
 
-    // --- GESTION DU LEADERBOARD (MODAL) ---
-    function openLeaderboardModal() {
-        document.getElementById('leaderboardModal').style.display = 'flex';
-        fetchLeaderboards();
+    if(Object.keys(state.players).length >= 4 && !state.players[myPseudo]) {
+        alert("La partie est pleine !");
+        window.location.href = '../index.html';
+        return;
     }
 
-    function closeLeaderboardModal() {
-        document.getElementById('leaderboardModal').style.display = 'none';
+    if(!state.players[myPseudo]) {
+        state.players[myPseudo] = { pseudo: myPseudo, avatar: myAvatar, money: 1500, position: 0 };
+    } else {
+        state.players[myPseudo].avatar = myAvatar; 
     }
+    
+    await updateLobbyState(state);
+    
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById('screenLobby').classList.add('active');
+    
+    dbSyncInterval = setInterval(async () => {
+        const s = await fetchLobbyState();
+        if(s) updateLobbyUI(s);
+    }, 1500);
+}
 
-    async function fetchLeaderboards() {
-        const { data, error } = await sb.from('cdsi_users').select('*');
-        if (error || !data) return;
+function updateLobbyUI(state) {
+    isMaster = (state.master === myPseudo);
+    
+    document.getElementById('playersList').innerHTML = Object.values(state.players).map(p => `
+        <div class="player-row">
+            <img src="${p.avatar}" class="player-avatar" onerror="this.onerror=null; this.src='../bingoudalo/avatar/paulo1.jpg';">
+            <span>${p.pseudo}</span>
+            ${state.master === p.pseudo ? '<span class="badge-master">Banquier</span>' : ''}
+        </div>
+    `).join('');
 
-        document.getElementById('lb-bingo').innerHTML = renderLbList(data, 'bingoudalo_wins', 'victoires');
-        document.getElementById('lb-kavale').innerHTML = renderLbList(data, 'kavale_wins', 'victoires');
-        document.getElementById('lb-wanted').innerHTML = renderLbList(data, 'wanted_wins', 'victoires');
-        document.getElementById('lb-franclick').innerHTML = renderLbList(data, 'franclick_score', 'pts');
+    if(state.phase === 'lobby' && isMaster) {
+        document.getElementById('lobbyControls').innerHTML = `<button class="btn-gold" onclick="startGame()">OUVRIR LE PLATEAU</button>`;
+    } else if(state.phase === 'playing') {
+        clearInterval(dbSyncInterval);
+        document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+        document.getElementById('screenGame').classList.add('active');
     }
+}
 
-    function renderLbList(users, field, suffix) {
-        let sorted = [...users].sort((a, b) => (b[field] || 0) - (a[field] || 0));
-        sorted = sorted.filter(u => (u[field] || 0) > 0).slice(0, 5);
+async function startGame() {
+    let state = await fetchLobbyState();
+    state.phase = 'playing';
+    await updateLobbyState(state);
+}
 
-        if (sorted.length === 0) {
-            return "<div style='text-align:center; color:#aaa; font-size: 13px; padding: 15px;'>Aucun score enregistré</div>";
-        }
-
-        return sorted.map((u, i) => {
-            let rankClass = i === 0 ? 'first' : '';
-            return `
-            <div class="lb-row ${rankClass}">
-                <div class="lb-player">
-                    <span style="color:#aaa; width: 15px;">${i+1}.</span>
-                    <img src="${u.avatar || 'https://via.placeholder.com/28'}" onerror="this.src='https://via.placeholder.com/28'">
-                    ${u.pseudo}
-                </div>
-                <div class="lb-score">${Math.floor(u[field] || 0)} ${suffix}</div>
-            </div>`;
-        }).join('');
+// Nettoyage si le maitre quitte le lobby
+window.addEventListener("beforeunload", async () => {
+    let state = await fetchLobbyState();
+    if (state && state.phase === 'lobby' && isMaster) {
+        await sb.from('bingo_state').delete().eq('id', GAME_ID);
     }
-
+});
 </script>
 </body>
 </html>
