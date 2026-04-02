@@ -166,6 +166,254 @@ for (let i = 1; i <= 40; i++) {
         id: i,
         name: "Carte " + i,
         rarity: raritiesCycle[rarityIndex],
+        img: "cartes/" + i + ".png" // BIEN AVEC UN S
+    });
+}
+
+// Cartes Mythiques : 100, 101, 102
+for (let i = 100; i <= 102; i++) {
+    CARDS_DB.push({
+        id: i,
+        name: "Mythique " + i,
+        rarity: "mythic",
+        img: "cartes/" + i + ".png" // BIEN AVEC UN S
+    });
+}
+
+window.onload = async () => {
+    myPseudo = localStorage.getItem('cdsi_logged_user');
+    if (!myPseudo || myPseudo === 'null') { window.location.href = '../index.html'; return; }
+    await fetchUserData();
+};
+
+async function fetchUserData() {
+    const { data } = await sb.from('cdsi_users').select('wallet, collection').eq('pseudo', myPseudo).single();
+    if(data) {
+        myWallet = Math.floor(parseFloat(data.wallet));
+        myCollection = data.collection || {};
+        document.getElementById('myWallet').innerText = myWallet;
+    }
+}
+
+// --- OUVERTURE DU BOOSTER ---
+async function openPack() {
+    if (myWallet < PACK_PRICE) return alert("❌ T'es à sec ! Il te faut " + PACK_PRICE + " M$ pour un booster.");
+    
+    // Déduire l'argent
+    myWallet -= PACK_PRICE;
+    document.getElementById('myWallet').innerText = myWallet;
+
+    document.getElementById('boosterPack').style.display = 'none';
+    const revealArea = document.getElementById('revealArea');
+    revealArea.style.display = 'flex';
+    revealArea.innerHTML = '';
+
+    // Tirage (Slot 1, Slot 2, Slot 3)
+    let pulledCards = [pullCard(1), pullCard(2), pullCard(3)];
+
+    // Générer l'HTML
+    pulledCards.forEach((card, index) => {
+        let rarityText = card.rarity === 'mythic' ? 'MYTHIQUE' : (card.rarity === 'legendary' ? 'LÉGENDAIRE' : (card.rarity === 'epic' ? 'ÉPIQUE' : (card.rarity === 'rare' ? 'RARE' : 'COMMUNE')));
+        
+        let cardHTML = `
+            <div class="card-container ${card.rarity}" onclick="flipCard(this)">
+                <div class="card-face card-back"></div>
+                <div class="card-face card-front">
+                    <img src="${card.img}" onerror="this.src='https://via.placeholder.com/220x320/222/fff?text=Carte+${card.id}'">
+                    <div class="rarity-badge">${rarityText}</div>
+                </div>
+            </div>
+        `;
+        revealArea.innerHTML += cardHTML;
+        
+        // Ajouter à la collection
+        if(!myCollection[card.id]) myCollection[card.id] = 0;
+        myCollection[card.id]++;
+    });
+
+    // Sauvegarder dans Supabase
+    await sb.from('cdsi_users').update({ 
+        wallet: myWallet, 
+        collection: myCollection 
+    }).eq('pseudo', myPseudo);
+
+    document.getElementById('btnAgain').style.display = 'block';
+}
+
+function flipCard(element) {
+    element.classList.add('flipped');
+}
+
+function resetPack() {
+    document.getElementById('revealArea').style.display = 'none';
+    document.getElementById('boosterPack').style.display = 'block';
+    document.getElementById('btnAgain').style.display = 'none';
+}
+
+// --- MOTEUR DE PROBABILITÉS ---
+function pullCard(slotNumber) {
+    let r = Math.random();
+    let rarityTarget = 'common';
+
+    if (slotNumber === 1) {
+        // Slot 1 : 80% Common, 20% Rare
+        if (r < 0.20) rarityTarget = 'rare';
+    } 
+    else if (slotNumber === 2) {
+        // Slot 2 : 70% Common, 25% Rare, 5% Epic
+        if (r < 0.05) rarityTarget = 'epic';
+        else if (r < 0.30) rarityTarget = 'rare';
+    } 
+    else if (slotNumber === 3) {
+        // Slot 3 (Le banger) : 50% Rare, 35% Epic, 14% Légendaire, 1% Mythique
+        if (r < 0.01) rarityTarget = 'mythic';
+        else if (r < 0.15) rarityTarget = 'legendary';
+        else if (r < 0.50) rarityTarget = 'epic';
+        else rarityTarget = 'rare';
+    }
+
+    let pool = CARDS_DB.filter(c => c.rarity === rarityTarget);
+    if (pool.length === 0) pool = CARDS_DB.filter(c => c.rarity === 'common');
+
+    return pool[Math.floor(Math.random() * pool.length)];
+}
+
+// --- LE CLASSEUR ---
+function openCollection() {
+    const grid = document.getElementById('collectionGrid');
+    grid.innerHTML = '';
+    
+    let ownedCount = 0;
+
+    CARDS_DB.forEach(card => {
+        let qty = myCollection[card.id] || 0;
+        let isOwned = qty > 0;
+        
+        if (isOwned) ownedCount++;
+
+        let lockedClass = isOwned ? card.rarity : 'locked';
+        let badgeHTML = (qty > 1) ? `<div class="dupe-badge">${qty}</div>` : '';
+
+        grid.innerHTML += `
+            <div class="coll-card ${lockedClass}" title="Carte ${card.id} (${card.rarity})">
+                ${badgeHTML}
+                <img src="${card.img}" onerror="this.src='https://via.placeholder.com/130x182/222/fff?text=${card.id}'">
+            </div>
+        `;
+    });
+
+    document.getElementById('collProgress').innerText = `${ownedCount} / ${CARDS_DB.length}`;
+    document.getElementById('collectionModal').style.display = 'flex';
+}
+</script>
+</body>
+</html>  .rare .rarity-badge { color: #3498db; border: 1px solid #3498db;}
+  .epic .rarity-badge { color: #9b59b6; border: 1px solid #9b59b6;}
+  .legendary .rarity-badge { color: #f1c40f; border: 1px solid #f1c40f;}
+  .mythic .rarity-badge { color: #ff0000; border: 1px solid #ff0000; text-shadow: 0 0 10px #ff0000;}
+
+  /* ── CONTROLS ── */
+  .action-controls { margin-top: 50px; display: flex; gap: 20px; z-index: 20;}
+  .btn { font-family: 'Bebas Neue'; font-size: 22px; letter-spacing: 2px; padding: 15px 30px; border: none; border-radius: 10px; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
+  .btn-gold { background: #f39c12; color: #000; box-shadow: 0 0 15px rgba(243, 156, 18, 0.4); }
+  .btn-gold:hover { background: #f1c40f; transform: translateY(-2px); box-shadow: 0 0 25px rgba(241, 196, 15, 0.6); }
+  .btn-outline { background: transparent; border: 2px solid #aaa; color: #aaa; }
+  .btn-outline:hover { border-color: #fff; color: #fff; background: rgba(255,255,255,0.1); }
+  
+  #btnAgain { display: none; }
+
+  /* ── CLASSEUR (MODAL) ── */
+  .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(10px); padding: 20px;}
+  .modal-content { background: #111; border: 2px solid #444; border-radius: 15px; width: 100%; max-width: 1000px; height: 85vh; padding: 30px; position: relative; display: flex; flex-direction: column;}
+  .close-btn { position: absolute; top: 15px; right: 20px; font-size: 35px; color: #aaa; cursor: pointer; transition: 0.2s;}
+  .close-btn:hover { color: #ff4444; }
+  
+  .collection-header { text-align: center; margin-bottom: 20px; flex-shrink: 0;}
+  .collection-header h2 { font-family: 'Bebas Neue'; font-size: 40px; color: #f39c12; letter-spacing: 2px;}
+  .collection-stats { color: #888; font-size: 16px; margin-top: 5px;}
+
+  .collection-grid { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; overflow-y: auto; padding-right: 10px;}
+  .collection-grid::-webkit-scrollbar { width: 8px; }
+  .collection-grid::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+  
+  .coll-card { position: relative; width: 100%; aspect-ratio: 2.5/3.5; border-radius: 8px; overflow: hidden; border: 2px solid #333; background: #000; transition: 0.2s;}
+  .coll-card img { width: 100%; height: 100%; object-fit: cover; }
+  
+  .coll-card.locked img { filter: grayscale(100%) brightness(0.2); }
+  
+  .coll-card.common { border-color: #bdc3c7; }
+  .coll-card.rare { border-color: #3498db; }
+  .coll-card.epic { border-color: #9b59b6; box-shadow: 0 0 10px rgba(155,89,182,0.3);}
+  .coll-card.legendary { border-color: #f1c40f; box-shadow: 0 0 15px rgba(241,196,15,0.5);}
+  .coll-card.mythic { border-color: #ff0000; box-shadow: 0 0 20px rgba(255,0,0,0.8);}
+
+  .dupe-badge { position: absolute; top: 5px; right: 5px; background: #e74c3c; color: white; font-size: 12px; font-weight: bold; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.5); z-index: 5;}
+
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+    <a href="../index.html" class="hub-link">← Retour au Hub</a>
+    <div class="logo">TCG MAUBEUGE</div>
+    <div class="wallet-pill">💰 <span id="myWallet">0</span> M$</div>
+</div>
+
+<div class="main-area">
+    
+    <!-- LE BOOSTER -->
+    <div class="booster-pack" id="boosterPack" onclick="openPack()">
+        <!-- L'image de ton booster -->
+        <img src="booster.png" alt="Booster Pack" onerror="this.src='https://via.placeholder.com/250x350/1a0509/f39c12?text=BOOSTER+INTROUVABLE'">
+        <div class="booster-price">OUVRIR (500 M$)</div>
+    </div>
+
+    <!-- LES 3 CARTES TIRÉES -->
+    <div class="reveal-area" id="revealArea"></div>
+
+    <!-- BOUTONS -->
+    <div class="action-controls">
+        <button class="btn btn-outline" onclick="openCollection()">Mon Classeur 📖</button>
+        <button class="btn btn-gold" id="btnAgain" onclick="resetPack()">Ouvrir un autre (500 M$)</button>
+    </div>
+</div>
+
+<!-- LE CLASSEUR (MODAL) -->
+<div class="modal" id="collectionModal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="document.getElementById('collectionModal').style.display='none'">&times;</span>
+        <div class="collection-header">
+            <h2>MA COLLECTION</h2>
+            <div class="collection-stats">Cartes obtenues : <span id="collProgress" style="color: #fff; font-weight: bold;">0/43</span></div>
+        </div>
+        <div class="collection-grid" id="collectionGrid"></div>
+    </div>
+</div>
+
+<script>
+// --- CONFIGURATION SUPABASE ---
+const SUPABASE_URL = 'https://pdybshweyfvxzvngnuxe.supabase.co'; 
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkeWJzaHdleWZ2eHp2bmdudXhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDg2MDAsImV4cCI6MjA5MDUyNDYwMH0.u442X28Mhs-4T-tydabnMm8now8VfAEeNU-Sicuipq4'; 
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let myPseudo = '';
+let myWallet = 0;
+let myCollection = {}; 
+
+const PACK_PRICE = 500;
+
+// --- GÉNÉRATION AUTOMATIQUE DE LA BASE DE DONNÉES DES CARTES ---
+const CARDS_DB = [];
+const raritiesCycle = ['common', 'rare', 'epic', 'legendary'];
+
+// Cartes 1 à 40 : Cycle (0: Commune, 1: Rare, 2: Epique, 3: Légendaire)
+for (let i = 1; i <= 40; i++) {
+    // Ex: (1-1)%4 = 0 (common) / (2-1)%4 = 1 (rare) / (3-1)%4 = 2 (epic) / (4-1)%4 = 3 (legendary)
+    let rarityIndex = (i - 1) % 4; 
+    CARDS_DB.push({
+        id: i,
+        name: "Carte " + i,
+        rarity: raritiesCycle[rarityIndex],
         img: "carte/" + i + ".png" // Remplace .png par .jpg si tes images sont des JPEG !
     });
 }
