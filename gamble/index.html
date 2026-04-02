@@ -654,32 +654,34 @@ function initReels() {
 function spinReel(reelId, finalSymId, duration) {
     return new Promise(resolve => {
         const reel = document.getElementById(`reel-${reelId}`);
+        const cellH = 110;
+        const cellCount = 20;
 
         reel.innerHTML = '';
-        const cellCount = 18;
 
-        // Le symbole final en PREMIER → il sera visible à la fin (translateY = 0)
-        reel.appendChild(makeCell(finalSymId));
-
-        // Les cellules random APRÈS (elles partent vers le bas, hors champ)
+        // Cellules random en haut (elles défileront vers le bas et sortiront)
         for (let i = 0; i < cellCount; i++) {
             reel.appendChild(makeCell(pickSymbol()));
         }
+        // Symbole final tout en bas
+        reel.appendChild(makeCell(finalSymId));
 
         reel.dataset.result = finalSymId;
 
-        const cellH = 110;
-        const totalH = cellCount * cellH;
-
-        // On commence décalé vers le BAS (cellules random visibles)
+        // On positionne le reel pour que les random soient visibles (au-dessus du final)
+        // Le total de cellules = cellCount + 1, on veut que la DERNIÈRE soit visible à la fin
+        // Donc on part de -(cellCount * cellH) et on va vers 0... non
+        // 
+        // Layout: [rand0][rand1]...[randN][FINAL]
+        // Position initiale: translateY(0) → rand0 visible
+        // Position finale:   translateY(-(cellCount * cellH)) → FINAL visible
         reel.style.transition = 'none';
-        reel.style.transform = `translateY(${totalH}px)`;
+        reel.style.transform = 'translateY(0px)';
 
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
-                // On remonte jusqu'à 0 → la première cellule (finalSymId) devient visible
-                reel.style.transition = `transform ${duration}ms cubic-bezier(0.17, 0.67, 0.35, 1.0)`;
-                reel.style.transform = 'translateY(0px)';
+                reel.style.transition = `transform ${duration}ms cubic-bezier(0.25, 0.1, 0.25, 1.0)`;
+                reel.style.transform = `translateY(-${cellCount * cellH}px)`;
                 setTimeout(resolve, duration);
             });
         });
