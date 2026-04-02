@@ -169,6 +169,12 @@
                     <img src="images/wanted-vignette.jpg" class="game-thumbnail" onerror="this.src='https://via.placeholder.com/400x190/111/fff?text=WANTED'">
                     <div class="game-info"><h2>Wanted Dayoub</h2><span>Réflexe Multijoueur</span></div>
                 </a>
+                
+                <!-- NOUVEAU JEU : MAUBEUGOPOLY AJOUTÉ ICI -->
+                <a href="maubeugepoly/index.html" class="game-card">
+                    <img src="images/maubeugepoly-vignette.png" class="game-thumbnail" onerror="this.src='https://via.placeholder.com/400x190/111/fff?text=MAUBEUGOPOLY'">
+                    <div class="game-info"><h2>Maubeugopoly</h2><span>Jeu de Plateau - 4 Joueurs</span></div>
+                </a>
             </div>
 
         </div>
@@ -189,6 +195,7 @@
                     <div class="stat-row"><span class="stat-label">Kavale</span><span class="stat-value" id="statKavale">0</span></div>
                     <div class="stat-row"><span class="stat-label">Bingoudalo</span><span class="stat-value" id="statBingo">0</span></div>
                     <div class="stat-row"><span class="stat-label">Wanted</span><span class="stat-value" id="statWanted">0</span></div>
+                    <div class="stat-row"><span class="stat-label">Maubeugopoly</span><span class="stat-value" id="statMaubeuge" style="color:var(--yellow);">0</span></div>
                     <div class="stat-row"><span class="stat-label">Franclick</span><span class="stat-value" id="statFranclick" style="color:var(--yellow);">0</span></div>
                 </div>
 
@@ -325,7 +332,7 @@
             pseudo: pseudo, 
             password: hashedPwd, // Enregistrement sécurisé
             avatar: 'bingoudalo/avatar/paulo1.jpg', 
-            kavale_wins: 0, bingoudalo_wins: 0, wanted_wins: 0, franclick_score: 0
+            kavale_wins: 0, bingoudalo_wins: 0, wanted_wins: 0, franclick_score: 0, maubeugopoly_wins: 0
         };
 
         const { error } = await sb.from('cdsi_users').insert([newUser]);
@@ -379,10 +386,11 @@
         document.getElementById('editPassword').placeholder = "Nouveau Mot de passe (optionnel)";
         tempSelectedAvatar = currentUser.avatar;
 
-        document.getElementById('statKavale').innerText = currentUser.kavale_wins;
-        document.getElementById('statBingo').innerText = currentUser.bingoudalo_wins;
-        document.getElementById('statWanted').innerText = currentUser.wanted_wins;
-        document.getElementById('statFranclick').innerText = Math.floor(currentUser.franclick_score);
+        document.getElementById('statKavale').innerText = currentUser.kavale_wins || 0;
+        document.getElementById('statBingo').innerText = currentUser.bingoudalo_wins || 0;
+        document.getElementById('statWanted').innerText = currentUser.wanted_wins || 0;
+        document.getElementById('statMaubeuge').innerText = currentUser.maubeugopoly_wins || 0;
+        document.getElementById('statFranclick').innerText = Math.floor(currentUser.franclick_score || 0);
     }
 
     function openProfileModal() {
@@ -478,7 +486,7 @@
                     <img src="${u.avatar || 'https://via.placeholder.com/28'}" onerror="this.src='https://via.placeholder.com/28'">
                     ${u.pseudo}
                 </div>
-                <div class="lb-score">${Math.floor(u[field])} ${suffix}</div>
+                <div class="lb-score">${Math.floor(u[field] || 0)} ${suffix}</div>
             </div>`;
         }).join('');
     }
