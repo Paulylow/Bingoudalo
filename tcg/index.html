@@ -86,12 +86,13 @@
   .coll-card:hover { transform: scale(1.05); z-index: 10; }
   .coll-card img { width: 100%; height: 100%; object-fit: cover; }
   
-  /* ANTI SPOIL : Cartes non possédées */
-  .coll-card.locked { background: repeating-linear-gradient(45deg, #111, #111 10px, #222 10px, #222 20px); border-color: #333; display: flex; align-items: center; justify-content: center; cursor: not-allowed;}
+  /* ANTI SPOIL : Cartes non possédées MAIS avec bordure colorée */
+  .coll-card.locked { background: repeating-linear-gradient(45deg, #111, #111 10px, #222 10px, #222 20px); display: flex; align-items: center; justify-content: center; cursor: not-allowed; opacity: 0.7;}
   .coll-card.locked::after { content: '?'; font-family: 'Bebas Neue'; font-size: 60px; color: #444; }
-  .coll-card.locked img { display: none; } /* On cache totalement l'image */
+  .coll-card.locked img { display: none; } 
   .coll-card.locked:hover { transform: none; z-index: 1; }
   
+  /* Les couleurs s'appliquent maintenant aux cartes possédées ET verrouillées */
   .coll-card.common { border-color: #bdc3c7; }
   .coll-card.rare { border-color: #3498db; }
   .coll-card.epic { border-color: #9b59b6; box-shadow: 0 0 10px rgba(155,89,182,0.3);}
@@ -103,7 +104,7 @@
   /* ── ZOOM CARTE (LIGHTBOX) ── */
   #zoomModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 300; align-items: center; justify-content: center; flex-direction: column; cursor: zoom-out;}
   #zoomModal img { max-width: 90vw; max-height: 85vh; border-radius: 20px; box-shadow: 0 0 50px rgba(255,255,255,0.2); animation: zoomIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);}
-  .zoom-name { font-family: 'Bebas Neue'; font-size: 30px; margin-top: 20px; color: #fff; letter-spacing: 2px; }
+  .zoom-name { font-family: 'Bebas Neue'; font-size: 30px; margin-top: 20px; color: #fff; letter-spacing: 2px; text-align: center; }
   
   @keyframes zoomIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
@@ -325,7 +326,8 @@ function openCollection() {
         
         if (isOwned) ownedCount++;
 
-        let lockedClass = isOwned ? card.rarity : 'locked';
+        // Si possédée, on applique la rareté. Sinon, on applique 'locked' ET la rareté pour garder l'aura.
+        let lockedClass = isOwned ? card.rarity : `locked ${card.rarity}`;
         let badgeHTML = (qty > 1) ? `<div class="dupe-badge">${qty}</div>` : '';
         
         // Texte du survol (anti-spoil)
