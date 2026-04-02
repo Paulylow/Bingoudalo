@@ -51,7 +51,6 @@
       padding: 5px; gap: 2px; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
   }
 
-  /* Structure des Cases */
   .square {
       background: #fff; border: 2px solid #000; position: relative;
       display: flex; align-items: center; justify-content: center;
@@ -59,30 +58,36 @@
   }
   .corner { font-size: 12px; }
   
-  /* Les Barres de Couleurs */
   .color-bar { position: absolute; border-color: #000; border-style: solid; }
   .cb-top { top: 0; left: 0; width: 100%; height: 20%; border-width: 0 0 2px 0; }
   .cb-bottom { bottom: 0; left: 0; width: 100%; height: 20%; border-width: 2px 0 0 0; }
   .cb-left { top: 0; left: 0; width: 20%; height: 100%; border-width: 0 2px 0 0; }
   .cb-right { top: 0; right: 0; width: 20%; height: 100%; border-width: 0 0 0 2px; }
   
+  /* COULEURS DES QUARTIERS */
+  .cyan { background-color: #00bcd4; }
   .marron { background-color: #8b4513; }
   .vert { background-color: #27ae60; }
   .rouge { background-color: #c0392b; }
   .bleu { background-color: #2980b9; }
 
-  /* Conteneur du Texte (Pour éviter que ça touche les couleurs) */
-  .sq-content { flex: 1; display: flex; align-items: center; justify-content: center; z-index: 1; pointer-events: none; width: 100%; height: 100%; }
+  .sq-content { flex: 1; display: flex; align-items: center; justify-content: center; z-index: 1; pointer-events: none; width: 100%; height: 100%; line-height: 1.1;}
   .row-top .sq-content { padding-bottom: 20%; }
   .row-bottom .sq-content { padding-top: 20%; }
   .col-left .sq-content { padding-right: 20%; }
   .col-right .sq-content { padding-left: 20%; }
   
-  /* Rotations parfaites du texte */
   .txt-rot-left { transform: rotate(90deg); display: inline-block; }
   .txt-rot-right { transform: rotate(-90deg); display: inline-block; }
 
-  /* ZONE DES PIONS (S'adapte à la position de la barre de couleur) */
+  /* BADGE PROPRIÉTAIRE */
+  .owner-badge { position: absolute; font-size: 8px; background: rgba(0,0,0,0.8); color: var(--gold); padding: 2px 4px; border-radius: 4px; z-index: 2; text-transform: uppercase; font-family: 'Bebas Neue'; letter-spacing: 1px;}
+  .row-bottom .owner-badge { top: 25%; }
+  .row-top .owner-badge { bottom: 25%; }
+  .col-left .owner-badge { left: 25%; transform: rotate(-90deg); }
+  .col-right .owner-badge { right: 25%; transform: rotate(90deg); }
+
+  /* ZONE DES PIONS */
   .players-zone { position: absolute; z-index: 5; display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; transition: 0.3s; }
   .pz-bottom { bottom: 2px; left: 2px; right: 2px; }
   .pz-top { top: 2px; left: 2px; right: 2px; }
@@ -110,8 +115,16 @@
   
   .dice-display { font-size: 60px; text-align: center; margin-bottom: 10px; display: flex; justify-content: center; gap: 10px;}
   .die { background: white; border-radius: 10px; width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; color: black; font-size: 30px; font-weight: bold; box-shadow: inset 0 0 10px rgba(0,0,0,0.2), 0 5px 10px rgba(0,0,0,0.5); border: 1px solid #ccc;}
-
   .turn-indicator { font-family: 'Bebas Neue'; font-size: 28px; color: var(--gold); text-align: center; margin-bottom: 15px; border-bottom: 2px solid rgba(255,215,0,0.3); padding-bottom: 5px;}
+
+  /* FENÊTRE D'ACHAT */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(5px);}
+  .modal-buy { background: rgba(20,20,30,0.95); border: 2px solid var(--gold); border-radius: 15px; padding: 30px; text-align: center; width: 90%; max-width: 400px; box-shadow: 0 0 40px rgba(255,215,0,0.4); }
+  .modal-buy h2 { font-family: 'Bebas Neue'; color: #fff; font-size: 35px; margin-bottom: 10px; letter-spacing: 1px;}
+  .modal-buy p { color: #aaa; margin-bottom: 20px; font-size: 18px;}
+  .modal-buy .price { font-family: 'Bebas Neue'; font-size: 45px; color: var(--gold); margin-bottom: 20px; }
+  .btn-group { display: flex; gap: 15px; }
+
 </style>
 </head>
 <body>
@@ -141,89 +154,47 @@
     
     <div class="game-layout">
         
-        <!-- LE PLATEAU PARFAITEMENT STRUCTURÉ -->
+        <!-- LE PLATEAU -->
         <div class="board-container">
-            
-            <!-- LIGNE HAUT (Gauche à Droite) -->
+            <!-- LIGNE HAUT -->
             <div class="square corner" id="cell-12" style="grid-column: 1; grid-row: 1;"><div class="sq-content">PARC<br>GRATUIT</div><div class="players-zone pz-center"></div></div>
-            
-            <div class="square row-top" id="cell-13" style="grid-column: 2; grid-row: 1;">
-                <div class="color-bar cb-bottom rouge"></div><div class="sq-content">IUT DE<br>MAUBEUGE</div><div class="players-zone pz-top"></div>
-            </div>
-            <div class="square row-top" id="cell-14" style="grid-column: 3; grid-row: 1;">
-                <div class="sq-content">CAISSE DE<br>COMMU</div><div class="players-zone pz-top"></div>
-            </div>
-            <div class="square row-top" id="cell-15" style="grid-column: 4; grid-row: 1;">
-                <div class="color-bar cb-bottom rouge"></div><div class="sq-content">MAISON<br>CORINNE</div><div class="players-zone pz-top"></div>
-            </div>
-            <div class="square row-top" id="cell-16" style="grid-column: 5; grid-row: 1;">
-                <div class="sq-content">GARE DE<br>LOUVROIL</div><div class="players-zone pz-top"></div>
-            </div>
-            <div class="square row-top" id="cell-17" style="grid-column: 6; grid-row: 1;">
-                <div class="color-bar cb-bottom bleu"></div><div class="sq-content">ZOO DE<br>MAUBEUGE</div><div class="players-zone pz-top"></div>
-            </div>
-
+            <div class="square row-top" id="cell-13" style="grid-column: 2; grid-row: 1;"><div class="color-bar cb-bottom rouge"></div><div class="sq-content">IUT DE<br>MAUBEUGE</div><div class="players-zone pz-top"></div></div>
+            <div class="square row-top" id="cell-14" style="grid-column: 3; grid-row: 1;"><div class="sq-content">CAISSE DE<br>COMMU</div><div class="players-zone pz-top"></div></div>
+            <div class="square row-top" id="cell-15" style="grid-column: 4; grid-row: 1;"><div class="color-bar cb-bottom rouge"></div><div class="sq-content">MAISON<br>CORINNE</div><div class="players-zone pz-top"></div></div>
+            <div class="square row-top" id="cell-16" style="grid-column: 5; grid-row: 1;"><div class="sq-content">GARE DE<br>LOUVROIL</div><div class="players-zone pz-top"></div></div>
+            <div class="square row-top" id="cell-17" style="grid-column: 6; grid-row: 1;"><div class="color-bar cb-bottom bleu"></div><div class="sq-content">ZOO DE<br>MAUBEUGE</div><div class="players-zone pz-top"></div></div>
             <div class="square corner" id="cell-18" style="grid-column: 7; grid-row: 1;"><div class="sq-content">ALLEZ EN<br>PRISON</div><div class="players-zone pz-center"></div></div>
 
-            <!-- COLONNE DROITE (Haut en Bas) -->
-            <div class="square col-right" id="cell-19" style="grid-column: 7; grid-row: 2;">
-                <div class="color-bar cb-left bleu"></div><div class="sq-content"><span class="txt-rot-left">CLAIR<br>DE LUNE</span></div><div class="players-zone pz-right"></div>
-            </div>
-            <div class="square col-right" id="cell-20" style="grid-column: 7; grid-row: 3;">
-                <div class="sq-content"><span class="txt-rot-left">CHANCE</span></div><div class="players-zone pz-right"></div>
-            </div>
-            <div class="square col-right" id="cell-21" style="grid-column: 7; grid-row: 4;">
-                <div class="sq-content"><span class="txt-rot-left">STIBUS</span></div><div class="players-zone pz-right"></div>
-            </div>
-            <div class="square col-right" id="cell-22" style="grid-column: 7; grid-row: 5;">
-                <div class="color-bar cb-left vert"></div><div class="sq-content"><span class="txt-rot-left">BASIC FIT</span></div><div class="players-zone pz-right"></div>
-            </div>
-            <div class="square col-right" id="cell-23" style="grid-column: 7; grid-row: 6;">
-                <div class="color-bar cb-left vert"></div><div class="sq-content"><span class="txt-rot-left">O'TACOS</span></div><div class="players-zone pz-right"></div>
-            </div>
+            <!-- COLONNE DROITE -->
+            <div class="square col-right" id="cell-19" style="grid-column: 7; grid-row: 2;"><div class="color-bar cb-left bleu"></div><div class="sq-content"><span class="txt-rot-left">CLAIR<br>DE LUNE</span></div><div class="players-zone pz-right"></div></div>
+            <div class="square col-right" id="cell-20" style="grid-column: 7; grid-row: 3;"><div class="sq-content"><span class="txt-rot-left">CHANCE</span></div><div class="players-zone pz-right"></div></div>
+            <div class="square col-right" id="cell-21" style="grid-column: 7; grid-row: 4;"><div class="sq-content"><span class="txt-rot-left">STIBUS</span></div><div class="players-zone pz-right"></div></div>
+            <div class="square col-right" id="cell-22" style="grid-column: 7; grid-row: 5;"><div class="color-bar cb-left vert"></div><div class="sq-content"><span class="txt-rot-left">BASIC FIT</span></div><div class="players-zone pz-right"></div></div>
+            <div class="square col-right" id="cell-23" style="grid-column: 7; grid-row: 6;"><div class="color-bar cb-left vert"></div><div class="sq-content"><span class="txt-rot-left">O'TACOS</span></div><div class="players-zone pz-right"></div></div>
 
-            <!-- LE CENTRE -->
+            <!-- CENTRE -->
             <div class="square center-logo">
                 <h1>MAUBEUGOPOLY</h1>
                 <div class="action-log" id="actionLog">La partie va commencer !</div>
             </div>
 
-            <!-- COLONNE GAUCHE (Haut en Bas) -->
-            <div class="square col-left" id="cell-11" style="grid-column: 1; grid-row: 2;">
-                <div class="color-bar cb-right marron"></div><div class="sq-content"><span class="txt-rot-right">GARAGE<br>À BITE</span></div><div class="players-zone pz-left"></div>
-            </div>
-            <div class="square col-left" id="cell-10" style="grid-column: 1; grid-row: 3;">
-                <div class="sq-content"><span class="txt-rot-right">CHANCE</span></div><div class="players-zone pz-left"></div>
-            </div>
-            <div class="square col-left" id="cell-9" style="grid-column: 1; grid-row: 4;">
-                <div class="color-bar cb-right marron"></div><div class="sq-content"><span class="txt-rot-right">APPART.<br>ELIAN</span></div><div class="players-zone pz-left"></div>
-            </div>
-            <div class="square col-left" id="cell-8" style="grid-column: 1; grid-row: 5;">
-                <div class="sq-content"><span class="txt-rot-right">GARE<br>HAUTMONT</span></div><div class="players-zone pz-left"></div>
-            </div>
-            <div class="square col-left" id="cell-7" style="grid-column: 1; grid-row: 6;">
-                <div class="sq-content"><span class="txt-rot-right">RADAR N2<br>(Payez 50)</span></div><div class="players-zone pz-left"></div>
-            </div>
+            <!-- COLONNE GAUCHE -->
+            <div class="square col-left" id="cell-11" style="grid-column: 1; grid-row: 2;"><div class="color-bar cb-right marron"></div><div class="sq-content"><span class="txt-rot-right">GARAGE<br>À BITE</span></div><div class="players-zone pz-left"></div></div>
+            <div class="square col-left" id="cell-10" style="grid-column: 1; grid-row: 3;"><div class="sq-content"><span class="txt-rot-right">CHANCE</span></div><div class="players-zone pz-left"></div></div>
+            <div class="square col-left" id="cell-9" style="grid-column: 1; grid-row: 4;"><div class="color-bar cb-right marron"></div><div class="sq-content"><span class="txt-rot-right">APPART.<br>ELIAN</span></div><div class="players-zone pz-left"></div></div>
+            <div class="square col-left" id="cell-8" style="grid-column: 1; grid-row: 5;"><div class="sq-content"><span class="txt-rot-right">GARE<br>HAUTMONT</span></div><div class="players-zone pz-left"></div></div>
+            <div class="square col-left" id="cell-7" style="grid-column: 1; grid-row: 6;"><div class="sq-content"><span class="txt-rot-right">RADAR N2<br>(Payez 50)</span></div><div class="players-zone pz-left"></div></div>
 
-            <!-- LIGNE BAS (Gauche à Droite) -->
+            <!-- LIGNE BAS -->
             <div class="square corner" id="cell-6" style="grid-column: 1; grid-row: 7;"><div class="sq-content">PRISON</div><div class="players-zone pz-center"></div></div>
+            <div class="square row-bottom" id="cell-5" style="grid-column: 2; grid-row: 7;"><div class="sq-content">TAXE</div><div class="players-zone pz-bottom"></div></div>
             
-            <div class="square row-bottom" id="cell-5" style="grid-column: 2; grid-row: 7;">
-                <div class="sq-content">TAXE</div><div class="players-zone pz-bottom"></div>
-            </div>
-            <div class="square row-bottom" id="cell-4" style="grid-column: 3; grid-row: 7;">
-                <div class="color-bar cb-top"></div><div class="sq-content">RUE X</div><div class="players-zone pz-bottom"></div>
-            </div>
-            <div class="square row-bottom" id="cell-3" style="grid-column: 4; grid-row: 7;">
-                <div class="sq-content">CAISSE DE<br>COMMU</div><div class="players-zone pz-bottom"></div>
-            </div>
-            <div class="square row-bottom" id="cell-2" style="grid-column: 5; grid-row: 7;">
-                <div class="color-bar cb-top"></div><div class="sq-content">RUE Y</div><div class="players-zone pz-bottom"></div>
-            </div>
-            <div class="square row-bottom" id="cell-1" style="grid-column: 6; grid-row: 7;">
-                <div class="sq-content">GARE SNCF</div><div class="players-zone pz-bottom"></div>
-            </div>
+            <!-- NOUVELLES RUES CYAN -->
+            <div class="square row-bottom" id="cell-4" style="grid-column: 3; grid-row: 7;"><div class="color-bar cb-top cyan"></div><div class="sq-content">MONTAGNE<br>DU CRACK</div><div class="players-zone pz-bottom"></div></div>
+            <div class="square row-bottom" id="cell-3" style="grid-column: 4; grid-row: 7;"><div class="sq-content">CAISSE DE<br>COMMU</div><div class="players-zone pz-bottom"></div></div>
+            <div class="square row-bottom" id="cell-2" style="grid-column: 5; grid-row: 7;"><div class="color-bar cb-top cyan"></div><div class="sq-content">ÉGOUT QUI<br>PUE LA BITE</div><div class="players-zone pz-bottom"></div></div>
             
+            <div class="square row-bottom" id="cell-1" style="grid-column: 6; grid-row: 7;"><div class="sq-content">GARE SNCF</div><div class="players-zone pz-bottom"></div></div>
             <div class="square corner" id="cell-0" style="grid-column: 7; grid-row: 7; background: #ffcccc;"><div class="sq-content" style="flex-direction: column;"><strong>DÉPART</strong><br>Recevez 200</div><div class="players-zone pz-center"></div></div>
         </div>
 
@@ -231,12 +202,10 @@
         <div class="side-panel">
             <div class="card" style="padding: 20px;">
                 <div class="turn-indicator" id="turnDisplay">TOUR DE : ...</div>
-                
                 <div class="dice-display">
                     <div class="die" id="die1">-</div>
                     <div class="die" id="die2">-</div>
                 </div>
-                
                 <button class="btn-gold" id="btnRoll" onclick="rollDice()" disabled>LANCER LES DÉS</button>
             </div>
             
@@ -245,10 +214,22 @@
                 <div style="font-family: 'Bebas Neue'; font-size: 40px; color: #27ae60;" id="moneyDisplay">1500 M$</div>
             </div>
             
-            <!-- QUITTER LA PARTIE -->
             <button class="btn-gold" style="background:transparent; border:1px solid #ff4444; color:#ff4444;" onclick="resetLobbyForce()">QUITTER LA PARTIE</button>
         </div>
 
+    </div>
+</div>
+
+<!-- MODAL D'ACHAT -->
+<div class="modal-overlay" id="buyModal">
+    <div class="modal-buy">
+        <h2>PROPRIÉTÉ DISPONIBLE</h2>
+        <p id="buyModalName">Nom de la rue</p>
+        <div class="price" id="buyModalPrice">100 M$</div>
+        <div class="btn-group">
+            <button class="btn-gold" style="background: #27ae60; color: white;" onclick="answerBuy(true)">ACHETER</button>
+            <button class="btn-gold" style="background: transparent; border: 2px solid #aaa; color: #aaa;" onclick="answerBuy(false)">PASSER</button>
+        </div>
     </div>
 </div>
 
@@ -265,8 +246,28 @@ let isMaster = false;
 let dbSyncInterval = null; 
 let gameStateLocal = null;
 
-// GESTION DE L'ANIMATION
-let visualPositions = {}; // Garde en mémoire la position visuelle des pions
+// L'ÉCONOMIE DU JEU (Données des cases)
+const BOARD_DATA = {
+    1: { name: "Gare SNCF", type: "property", price: 150, rent: 30 },
+    2: { name: "Égout qui pue la bite", type: "property", price: 100, rent: 20 },
+    4: { name: "Montagne du Crack", type: "property", price: 120, rent: 25 },
+    5: { name: "Taxe", type: "tax", amount: 100 },
+    7: { name: "Radar N2", type: "tax", amount: 50 },
+    8: { name: "Gare d'Hautmont", type: "property", price: 150, rent: 30 },
+    9: { name: "Appart. Elian", type: "property", price: 180, rent: 40 },
+    11: { name: "Garage à Bite", type: "property", price: 200, rent: 50 },
+    13: { name: "IUT de Maubeuge", type: "property", price: 220, rent: 60 },
+    15: { name: "Maison de Corinne", type: "property", price: 240, rent: 70 },
+    16: { name: "Gare de Louvroil", type: "property", price: 150, rent: 30 },
+    17: { name: "Zoo de Maubeuge", type: "property", price: 260, rent: 80 },
+    18: { name: "Allez en Prison", type: "go_prison" },
+    19: { name: "Clair de Lune", type: "property", price: 300, rent: 100 },
+    21: { name: "Stibus", type: "property", price: 150, rent: 30 },
+    22: { name: "Basic Fit", type: "property", price: 320, rent: 120 },
+    23: { name: "O'Tacos", type: "property", price: 350, rent: 150 }
+};
+
+let visualPositions = {}; 
 let isAnimating = false;
 
 // INIT
@@ -274,13 +275,11 @@ window.onload = async () => {
     try {
         myPseudo = localStorage.getItem('cdsi_logged_user');
         if (!myPseudo || myPseudo === 'null') { window.location.href = '../index.html'; return; }
-
-        const { data, error } = await sb.from('cdsi_users').select('avatar').eq('pseudo', myPseudo).maybeSingle();
+        const { data } = await sb.from('cdsi_users').select('avatar').eq('pseudo', myPseudo).maybeSingle();
         myAvatar = (data && data.avatar) ? (data.avatar.startsWith('../') ? data.avatar : '../' + data.avatar) : '../bingoudalo/avatar/paulo1.jpg';
-
         await autoJoinLobby();
     } catch (e) {
-        document.getElementById('loadingMsg').innerHTML = "ERREUR RÉSEAU<br><button class='btn-gold' onclick='window.location.href=\"../index.html\"'>RETOUR</button>";
+        document.getElementById('loadingMsg').innerHTML = "ERREUR RÉSEAU<br><button class='btn-gold' onclick='location.reload()'>RÉESSAYER</button>";
     }
 };
 
@@ -293,12 +292,12 @@ async function updateState(newState) {
     await sb.from('bingo_state').upsert({ id: GAME_ID, data: newState, updated_at: new Date().toISOString() }, { onConflict: 'id' });
 }
 
-// LOBBY LOGIC
+// LOBBY
 async function autoJoinLobby() {
     let state = await fetchState();
     
     if(!state || !state.players) {
-        state = { phase: 'lobby', master: myPseudo, players: {}, turnOrder: [], currentTurnIndex: 0, log: "En attente de joueurs..." };
+        state = { phase: 'lobby', master: myPseudo, players: {}, turnOrder: [], currentTurnIndex: 0, log: "En attente de joueurs...", properties: {} };
     } else if (!state.players[state.master] && Object.keys(state.players).length > 0) {
         state.master = Object.keys(state.players)[0];
     } else if (!state.master) {
@@ -316,7 +315,6 @@ async function autoJoinLobby() {
     }
     
     await updateState(state);
-    
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
     document.getElementById('screenLobby').classList.add('active');
     
@@ -326,7 +324,7 @@ async function autoJoinLobby() {
     }, 1000);
 }
 
-// MOTEUR DU JEU ET ANIMATION
+// MOTEUR DU JEU
 async function processState(state) {
     gameStateLocal = state;
     isMaster = (state.master === myPseudo);
@@ -336,16 +334,11 @@ async function processState(state) {
             <div class="player-row"><img src="${p.avatar}" class="player-avatar" onerror="this.onerror=null; this.src='../bingoudalo/avatar/paulo1.jpg';"><span>${p.pseudo}</span>
             ${state.master === p.pseudo ? '<span class="badge-master">Banquier</span>' : ''}</div>
         `).join('');
-
-        if(isMaster) {
-            document.getElementById('lobbyControls').innerHTML = `<button class="btn-gold" onclick="startGame()">LANCER LA PARTIE</button>`;
-        }
+        if(isMaster) document.getElementById('lobbyControls').innerHTML = `<button class="btn-gold" onclick="startGame()">LANCER LA PARTIE</button>`;
     } 
     else if (state.phase === 'playing') {
-        if (!state.turnOrder || state.turnOrder.length === 0) {
-            if (isMaster) startGame(); 
-            return; 
-        }
+        if (!state.turnOrder || state.turnOrder.length === 0) { if (isMaster) startGame(); return; }
+        if (!state.properties) state.properties = {}; // Sécurité
 
         document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
         document.getElementById('screenGame').classList.add('active');
@@ -359,20 +352,17 @@ async function startGame() {
     state.phase = 'playing';
     state.turnOrder = Object.keys(state.players); 
     state.currentTurnIndex = 0;
+    state.properties = {};
     state.log = `C'est à ${state.turnOrder[0]} de commencer !`;
     await updateState(state);
 }
 
-// METTRE A JOUR LE PLATEAU VISUELLEMENT
+// UI & ANIMATION
 async function updateBoardUI(state) {
-    // Initialisation des positions visuelles si nouveau joueur
     for (let pseudo in state.players) {
-        if (visualPositions[pseudo] === undefined) {
-            visualPositions[pseudo] = state.players[pseudo].position;
-        }
+        if (visualPositions[pseudo] === undefined) visualPositions[pseudo] = state.players[pseudo].position;
     }
 
-    // Mise à jour de l'UI latérale (Argent, Dés, Tours)
     const activePlayer = state.turnOrder[state.currentTurnIndex];
     document.getElementById('turnDisplay').innerText = `TOUR DE : ${activePlayer}`;
     document.getElementById('turnDisplay').style.color = (activePlayer === myPseudo) ? "#27ae60" : "var(--gold)";
@@ -385,27 +375,28 @@ async function updateBoardUI(state) {
     }
 
     const btn = document.getElementById('btnRoll');
-    // On bloque le bouton si c'est pas notre tour OU si une animation de pion est en cours
     if (activePlayer === myPseudo && !isAnimating) {
-        btn.disabled = false;
-        btn.innerText = "LANCER LES DÉS";
+        btn.disabled = false; btn.innerText = "LANCER LES DÉS";
     } else {
-        btn.disabled = true;
-        btn.innerText = "ATTENDS TON TOUR";
+        btn.disabled = true; btn.innerText = "ATTENDS TON TOUR";
     }
 
-    // GESTION DU DÉPLACEMENT ANIMÉ
-    if (!isAnimating) {
-        await processMovements(state);
+    // Affichage des propriétaires
+    document.querySelectorAll('.owner-badge').forEach(e => e.remove());
+    for (let pos in state.properties) {
+        let owner = state.properties[pos];
+        let cell = document.getElementById(`cell-${pos}`);
+        if(cell) cell.innerHTML += `<div class="owner-badge">${owner.substring(0,4)}</div>`;
     }
+
+    if (!isAnimating) await processMovements(state);
 }
 
-// FONCTION POUR ANIMER LES PIONS UN PAR UN
 async function processMovements(state) {
     isAnimating = true;
     let movementHappened = false;
-    
-    // On cherche si un joueur n'est pas sur sa bonne case
+    let activePlayer = state.turnOrder[state.currentTurnIndex];
+
     for (let pseudo in state.players) {
         let target = state.players[pseudo].position;
         if (visualPositions[pseudo] !== target) {
@@ -415,39 +406,36 @@ async function processMovements(state) {
     }
     
     isAnimating = false;
-    renderTokens(); // Petit rafraichissement final de sécurité
+    renderTokens(); 
+
+    // SI C'EST MON TOUR ET QUE JE VIENS DE BOUGER, JE DÉCLENCHE L'ACTION DE LA CASE
+    if (movementHappened && activePlayer === myPseudo) {
+        handleCellAction(state, state.players[myPseudo].position);
+    }
 }
 
-// DÉPLACE LE PION CASE PAR CASE (200ms)
 async function moveTokenStepByStep(pseudo, targetPos) {
     return new Promise(resolve => {
         let interval = setInterval(() => {
             visualPositions[pseudo] = (visualPositions[pseudo] + 1) % 24;
-            renderTokens(pseudo); // On passe le pseudo pour faire le petit saut (hop)
-            
+            renderTokens(pseudo); 
             if (visualPositions[pseudo] === targetPos) {
                 clearInterval(interval);
-                // Pause de 0.2s avant de rendre la main au joueur suivant
                 setTimeout(resolve, 200); 
             }
-        }, 200); // <-- VITESSE DU PION (Plus c'est bas, plus il court vite)
+        }, 200);
     });
 }
 
-// DESSINE LES PIONS SUR LEUR POSITION VISUELLE ACTUELLE
 function renderTokens(hoppingPseudo = null) {
-    // 1. On vide toutes les cases
     for(let i=0; i<24; i++) {
         const cell = document.getElementById(`cell-${i}`);
         if(cell) cell.querySelector('.players-zone').innerHTML = '';
     }
-
-    // 2. On replace les joueurs selon visualPositions
     for(let pseudo in visualPositions) {
         let pos = visualPositions[pseudo];
         let pData = gameStateLocal.players[pseudo];
         if(!pData) continue;
-        
         let cell = document.getElementById(`cell-${pos}`);
         if(cell) {
             let hopClass = (pseudo === hoppingPseudo) ? 'hop' : '';
@@ -466,27 +454,103 @@ async function rollDice() {
     const total = d1 + d2;
 
     let state = await fetchState();
-    
     let p = state.players[myPseudo];
     let oldPos = p.position;
+    
     p.position = (p.position + total) % 24;
     
     if(oldPos + total >= 24) {
         p.money += 200;
-        state.log = `${myPseudo} a fait ${total} et passe par Départ (+200 M$) !`;
+        state.log = `${myPseudo} fait ${total} et passe par DÉPART (+200 M$) !`;
     } else {
-        state.log = `${myPseudo} a fait ${total} !`;
+        state.log = `${myPseudo} fait ${total} !`;
     }
 
     state.lastDice = [d1, d2];
+    
+    // ON SAUVEGARDE DIRECTEMENT POUR LANCER L'ANIMATION (Le tour ne passe pas encore)
+    await updateState(state);
+}
 
-    if (d1 !== d2) {
-        state.currentTurnIndex = (state.currentTurnIndex + 1) % state.turnOrder.length;
-        state.log += ` Tour de ${state.turnOrder[state.currentTurnIndex]}.`;
-    } else {
-        state.log += ` DOUBLE ! Rejoue.`;
+// --- LOGIQUE DES CASES (ACHAT, LOYER, TAXES) ---
+async function handleCellAction(state, pos) {
+    const cellData = BOARD_DATA[pos];
+    
+    if (!cellData) {
+        // Case vide (Parc, Prison Visite, Chance pour l'instant)
+        if(pos === 3 || pos === 10 || pos === 14 || pos === 20) {
+            state.log = `${myPseudo} tire une carte Chance... (Bientôt dispo) !`;
+        }
+        return endTurn(state);
     }
 
+    if (cellData.type === 'tax') {
+        state.players[myPseudo].money -= cellData.amount;
+        state.log = `${myPseudo} paie ${cellData.amount} M$ de taxe !`;
+        return endTurn(state);
+    }
+    
+    if (cellData.type === 'go_prison') {
+        state.players[myPseudo].position = 6;
+        state.log = `👮 ${myPseudo} va directement en prison !`;
+        return endTurn(state);
+    }
+
+    if (cellData.type === 'property') {
+        if (state.properties[pos]) {
+            let owner = state.properties[pos];
+            if (owner !== myPseudo) {
+                // Paiement du loyer
+                state.players[myPseudo].money -= cellData.rent;
+                state.players[owner].money += cellData.rent;
+                state.log = `${myPseudo} paie ${cellData.rent} M$ de loyer à ${owner} !`;
+            }
+            return endTurn(state);
+        } else {
+            // Proposition d'achat
+            showBuyModal(state, pos, cellData);
+        }
+    }
+}
+
+// --- MODAL D'ACHAT ---
+function showBuyModal(state, pos, cellData) {
+    document.getElementById('buyModalName').innerText = cellData.name;
+    document.getElementById('buyModalPrice').innerText = cellData.price + " M$";
+    document.getElementById('buyModal').style.display = 'flex';
+    
+    window.currentBuyState = state;
+    window.currentBuyPos = pos;
+    window.currentBuyData = cellData;
+}
+
+async function answerBuy(buy) {
+    document.getElementById('buyModal').style.display = 'none';
+    let state = window.currentBuyState;
+    
+    if (buy) {
+        if (state.players[myPseudo].money >= window.currentBuyData.price) {
+            state.players[myPseudo].money -= window.currentBuyData.price;
+            state.properties[window.currentBuyPos] = myPseudo;
+            state.log = `${myPseudo} a acheté ${window.currentBuyData.name} !`;
+        } else {
+            alert("Tu n'as pas assez d'argent pour acheter ça !");
+        }
+    } else {
+        state.log = `${myPseudo} refuse d'acheter ${window.currentBuyData.name}.`;
+    }
+    
+    endTurn(state);
+}
+
+// --- FIN DU TOUR ---
+async function endTurn(state) {
+    // Si c'est un double, le joueur rejoue ! (Sauf s'il va en prison)
+    if (state.lastDice[0] === state.lastDice[1] && BOARD_DATA[state.players[myPseudo].position]?.type !== 'go_prison') {
+        state.log += ` DOUBLE ! ${myPseudo} rejoue.`;
+    } else {
+        state.currentTurnIndex = (state.currentTurnIndex + 1) % state.turnOrder.length;
+    }
     await updateState(state);
 }
 
