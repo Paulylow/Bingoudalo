@@ -311,10 +311,9 @@ body.bourrine .htab, body.mega .htab { color:#ff9900; border-color:rgba(255,150,
 /* Wrapper large qui contient toute la zone d'animation (translateY inclus)
    pour éviter le bug de hit-box qui faisait "fuir" l'orb */
 #mega-orb {
-    position:fixed; z-index:502; width:120px; height:120px;
+    position:fixed; z-index:502; width:90px; height:90px;
     display:none; align-items:center; justify-content:center;
     background:transparent; border:none;
-    /* Le clic sur toute la zone déclenche activateMegaBonus */
 }
 #mega-orb-inner {
     width:90px; height:90px; border-radius:50%;
@@ -322,7 +321,7 @@ body.bourrine .htab, body.mega .htab { color:#ff9900; border-color:rgba(255,150,
     border:3px solid #fff;
     display:flex; align-items:center; justify-content:center; flex-direction:column;
     font-size:9px; font-weight:bold; color:#fff; text-align:center; line-height:1.3;
-    animation:orbBobSlow 2s ease-in-out infinite, megaGlow .8s ease-in-out infinite alternate;
+    animation:megaGlow .8s ease-in-out infinite alternate;
     pointer-events:none;
     flex-shrink:0;
 }
@@ -616,7 +615,7 @@ const SUCCES = [
 let unlockedSucces = new Set();
 let activeCursor = null; // id du curseur actif
 // Mega bonus
-let megaOn=false, mega_t0=0, megaSecTimer=0;
+let megaOn=false, megaActive=false, mega_t0=0, megaSecTimer=0;
 let megaDelay=300+Math.floor(Math.random()*300); // 5-10 min
 let fraudeOn=false, fraude_t0=0, fx=0, fy=0, fvx=0, fvy=0;
 const FRAUDE_MS = 10000;
@@ -716,7 +715,7 @@ function raf() {
         document.getElementById('bourrine-timer-bar').style.width = pct+'%';
         if (el >= BOURRINE_MS) deactivateBourrine();
     }
-    if (megaOn) {
+    if (megaActive) {
         const mel = now - mega_t0;
         const mpct = Math.max(0,(BOURRINE_MS-mel)/BOURRINE_MS*100);
         document.getElementById('mega-timer-bar').style.width = mpct+'%';
@@ -1010,7 +1009,8 @@ function scheduleMega() {
     megaDelay = 300 + Math.floor(Math.random()*300);
 }
 function activateMega() {
-    isBourrine = false; // désactiver bourrine si actif
+    isBourrine = false;
+    megaActive = true;
     document.body.classList.remove('bourrine');
     document.body.classList.add('mega');
     mega_t0 = performance.now();
@@ -1020,7 +1020,7 @@ function activateMega() {
     showNotif('💜 MEGA BONUS x5 — FRANCKY EST EN FEU ! 30 SEC ! 💜');
 }
 function deactivateMega() {
-    megaOn = false; clickMult = baseClickMult; bpsMultiplier = 1;
+    megaActive = false; clickMult = baseClickMult; bpsMultiplier = 1;
     document.body.classList.remove('mega');
     document.getElementById('mega-timer-bar').style.width = '100%';
     setFranckyImg('../bingoudalo/avatar/francky.jpg');
@@ -1199,24 +1199,20 @@ function pickCursor(id) {
 }
 
 function applyCursor() {
-    let css;
-    if (activeCursor === null) {
-        // Curseur haltère cyan par défaut
-        css = document.documentElement.style.getPropertyValue('--cur-n') || '';
-        // Réinitialiser via la feuille de style
-        document.documentElement.style.removeProperty('--active-cursor');
-        document.querySelectorAll('*').forEach(el => el.style.cursor = '');
-        return;
-    }
-    const s = SUCCES.find(x => x.id === activeCursor);
-    if (!s) return;
-    // Injecter le curseur custom via une règle dynamique
+    // Toujours récupérer ou créer la sheet dynamique
     let sheet = document.getElementById('cursor-sheet');
     if (!sheet) {
         sheet = document.createElement('style');
         sheet.id = 'cursor-sheet';
         document.head.appendChild(sheet);
     }
+    if (activeCursor === null) {
+        // Vider la sheet : le CSS de base du fichier reprend la main
+        sheet.textContent = '';
+        return;
+    }
+    const s = SUCCES.find(x => x.id === activeCursor);
+    if (!s) { sheet.textContent = ''; return; }
     sheet.textContent = `* { cursor: ${s.cursorCSS} !important; }`;
 }
 
