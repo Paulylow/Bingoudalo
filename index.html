@@ -22,34 +22,38 @@
 
         /* VUES */
         #authView, #appView { width: 100%; display: none; flex-direction: column; align-items: center; }
-        #authView.active { display: flex; justify-content: center; height: 100vh; }
+        #authView.active { display: flex; justify-content: center; height: 100vh; background-color: rgba(0,0,0,0.5); }
         #appView.active { display: flex; }
 
         /* AUTHENTIFICATION */
-        .auth-card {
-            background: rgba(20, 20, 30, 0.8); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 40px; width: 100%; max-width: 400px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8); text-align: center;
-        }
+        .card-style { background: rgba(20, 20, 30, 0.7); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .auth-card { padding: 40px; width: 100%; max-width: 400px; text-align: center; }
         .auth-logo-img { max-width: 250px; margin-bottom: 25px; filter: drop-shadow(0 0 15px rgba(243, 156, 18, 0.7)); }
         
-        .auth-input { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 15px; color: white; margin-bottom: 15px; font-size: 16px; outline: none; transition: 0.3s; text-align: center;}
+        .auth-input { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; color: white; margin-bottom: 15px; font-size: 16px; outline: none; transition: 0.3s; text-align: center; }
         .auth-input:focus { border-color: var(--orange); box-shadow: 0 0 15px rgba(243, 156, 18, 0.3); }
         
         .auth-btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; cursor: pointer; transition: 0.2s; font-size: 16px; margin-bottom: 10px; }
-        
         .btn-solid { background: var(--orange); color: black; box-shadow: 0 5px 15px rgba(243, 156, 18, 0.3); }
         .btn-solid:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(243, 156, 18, 0.6); }
-        
         .btn-outline { background: transparent; border: 2px solid var(--orange); color: var(--orange); }
-        .btn-outline:hover { background: var(--orange); color: white; box-shadow: 0 0 20px rgba(243, 156, 18, 0.5); }
+        .btn-outline:hover { background: var(--orange); color: black; box-shadow: 0 0 20px rgba(243, 156, 18, 0.5); }
         
         .error-msg { color: #ff4444; font-size: 14px; margin-bottom: 15px; min-height: 20px; font-weight: bold; }
 
         /* BOUTONS FLOTTANTS (PROFIL & LEADERBOARD) */
         #floatingControls {
-            display: none; position: absolute; top: 30px; right: 40px; gap: 20px; z-index: 50; flex-direction: row;
+            display: none; position: absolute; top: 30px; right: 40px; gap: 15px; z-index: 50; flex-direction: row; align-items: center;
         }
+        
+        /* NOUVEAU : PILULE D'ARGENT FLOTTANTE */
+        .floating-wallet {
+            background: rgba(39, 174, 96, 0.2); border: 2px solid #27ae60; color: #2ecc71;
+            padding: 0 20px; height: 50px; border-radius: 25px; display: flex; align-items: center; justify-content: center;
+            font-family: 'Bebas Neue'; font-size: 26px; letter-spacing: 1px; box-shadow: 0 0 15px rgba(39, 174, 96, 0.3);
+            backdrop-filter: blur(5px);
+        }
+
         .floating-btn {
             width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--orange); cursor: pointer;
             box-shadow: 0 0 20px rgba(243, 156, 18, 0.5); transition: 0.3s; background: rgba(0,0,0,0.8);
@@ -124,6 +128,10 @@
 <body>
 
     <div id="floatingControls">
+        <!-- PILULE ARGENT -->
+        <div class="floating-wallet">
+            💰 <span id="floatingWallet" style="margin-left: 8px; margin-top: 3px;">0 M$</span>
+        </div>
         <div class="floating-btn" onclick="openLeaderboardModal()" title="Classement Général">
             🏆
         </div>
@@ -153,6 +161,12 @@
             <img src="images/cdsi-games-logo.png" alt="CDSI GAMES" class="main-logo" onerror="this.src='https://via.placeholder.com/400x150/111/f1c40f?text=CDSI+GAMES'">
             
             <div class="games-grid">
+                <!-- CARREFOUR MAUBEUGE -->
+                <a href="carrefour/index.html" class="game-card" style="border-color: #27ae60; box-shadow: 0 0 20px rgba(39, 174, 96, 0.2);">
+                    <img src="images/carrefour-vignette.png" class="game-thumbnail" onerror="this.src='https://via.placeholder.com/400x190/111/27ae60?text=CARREFOUR+MAUBEUGE'">
+                    <div class="game-info"><h2 style="color: #27ae60; text-shadow: 0 0 10px rgba(39,174,96,0.5);">Carrefour Maubeuge</h2><span>Marché Prédictif</span></div>
+                </a>
+
                 <a href="bingoudalo/index.html" class="game-card">
                     <img src="images/bingoudalo-vignette.png" class="game-thumbnail" onerror="this.src='https://via.placeholder.com/400x190/111/fff?text=BINGOUDALO'">
                     <div class="game-info"><h2>Bingoudalo</h2><span>Jeu multijoueur</span></div>
@@ -176,8 +190,8 @@
                 </a>
 
                 <a href="gamble/index.html" class="game-card">
-                    <img src="images/gamble-vignette.png" class="game-thumbnail" onerror="this.src='https://via.placeholder.com/400x190/111/fff?text=GAMBLE'">
-                    <div class="game-info"><h2>Gamble</h2><span>Casino & Chance</span></div>
+                    <img src="images/gamble-vignette.png" class="game-thumbnail" onerror="this.src='https://via.placeholder.com/400x190/111/fff?text=GAMBLE+LE+JEJ'">
+                    <div class="game-info"><h2>Gamble le JEJ</h2><span>Casino & Chance</span></div>
                 </a>
             </div>
 
@@ -191,6 +205,7 @@
             <div class="modal-header">
                 <img src="" id="modalAvatar" class="modal-avatar">
                 <div class="modal-pseudo" id="modalPseudo">PSEUDO</div>
+                <div style="font-family: 'Bebas Neue'; font-size: 30px; color: #27ae60; margin-top: 10px;">SOLDE : <span id="modalWallet">0</span> M$</div>
             </div>
 
             <div class="modal-grid">
@@ -336,7 +351,8 @@
             pseudo: pseudo, 
             password: hashedPwd, // Enregistrement sécurisé
             avatar: 'bingoudalo/avatar/paulo1.jpg', 
-            kavale_wins: 0, bingoudalo_wins: 0, wanted_wins: 0, franclick_score: 0, maubeugopoly_wins: 0
+            kavale_wins: 0, bingoudalo_wins: 0, wanted_wins: 0, franclick_score: 0, maubeugopoly_wins: 0,
+            wallet: 1000 // Don de bienvenue
         };
 
         const { error } = await sb.from('cdsi_users').insert([newUser]);
@@ -380,9 +396,11 @@
         if(!currentUser) return;
         
         document.getElementById('floatingAvatarSrc').src = currentUser.avatar || 'https://via.placeholder.com/70';
+        document.getElementById('floatingWallet').innerText = Math.floor(currentUser.wallet || 0) + ' M$';
         
         document.getElementById('modalAvatar').src = currentUser.avatar || 'https://via.placeholder.com/100';
         document.getElementById('modalPseudo').innerText = currentUser.pseudo;
+        document.getElementById('modalWallet').innerText = Math.floor(currentUser.wallet || 0);
         
         document.getElementById('editPseudo').value = currentUser.pseudo;
         // On vide le mot de passe par sécurité
