@@ -22,10 +22,7 @@
   
   .booster-pack { cursor: pointer; transition: 0.3s; position: relative; animation: float 3s ease-in-out infinite; display: flex; flex-direction: column; align-items: center; }
   .booster-pack:hover { transform: scale(1.05) translateY(-10px); filter: drop-shadow(0 0 40px rgba(243, 156, 18, 0.8)); }
-  
-  /* Ajustement de l'image du booster */
   .booster-pack img { width: 280px; min-height: 380px; border-radius: 15px; filter: drop-shadow(0 20px 30px rgba(0,0,0,0.9)); object-fit: cover; } 
-  
   .booster-price { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); background: #c0392b; color: white; font-family: 'Bebas Neue'; font-size: 24px; padding: 5px 20px; border-radius: 10px; border: 2px solid #ff4444; box-shadow: 0 10px 20px rgba(0,0,0,0.5); white-space: nowrap;}
   
   @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
@@ -73,7 +70,7 @@
 
   /* ── CLASSEUR (MODAL) ── */
   .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(10px); padding: 20px;}
-  .modal-content { background: #111; border: 2px solid #444; border-radius: 15px; width: 100%; max-width: 1000px; height: 85vh; padding: 30px; position: relative; display: flex; flex-direction: column;}
+  .modal-content { background: #111; border: 2px solid #444; border-radius: 15px; width: 100%; max-width: 1200px; height: 85vh; padding: 30px; position: relative; display: flex; flex-direction: column;}
   .close-btn { position: absolute; top: 15px; right: 20px; font-size: 35px; color: #aaa; cursor: pointer; transition: 0.2s;}
   .close-btn:hover { color: #ff4444; }
   
@@ -85,9 +82,12 @@
   .collection-grid::-webkit-scrollbar { width: 8px; }
   .collection-grid::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
   
-  .coll-card { position: relative; width: 100%; aspect-ratio: 2.5/3.5; border-radius: 8px; overflow: hidden; border: 2px solid #333; background: #000; transition: 0.2s;}
+  .coll-card { position: relative; width: 100%; aspect-ratio: 2.5/3.5; border-radius: 8px; overflow: hidden; border: 2px solid #333; background: #000; transition: 0.2s; cursor: pointer;}
+  .coll-card:hover { transform: scale(1.05); z-index: 10; }
   .coll-card img { width: 100%; height: 100%; object-fit: cover; }
   
+  .coll-card.locked { cursor: not-allowed; }
+  .coll-card.locked:hover { transform: none; }
   .coll-card.locked img { filter: grayscale(100%) brightness(0.2); }
   
   .coll-card.common { border-color: #bdc3c7; }
@@ -97,6 +97,13 @@
   .coll-card.mythic { border-color: #ff0000; box-shadow: 0 0 20px rgba(255,0,0,0.8);}
 
   .dupe-badge { position: absolute; top: 5px; right: 5px; background: #e74c3c; color: white; font-size: 12px; font-weight: bold; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.5); z-index: 5;}
+
+  /* ── ZOOM CARTE (LIGHTBOX) ── */
+  #zoomModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 300; align-items: center; justify-content: center; flex-direction: column; cursor: zoom-out;}
+  #zoomModal img { max-width: 90vw; max-height: 85vh; border-radius: 20px; box-shadow: 0 0 50px rgba(255,255,255,0.2); animation: zoomIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);}
+  .zoom-name { font-family: 'Bebas Neue'; font-size: 30px; margin-top: 20px; color: #fff; letter-spacing: 2px; }
+  
+  @keyframes zoomIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
 </style>
 </head>
@@ -110,22 +117,20 @@
 
 <div class="main-area">
     
-    
     <div class="booster-pack" id="boosterPack" onclick="openPack()">
         <img src="cartes/booster.png" alt="Booster Pack" onerror="this.src='https://via.placeholder.com/250x350/1a0509/f39c12?text=BOOSTER+INTROUVABLE'">
         <div class="booster-price">OUVRIR (500 M$)</div>
     </div>
 
-    
     <div class="reveal-area" id="revealArea"></div>
 
-    
     <div class="action-controls">
         <button class="btn btn-outline" onclick="openCollection()">Mon Classeur 📖</button>
         <button class="btn btn-gold" id="btnAgain" onclick="resetPack()">Ouvrir un autre (500 M$)</button>
     </div>
 </div>
 
+<!-- LE CLASSEUR (MODAL) -->
 <div class="modal" id="collectionModal">
     <div class="modal-content">
         <span class="close-btn" onclick="document.getElementById('collectionModal').style.display='none'">&times;</span>
@@ -135,6 +140,12 @@
         </div>
         <div class="collection-grid" id="collectionGrid"></div>
     </div>
+</div>
+
+<!-- ZOOM SUR LA CARTE (MODAL) -->
+<div id="zoomModal" onclick="closeZoom()">
+    <img src="" id="zoomImg" alt="Zoom Carte">
+    <div class="zoom-name" id="zoomName">Nom de la carte</div>
 </div>
 
 <script>
@@ -149,6 +160,15 @@ let myCollection = {};
 
 const PACK_PRICE = 500;
 
+// Ordre d'importance pour le tri
+const RARITY_VALUES = {
+    'mythic': 5,
+    'legendary': 4,
+    'epic': 3,
+    'rare': 2,
+    'common': 1
+};
+
 // --- GÉNÉRATION AUTOMATIQUE DE LA BASE DE DONNÉES DES CARTES ---
 const CARDS_DB = [];
 const raritiesCycle = ['common', 'rare', 'epic', 'legendary'];
@@ -158,18 +178,18 @@ for (let i = 1; i <= 40; i++) {
     let rarityIndex = (i - 1) % 4; 
     CARDS_DB.push({
         id: i,
-        name: "Carte " + i,
+        name: "Carte n°" + i,
         rarity: raritiesCycle[rarityIndex],
         img: "cartes/" + i + ".png" 
     });
 }
 
-// Cartes Mythiques : 100, 101, 102 ET 103 (vu sur ton screenshot !)
+// Cartes Mythiques : 100, 101, 102 ET 103
 const mythics = [100, 101, 102, 103];
 mythics.forEach(i => {
     CARDS_DB.push({
         id: i,
-        name: "Mythique " + i,
+        name: "Mythique n°" + i,
         rarity: "mythic",
         img: "cartes/" + i + ".png"
     });
@@ -287,7 +307,17 @@ function openCollection() {
     
     let ownedCount = 0;
 
-    CARDS_DB.forEach(card => {
+    // Trier les cartes par Rareté (Décroissant) puis par ID
+    const sortedCards = [...CARDS_DB].sort((a, b) => {
+        let valA = RARITY_VALUES[a.rarity];
+        let valB = RARITY_VALUES[b.rarity];
+        if (valA !== valB) {
+            return valB - valA; // Plus grand en premier (Mythic > Legendary...)
+        }
+        return a.id - b.id; // En cas d'égalité, tri par ID (personnage)
+    });
+
+    sortedCards.forEach(card => {
         let qty = myCollection[card.id] || 0;
         let isOwned = qty > 0;
         
@@ -295,9 +325,12 @@ function openCollection() {
 
         let lockedClass = isOwned ? card.rarity : 'locked';
         let badgeHTML = (qty > 1) ? `<div class="dupe-badge">${qty}</div>` : '';
+        
+        // Si on possède la carte, on ajoute l'événement de zoom, sinon rien
+        let clickEvent = isOwned ? `onclick="openZoom('${card.img}', '${card.name}', '${card.rarity}')"` : '';
 
         grid.innerHTML += `
-            <div class="coll-card ${lockedClass}" title="Carte ${card.id} (${card.rarity})">
+            <div class="coll-card ${lockedClass}" title="Carte ${card.id} (${card.rarity})" ${clickEvent}>
                 ${badgeHTML}
                 <img src="${card.img}" onerror="this.src='https://via.placeholder.com/130x182/222/fff?text=${card.id}'">
             </div>
@@ -306,6 +339,34 @@ function openCollection() {
 
     document.getElementById('collProgress').innerText = `${ownedCount} / ${CARDS_DB.length}`;
     document.getElementById('collectionModal').style.display = 'flex';
+}
+
+// --- GESTION DU ZOOM ---
+function openZoom(imgSrc, name, rarity) {
+    const zoomModal = document.getElementById('zoomModal');
+    const zoomImg = document.getElementById('zoomImg');
+    const zoomName = document.getElementById('zoomName');
+
+    zoomImg.src = imgSrc;
+    
+    let rarityText = rarity === 'mythic' ? 'MYTHIQUE' : (rarity === 'legendary' ? 'LÉGENDAIRE' : (rarity === 'epic' ? 'ÉPIQUE' : (rarity === 'rare' ? 'RARE' : 'COMMUNE')));
+    
+    // Définir la couleur du texte selon la rareté
+    let textColor = '#bdc3c7';
+    if(rarity === 'rare') textColor = '#3498db';
+    if(rarity === 'epic') textColor = '#9b59b6';
+    if(rarity === 'legendary') textColor = '#f1c40f';
+    if(rarity === 'mythic') textColor = '#ff0000';
+
+    zoomName.innerHTML = `${name} <br> <span style="font-size: 18px; color: ${textColor};">${rarityText}</span>`;
+    
+    zoomImg.style.boxShadow = `0 0 50px ${textColor}`; // Aura colorée sur le zoom
+
+    zoomModal.style.display = 'flex';
+}
+
+function closeZoom() {
+    document.getElementById('zoomModal').style.display = 'none';
 }
 </script>
 </body>
