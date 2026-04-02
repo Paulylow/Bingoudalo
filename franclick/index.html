@@ -435,7 +435,7 @@ function spawnFx(cx, cy) {
 }
 
 /* ── Variables jeu ── */
-let score=0, bps=0, clickMult=1, totalClicks=0;
+let score=0, bps=0, clickMult=1, baseClickMult=1, totalClicks=0;
 let isBourrine=false, bourrine_t0=0;
 const BOURRINE_MS = 30000;
 
@@ -641,7 +641,9 @@ function recalcBPS() {
     // clickMult de base = 1, +0.1 par feuille achetée (avec bonus de palier)
     const feuille = buildings[0];
     const clickBoostTotal = feuille.count * feuille.clickBonus * getRowMultiplier(feuille);
-    clickMult = parseFloat((1 + clickBoostTotal).toFixed(4));
+    baseClickMult = parseFloat((1 + clickBoostTotal).toFixed(4));
+    // Si bourrine active, on garde le x2 sur la nouvelle base
+    clickMult = isBourrine ? baseClickMult * 2 : baseClickMult;
 }
 function updateScoreUI() {
     document.getElementById('scoreDisplay').textContent = Math.floor(score).toLocaleString('fr-FR');
@@ -767,12 +769,12 @@ function scheduleBonus() {
 
 function activateBourrine() {
     isBourrine = true; bourrine_t0 = performance.now();
-    clickMult = 2; document.body.classList.add('bourrine');
+    clickMult = baseClickMult * 2; document.body.classList.add('bourrine');
     flash('rgba(255,20,0,.4)');
     showNotif('🔥 BOURRINE FRANCKY ! x2 PENDANT 30 SEC ! 🔥');
 }
 function deactivateBourrine() {
-    isBourrine = false; clickMult = 1;
+    isBourrine = false; clickMult = baseClickMult;
     document.body.classList.remove('bourrine');
     document.getElementById('bourrine-timer-bar').style.width = '100%';
     showNotif('😤 Fin du mode BOURRINE... repose-toi !');
