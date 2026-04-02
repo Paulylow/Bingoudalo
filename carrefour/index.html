@@ -45,7 +45,7 @@
   .modal-content { background: #1a1a24; border: 1px solid #333; border-radius: 16px; width: 100%; max-width: 800px; padding: 30px; position: relative; max-height: 90vh; overflow-y: auto;}
   .close-btn { position: absolute; top: 20px; right: 20px; font-size: 24px; color: #888; cursor: pointer; }
   
-  /* FIX CHART JS */
+  /* CONTENEUR DU GRAPHIQUE */
   .chart-container { position: relative; width: 100%; height: 300px; margin-top: 20px; margin-bottom: 30px;}
   
   .bet-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #111; padding: 20px; border-radius: 12px;}
@@ -151,7 +151,7 @@ let myPseudo = '';
 let myWallet = 0;
 let marketsData = {};
 let currentMarketId = null;
-let chartInstance = null;
+let chartInstance = null; // Graphique actuel
 
 window.onload = async () => {
     myPseudo = localStorage.getItem('cdsi_logged_user');
@@ -240,7 +240,8 @@ async function createMarket() {
         poolNo: 0,
         resolved: false,
         winner: null,
-        history: [{ time: new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'}), yesPct: 50 }],
+        // Ajout des secondes pour bien séparer les paris sur le graphique
+        history: [{ time: new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit', second:'2-digit'}), yesPct: 50 }],
         bets: {} 
     };
 
@@ -266,7 +267,7 @@ function openDetailModal(id) {
 
     updateDetailModalData(m);
     
-    // Le Timeout est crucial pour laisser le temps au Modal de s'afficher avant de dessiner la courbe
+    // Léger délai pour laisser le modal prendre sa taille physique avant de dessiner la courbe
     setTimeout(() => {
         initChart(m.history);
     }, 50);
@@ -275,7 +276,12 @@ function openDetailModal(id) {
 function closeDetailModal() {
     document.getElementById('detailModal').style.display = 'none';
     currentMarketId = null;
-    if (chartInstance) chartInstance.destroy();
+    
+    // Destruction totale du graphique pour éviter les conflits au prochain clic
+    if (chartInstance) {
+        chartInstance.destroy();
+        chartInstance = null;
+    }
     
     document.getElementById('betYesAmount').value = "";
     document.getElementById('betNoAmount').value = "";
@@ -288,21 +294,19 @@ function updateDetailModalData(m) {
     let yesPct = totalPool === 0 ? 50 : Math.round((m.poolYes / totalPool) * 100);
     let noPct = 100 - yesPct;
     
-    // Calcul des cotes actuelles
     let coteYes = totalPool === 0 ? 2.00 : (m.poolYes === 0 ? 0 : totalPool / m.poolYes);
     let coteNo = totalPool === 0 ? 2.00 : (m.poolNo === 0 ? 0 : totalPool / m.poolNo);
     
     document.getElementById('detailYesPct').innerText = yesPct;
     document.getElementById('detailNoPct').innerText = noPct;
 
-    // Affichage des cotes (Si pool = 0, on met Max)
     document.getElementById('detailYesCote').innerText = (totalPool === 0) ? "2.00" : (m.poolYes === 0 ? "Max" : coteYes.toFixed(2));
     document.getElementById('detailNoCote').innerText = (totalPool === 0) ? "2.00" : (m.poolNo === 0 ? "Max" : coteNo.toFixed(2));
 
-    // Mettre à jour les calculs de gains potentiels en direct si le champ est rempli
     calcPotential('yes');
     calcPotential('no');
 
+    // On met à jour le graphique QUE S'IL EXISTE (donc pas au premier tick d'ouverture)
     if (chartInstance) {
         chartInstance.data.labels = m.history.map(h => h.time);
         chartInstance.data.datasets[0].data = m.history.map(h => h.yesPct);
@@ -310,7 +314,6 @@ function updateDetailModalData(m) {
     }
 }
 
-// --- CALCUL DU GAIN POTENTIEL EN TEMPS RÉEL ---
 function calcPotential(choice) {
     const inputId = choice === 'yes' ? 'betYesAmount' : 'betNoAmount';
     const displayId = choice === 'yes' ? 'potentialYes' : 'potentialNo';
@@ -330,14 +333,10 @@ function calcPotential(choice) {
     let currentYes = m.poolYes;
     let currentNo = m.poolNo;
     
-    // Simulation de l'ajout de la mise dans le pool
     let newTotal = currentTotal + amount;
     let newPool = choice === 'yes' ? (currentYes + amount) : (currentNo + amount);
     
-    // Part du gâteau = (Ma mise / Nouveau Pool) * Nouveau Total
     let potentialWin = (amount / newPool) * newTotal;
-    
-    // La cote finale que j'obtiens réellement (elle baisse car j'ajoute ma mise au pool)
     let effCote = newTotal / newPool;
     
     displayEl.innerHTML = `Gain potentiel : <strong>${potentialWin.toFixed(2)} M$</strong><br><span style="font-size:11px; color:#888;">(Cote finale estimée : ${effCote.toFixed(2)})</span>`;
@@ -356,11 +355,12 @@ function initChart(historyData) {
                 data: historyData.map(h => h.yesPct),
                 borderColor: '#27ae60',
                 backgroundColor: 'rgba(39, 174, 96, 0.1)',
-                borderWidth: 2,
+                borderWidth: 3,
                 fill: true,
-                tension: 0.3,
-                pointRadius: 0,
-                pointHoverRadius: 5
+                tension: 0.1, // Courbe plus stricte (façon Polymarket)
+                pointRadius: 3, // ON AFFICHE LES POINTS
+                pointBackgroundColor: '#27ae60',
+                pointHoverRadius: 6
             }]
         },
         options: {
@@ -401,7 +401,9 @@ async function placeBet(choice) {
 
     let totalPool = m.poolYes + m.poolNo;
     let yesPct = Math.round((m.poolYes / totalPool) * 100);
-    m.history.push({ time: new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'}), yesPct: yesPct });
+    
+    // Ajout dans l'historique avec les SECONDES
+    m.history.push({ time: new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit', second:'2-digit'}), yesPct: yesPct });
 
     await saveMarketState(state);
     
