@@ -469,8 +469,8 @@ body.mega #mega-timer { display:block; }
             <div class="ring"></div>
             <div class="ring"></div>
             <div class="francky-btn" id="franckyBtn" onclick="clickFrancky(event)">
-                <img src="../bingoudalo/avatar/francky.jpg" alt="Francky"
-                     onerror="this.style.display='none'">
+                <img id="francky-img" src="../bingoudalo/avatar/francky.jpg" alt="Francky"
+                     onerror="this.src='../bingoudalo/avatar/francky.jpg'">
             </div>
         </div>
     </div>
@@ -975,8 +975,10 @@ function deactivateBourrine() {
 
 // Changer l'image du cercle Francky
 function setFranckyImg(src) {
-    const img = document.querySelector('.francky-btn img');
-    if (img) img.src = src;
+    const img = document.getElementById('francky-img');
+    if (!img) return;
+    img.onerror = () => { img.src = '../bingoudalo/avatar/francky.jpg'; img.onerror = null; };
+    img.src = src;
 }
 
 // ── MEGA BONUS ──
@@ -1015,7 +1017,7 @@ function activateMega() {
     document.body.classList.add('mega');
     mega_t0 = performance.now();
     clickMult = baseClickMult * 5; bpsMultiplier = 5;
-    setFranckyImg('images/francky_megabonus.jpg');
+    setFranckyImg('images/franck_megabonus.jpg');
     flash('rgba(120,0,200,.45)');
     showNotif('💜 MEGA BONUS x5 — FRANCKY EST EN FEU ! 30 SEC ! 💜');
 }
