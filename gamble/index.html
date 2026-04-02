@@ -18,6 +18,7 @@ body {
 
 #bg-canvas { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; opacity:0.07; }
 
+/* ── HUB ── */
 #hub-link {
     position:fixed; top:14px; left:16px; z-index:200;
     display:flex; align-items:center; gap:6px;
@@ -28,153 +29,344 @@ body {
 }
 #hub-link:hover { background:rgba(0,255,255,0.1); border-color:#00FFFF; }
 
+/* ── HEADER ── */
 header {
-    text-align:center; padding:12px 12px 12px 140px;
-    background:rgba(0,0,0,0.65); border-bottom:2px solid #1f2833;
-    position:relative; z-index:10; flex-shrink:0;
+    text-align:center; padding:10px 12px;
+    background:rgba(0,0,0,0.75); border-bottom:2px solid #1f2833;
+    position:relative; z-index:150; flex-shrink:0;
+    height:70px; display:flex; flex-direction:column; align-items:center; justify-content:center;
 }
-h1 { font-family:'Bebas Neue'; font-size:38px; letter-spacing:4px; background:linear-gradient(90deg,#00FFFF,#FF00FF); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-.header-sub { font-size:12px; color:#555; letter-spacing:2px; font-family:'Bebas Neue'; margin-top:2px; }
+h1 { font-family:'Bebas Neue'; font-size:36px; letter-spacing:4px; background:linear-gradient(90deg,#00FFFF,#FF00FF); -webkit-background-clip:text; -webkit-text-fill-color:transparent; line-height:1; }
+.header-sub { font-size:11px; color:#444; letter-spacing:2px; font-family:'Bebas Neue'; margin-top:2px; }
 
-.game-wrapper { flex:1; display:flex; align-items:center; justify-content:center; position:relative; z-index:1; padding:16px 140px 16px 260px; gap:22px; }
-
-/* ── LEADERBOARD FIXE GAUCHE ── */
+/* ── LEADERBOARD FIXE GAUCHE — démarre exactement sous le header ── */
 .leaderboard {
-    position:fixed; left:0; top:80px; bottom:0; width:245px; z-index:100;
-    background:linear-gradient(180deg, #0d0f1a 0%, #0b0c10 100%);
-    border-right:1px solid #1f2833;
-    padding:18px 14px;
+    position:fixed; left:0; top:70px; bottom:0; width:250px; z-index:100;
+    background:linear-gradient(180deg, #0c0e18 0%, #0b0c10 100%);
+    border-right:2px solid #1a1a2e;
     display:flex; flex-direction:column;
     overflow:hidden;
 }
+
+/* Bande déco haut du LB */
+.lb-top-bar {
+    height:3px; flex-shrink:0;
+    background:linear-gradient(90deg, transparent, #FFD700, transparent);
+    opacity:0.4;
+}
+
+.lb-inner { padding:16px 14px; display:flex; flex-direction:column; gap:0; flex:1; overflow:hidden; }
+
 .lb-header {
-    display:flex; flex-direction:column; align-items:center; gap:4px;
-    border-bottom:1px solid #1f2833; padding-bottom:12px; margin-bottom:10px; flex-shrink:0;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    margin-bottom:14px; flex-shrink:0;
 }
-.lb-title { font-family:'Bebas Neue'; font-size:17px; letter-spacing:3px; color:#FFD700; }
-.lb-week { font-family:'Bebas Neue'; font-size:10px; letter-spacing:2px; color:#666; background:rgba(255,215,0,0.06); border:1px solid rgba(255,215,0,0.15); border-radius:4px; padding:2px 8px; }
-.lb-reset { font-size:9px; color:#2a2a3a; font-family:'Bebas Neue'; letter-spacing:1px; margin-top:1px; }
+.lb-title { font-family:'Bebas Neue'; font-size:20px; letter-spacing:4px; color:#FFD700; }
+.lb-meta { display:flex; gap:8px; align-items:center; }
+.lb-week {
+    font-family:'Bebas Neue'; font-size:10px; letter-spacing:2px; color:#666;
+    background:rgba(255,215,0,0.07); border:1px solid rgba(255,215,0,0.2);
+    border-radius:4px; padding:2px 8px;
+}
+.lb-reset { font-size:9px; color:#2a2a3a; font-family:'Bebas Neue'; letter-spacing:1px; }
 
-.lb-list { display:flex; flex-direction:column; gap:4px; overflow-y:auto; flex:1; }
+/* Séparateur doré */
+.lb-sep { height:1px; background:linear-gradient(90deg,transparent,rgba(255,215,0,0.2),transparent); margin-bottom:12px; flex-shrink:0; }
+
+.lb-list { display:flex; flex-direction:column; gap:5px; overflow-y:auto; flex:1; padding-right:2px; }
 .lb-list::-webkit-scrollbar { width:3px; }
-.lb-list::-webkit-scrollbar-thumb { background:#2a2a3a; border-radius:2px; }
+.lb-list::-webkit-scrollbar-thumb { background:#222; border-radius:2px; }
 
+/* Entrée LB */
 .lb-item {
-    display:flex; align-items:center; gap:7px;
-    padding:6px 8px; border-radius:6px;
-    background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.03);
+    display:flex; flex-direction:column; gap:4px;
+    padding:8px 10px; border-radius:8px;
+    background:rgba(255,255,255,0.02);
+    border:1px solid rgba(255,255,255,0.04);
+    transition:background 0.2s;
+    position:relative; overflow:hidden;
 }
-.lb-item.lb-me { border-color:rgba(0,255,255,0.25); background:rgba(0,255,255,0.04); }
-.lb-item.lb-top1 { border-color:rgba(255,215,0,0.45); background:rgba(255,215,0,0.08); }
-.lb-item.lb-top2 { border-color:rgba(192,192,192,0.3); background:rgba(192,192,192,0.04); }
-.lb-item.lb-top3 { border-color:rgba(205,127,50,0.3); background:rgba(205,127,50,0.04); }
+.lb-item::before {
+    content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+    border-radius:2px 0 0 2px; background:#333;
+}
+.lb-item.lb-top1::before { background:#FFD700; }
+.lb-item.lb-top2::before { background:#C0C0C0; }
+.lb-item.lb-top3::before { background:#CD7F32; }
+.lb-item.lb-me::before { background:#00FFFF; }
 
-.lb-rank { font-family:'Bebas Neue'; font-size:15px; width:20px; text-align:center; flex-shrink:0; color:#333; }
+.lb-item.lb-me { border-color:rgba(0,255,255,0.2); background:rgba(0,255,255,0.03); }
+.lb-item.lb-top1 { border-color:rgba(255,215,0,0.3); background:rgba(255,215,0,0.06); }
+.lb-item.lb-top2 { border-color:rgba(192,192,192,0.2); background:rgba(192,192,192,0.03); }
+.lb-item.lb-top3 { border-color:rgba(205,127,50,0.2); background:rgba(205,127,50,0.03); }
+
+.lb-row1 { display:flex; align-items:center; gap:6px; }
+.lb-rank { font-family:'Bebas Neue'; font-size:16px; width:22px; text-align:center; flex-shrink:0; color:#333; }
 .lb-item.lb-top1 .lb-rank { color:#FFD700; }
 .lb-item.lb-top2 .lb-rank { color:#C0C0C0; }
 .lb-item.lb-top3 .lb-rank { color:#CD7F32; }
-
-.lb-pseudo { flex:1; font-family:'Bebas Neue'; font-size:12px; letter-spacing:0.5px; color:#888; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.lb-pseudo { flex:1; font-family:'Bebas Neue'; font-size:13px; letter-spacing:0.5px; color:#777; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .lb-item.lb-me .lb-pseudo { color:#00FFFF; }
 .lb-item.lb-top1 .lb-pseudo { color:#FFD700; }
 .lb-item.lb-top2 .lb-pseudo { color:#C0C0C0; }
+.lb-amount { font-family:'Bebas Neue'; font-size:15px; color:#FFD700; flex-shrink:0; letter-spacing:1px; }
+.lb-item.lb-top1 .lb-amount { font-size:17px; text-shadow:0 0 10px rgba(255,215,0,0.5); }
 
-.lb-amount { font-family:'Bebas Neue'; font-size:13px; color:#FFD700; flex-shrink:0; white-space:nowrap; }
-.lb-item.lb-top1 .lb-amount { font-size:14px; text-shadow:0 0 8px rgba(255,215,0,0.5); }
+/* Ligne combo */
+.lb-combo { display:flex; gap:3px; align-items:center; padding-left:28px; }
+.lb-combo img { width:18px; height:18px; object-fit:cover; border-radius:3px; border:1px solid rgba(255,255,255,0.08); opacity:0.75; }
+.lb-combo-label { font-family:'Bebas Neue'; font-size:9px; color:#333; letter-spacing:1px; margin-left:4px; }
+.lb-item.lb-top1 .lb-combo img { opacity:1; border-color:rgba(255,215,0,0.3); }
+.lb-item.lb-me .lb-combo img { opacity:0.9; border-color:rgba(0,255,255,0.2); }
+.lb-item.lb-top1 .lb-combo-label { color:#aa8800; }
 
-.lb-empty { font-family:'Bebas Neue'; font-size:11px; color:#2a2a3a; letter-spacing:2px; text-align:center; padding:24px 0; }
+.lb-empty { font-family:'Bebas Neue'; font-size:11px; color:#2a2a3a; letter-spacing:2px; text-align:center; padding:30px 0; line-height:1.8; }
 
-.lb-loading { display:flex; align-items:center; justify-content:center; padding:24px 0; gap:0; }
+.lb-loading { display:flex; align-items:center; justify-content:center; padding:30px 0; }
 .lb-loading-dot { width:5px; height:5px; border-radius:50%; background:#FFD700; margin:0 3px; opacity:0.3; animation:ldot 1s ease-in-out infinite; }
 .lb-loading-dot:nth-child(2) { animation-delay:0.2s; }
 .lb-loading-dot:nth-child(3) { animation-delay:0.4s; }
 @keyframes ldot{0%,100%{opacity:0.2;transform:scale(0.8)}50%{opacity:1;transform:scale(1.2)}}
 
-@keyframes lbFlash{0%{background:rgba(255,215,0,0.22)}100%{background:rgba(255,215,0,0.08)}}
-.lb-item.lb-new { animation:lbFlash 1.4s ease-out forwards; }
+@keyframes lbFlash{0%{box-shadow:0 0 20px rgba(255,215,0,0.5)}100%{box-shadow:none}}
+.lb-item.lb-new { animation:lbFlash 1.5s ease-out forwards; }
 
-/* ── MACHINE ── */
-.machine {
-    background:linear-gradient(160deg, #0d0f1a 0%, #12141f 100%);
-    border:2px solid #2a2a3a; border-radius:20px; padding:30px 36px 36px;
-    box-shadow:0 0 60px rgba(0,255,255,0.08), 0 0 120px rgba(255,0,255,0.04), inset 0 0 40px rgba(0,0,0,0.5);
-    display:flex; flex-direction:column; align-items:center; gap:24px;
-    min-width:520px; position:relative;
+/* ── LAYOUT PRINCIPAL ── */
+.game-wrapper {
+    flex:1; display:flex; align-items:center; justify-content:center;
+    position:relative; z-index:1;
+    padding:20px 150px 20px 270px;
+    gap:24px;
 }
-.machine::before { content:''; position:absolute; inset:-1px; border-radius:20px; background:linear-gradient(135deg, rgba(0,255,255,0.2), transparent 40%, rgba(255,0,255,0.15)); pointer-events:none; z-index:-1; }
-.machine-title { font-family:'Bebas Neue'; font-size:16px; letter-spacing:4px; color:#444; text-align:center; }
 
-.reels-frame { background:#050608; border:3px solid #1a1a2e; border-radius:12px; padding:10px; box-shadow:inset 0 0 30px rgba(0,0,0,0.8), 0 0 20px rgba(0,255,255,0.05); position:relative; overflow:hidden; }
-.reels-frame::after { content:''; position:absolute; top:50%; left:0; right:0; height:3px; background:linear-gradient(90deg, transparent, rgba(0,255,255,0.6), rgba(255,0,255,0.6), transparent); transform:translateY(-50%); pointer-events:none; z-index:10; }
-.reels { display:flex; gap:10px; }
-.reel-container { width:110px; height:110px; overflow:hidden; border-radius:8px; background:#08090e; border:1px solid #1f2833; position:relative; }
+/* ── MACHINE (plus grande, meilleur design) ── */
+.machine {
+    position:relative;
+    background:linear-gradient(160deg, #0e1020 0%, #131525 100%);
+    border:2px solid #252535;
+    border-radius:24px;
+    padding:32px 40px 40px;
+    box-shadow:
+        0 0 80px rgba(0,255,255,0.07),
+        0 0 160px rgba(255,0,255,0.04),
+        inset 0 0 60px rgba(0,0,0,0.6),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+    display:flex; flex-direction:column; align-items:center; gap:22px;
+    min-width:580px;
+}
+
+/* Contour lumineux dégradé */
+.machine::before {
+    content:''; position:absolute; inset:-2px; border-radius:25px; z-index:-1;
+    background:linear-gradient(135deg,
+        rgba(0,255,255,0.35) 0%,
+        rgba(0,255,255,0.05) 30%,
+        rgba(255,0,255,0.05) 70%,
+        rgba(255,0,255,0.25) 100%);
+    pointer-events:none;
+}
+
+/* Déco coins */
+.machine::after {
+    content:''; position:absolute; inset:6px; border-radius:20px;
+    border:1px solid rgba(255,255,255,0.03);
+    pointer-events:none;
+}
+
+.machine-title {
+    font-family:'Bebas Neue'; font-size:13px; letter-spacing:6px;
+    color:#333; text-align:center;
+    text-transform:uppercase;
+}
+
+/* ── FENÊTRE ROULEAUX ── */
+.reels-frame {
+    background:#040508;
+    border:3px solid #16172a;
+    border-radius:16px;
+    padding:12px;
+    box-shadow:
+        inset 0 0 50px rgba(0,0,0,0.9),
+        0 0 30px rgba(0,255,255,0.04),
+        inset 0 2px 0 rgba(255,255,255,0.03);
+    position:relative;
+    overflow:hidden;
+}
+
+/* Lignes décoratives haut/bas de la fenêtre */
+.reels-frame::before {
+    content:'';
+    position:absolute; left:12px; right:12px; top:50%;
+    height:140px; transform:translateY(-50%);
+    border:1px solid rgba(255,255,255,0.04);
+    border-radius:6px; pointer-events:none; z-index:11;
+}
+
+/* Ligne de payline */
+.reels-frame::after {
+    content:''; position:absolute;
+    top:50%; left:0; right:0; height:3px;
+    background:linear-gradient(90deg, transparent 5%, rgba(0,255,255,0.5) 40%, rgba(255,0,255,0.5) 60%, transparent 95%);
+    transform:translateY(-50%);
+    pointer-events:none; z-index:12;
+}
+
+.reels { display:flex; gap:12px; }
+
+.reel-container {
+    width:140px; height:140px;
+    overflow:hidden; border-radius:10px;
+    background:#06070c;
+    border:1px solid #1a1b2e;
+    position:relative;
+    box-shadow:inset 0 0 20px rgba(0,0,0,0.8);
+}
+
+/* Ombres haut/bas du rouleau pour effet profondeur */
+.reel-container::before,
+.reel-container::after {
+    content:''; position:absolute; left:0; right:0; height:30px; z-index:5; pointer-events:none;
+}
+.reel-container::before { top:0; background:linear-gradient(180deg,rgba(4,5,8,0.9),transparent); }
+.reel-container::after { bottom:0; background:linear-gradient(0deg,rgba(4,5,8,0.9),transparent); }
+
 .reel { display:flex; flex-direction:column; }
-.reel-cell { width:110px; height:110px; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:#08090e; overflow:hidden; }
-.reel-cell img { width:100%; height:100%; object-fit:cover; border-radius:4px; pointer-events:none; display:block; }
+.reel-cell { width:140px; height:140px; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:#06070c; overflow:hidden; }
+.reel-cell img { width:100%; height:100%; object-fit:cover; pointer-events:none; display:block; }
 
-.payline { position:absolute; top:50%; left:-6px; right:-6px; height:2px; background:rgba(0,255,255,0.2); transform:translateY(-50%); pointer-events:none; z-index:5; transition:background 0.3s; }
-.payline.win { background:rgba(255,215,0,0.7); box-shadow:0 0 12px #FFD700; }
+/* ── PAYLINE ── */
+.payline { display:none; } /* géré par reels-frame::after */
+.payline.win { /* on anime le reels-frame border au lieu */ }
+.reels-frame.win-frame { border-color:rgba(255,215,0,0.5); box-shadow:inset 0 0 50px rgba(0,0,0,0.9), 0 0 30px rgba(255,215,0,0.2); }
+.reels-frame.win-frame::after { background:linear-gradient(90deg, transparent 5%, rgba(255,215,0,0.8) 40%, rgba(255,215,0,0.8) 60%, transparent 95%); box-shadow:0 0 12px #FFD700; }
 
-.stats-row { display:flex; gap:24px; align-items:center; }
-.stat-box { background:rgba(0,0,0,0.5); border:1px solid #1f2833; border-radius:8px; padding:10px 18px; text-align:center; min-width:110px; }
-.stat-label { font-family:'Bebas Neue'; font-size:11px; letter-spacing:2px; color:#555; margin-bottom:4px; }
-.stat-value { font-family:'Bebas Neue'; font-size:28px; color:#fff; text-shadow:0 0 12px rgba(0,255,255,0.4); transition:color 0.3s, text-shadow 0.3s; }
+/* ── STATS ── */
+.stats-row { display:flex; gap:16px; align-items:center; width:100%; }
+.stat-box {
+    background:rgba(0,0,0,0.6);
+    border:1px solid #1a1b2e;
+    border-radius:10px; padding:10px 16px;
+    text-align:center; flex:1;
+    position:relative; overflow:hidden;
+}
+.stat-box::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent); }
+.stat-label { font-family:'Bebas Neue'; font-size:10px; letter-spacing:2.5px; color:#3a3a5a; margin-bottom:4px; }
+.stat-value { font-family:'Bebas Neue'; font-size:30px; color:#fff; text-shadow:0 0 12px rgba(0,255,255,0.3); transition:color 0.3s, text-shadow 0.3s; line-height:1; }
 .stat-value.win { color:#FFD700; text-shadow:0 0 20px #FFD700; }
-#credits-val { color:#2ecc71; text-shadow:0 0 12px rgba(46,204,113,0.5); }
+#credits-val { color:#2ecc71; text-shadow:0 0 12px rgba(46,204,113,0.4); }
 
-.bet-controls { display:flex; gap:8px; align-items:center; }
-.bet-btn { font-family:'Bebas Neue'; font-size:13px; letter-spacing:1px; color:#FF00FF; background:transparent; border:1px solid rgba(255,0,255,0.4); border-radius:5px; padding:4px 12px; transition:0.15s; cursor:pointer; }
-.bet-btn:hover { background:rgba(255,0,255,0.15); border-color:#FF00FF; }
-.bet-btn.active { background:rgba(255,0,255,0.2); border-color:#FF00FF; color:#fff; }
+/* ── MISE ── */
+.bet-controls { display:flex; gap:8px; align-items:center; width:100%; }
+.bet-label { font-family:'Bebas Neue'; font-size:11px; letter-spacing:2px; color:#333; flex-shrink:0; }
+.bet-btn {
+    font-family:'Bebas Neue'; font-size:13px; letter-spacing:1px;
+    color:#FF00FF; background:transparent;
+    border:1px solid rgba(255,0,255,0.3); border-radius:6px;
+    padding:5px 12px; transition:0.15s; cursor:pointer; flex:1;
+}
+.bet-btn:hover { background:rgba(255,0,255,0.12); border-color:#FF00FF; }
+.bet-btn.active { background:rgba(255,0,255,0.18); border-color:#FF00FF; color:#fff; box-shadow:0 0 10px rgba(255,0,255,0.2); }
 .bet-btn:disabled { opacity:0.3; cursor:not-allowed; }
 
-.lever-area { display:flex; flex-direction:column; align-items:center; gap:0; position:relative; }
-.lever-track { width:18px; height:200px; background:linear-gradient(180deg, #1a1a2e, #0d0f1a); border:1px solid #2a2a3a; border-radius:9px; position:relative; box-shadow:inset 0 0 10px rgba(0,0,0,0.6); }
-.lever-ball { width:40px; height:40px; border-radius:50%; background:radial-gradient(circle at 38% 35%, #ff6666, #cc1111 50%, #880000); border:2px solid rgba(255,255,255,0.3); box-shadow:0 0 20px rgba(255,30,0,0.6), 0 4px 10px rgba(0,0,0,0.5); position:absolute; left:50%; top:10px; transform:translateX(-50%); transition:top 0.1s ease, box-shadow 0.2s; cursor:pointer; }
-.lever-ball:hover { box-shadow:0 0 30px rgba(255,30,0,0.9), 0 4px 10px rgba(0,0,0,0.5); top:6px; }
-.lever-ball.pulled { top:150px; }
-.lever-ball.spinning { cursor:not-allowed; }
-.lever-arm { width:4px; height:100%; position:absolute; left:50%; transform:translateX(-50%); background:linear-gradient(180deg, #333, #222); border-radius:2px; z-index:-1; }
-.lever-label { font-family:'Bebas Neue'; font-size:11px; letter-spacing:2px; color:#333; margin-top:8px; text-align:center; }
-.lever-fixed { position:fixed; right:60px; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; align-items:center; z-index:50; }
-
-.spin-btn { font-family:'Bebas Neue'; font-size:20px; letter-spacing:3px; background:linear-gradient(135deg, rgba(0,255,255,0.15), rgba(255,0,255,0.15)); border:2px solid #00FFFF; color:#00FFFF; border-radius:10px; padding:12px 36px; transition:0.2s; width:100%; cursor:pointer; box-shadow:0 0 20px rgba(0,255,255,0.1); }
-.spin-btn:hover:not(:disabled) { background:linear-gradient(135deg, rgba(0,255,255,0.3), rgba(255,0,255,0.2)); box-shadow:0 0 35px rgba(0,255,255,0.25); transform:scale(1.02); }
-.spin-btn:disabled { opacity:0.4; cursor:not-allowed; transform:none; border-color:#555; color:#555; background:#222; box-shadow:none; }
-
-.result-msg { font-family:'Bebas Neue'; font-size:22px; letter-spacing:3px; min-height:32px; text-align:center; color:#555; transition:color 0.3s, text-shadow 0.3s; }
+/* ── RÉSULTAT ── */
+.result-msg {
+    font-family:'Bebas Neue'; font-size:24px; letter-spacing:3px;
+    min-height:34px; text-align:center; color:#333;
+    transition:color 0.3s, text-shadow 0.3s;
+}
 .result-msg.win { color:#FFD700; text-shadow:0 0 20px #FFD700; animation:msgPop 0.4s cubic-bezier(.17,.89,.32,1.28); }
 .result-msg.lose { color:#ff4444; }
 .result-msg.jackpot { color:#FF00FF; text-shadow:0 0 30px #FF00FF; animation:msgPop 0.4s cubic-bezier(.17,.89,.32,1.28); }
 @keyframes msgPop{0%{transform:scale(0.7);opacity:0}100%{transform:scale(1);opacity:1}}
 
-/* ── TABLEAU GAINS + HISTORIQUE ── */
-.pay-table { background:linear-gradient(160deg, #0d0f1a 0%, #12141f 100%); border:1px solid #1f2833; border-radius:16px; padding:18px 16px; width:230px; flex-shrink:0; box-shadow:inset 0 0 20px rgba(0,0,0,0.4); }
-.pay-table-title { font-family:'Bebas Neue'; font-size:18px; letter-spacing:3px; color:#FF00FF; border-bottom:1px solid #1f2833; padding-bottom:10px; margin-bottom:12px; text-align:center; }
-.pay-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+/* ── SPIN BTN ── */
+.spin-btn {
+    font-family:'Bebas Neue'; font-size:22px; letter-spacing:4px;
+    background:linear-gradient(135deg, rgba(0,255,255,0.12), rgba(255,0,255,0.12));
+    border:2px solid #00FFFF; color:#00FFFF;
+    border-radius:12px; padding:14px 40px;
+    transition:0.2s; width:100%; cursor:pointer;
+    box-shadow:0 0 25px rgba(0,255,255,0.08), inset 0 1px 0 rgba(255,255,255,0.05);
+    position:relative; overflow:hidden;
+}
+.spin-btn::before {
+    content:''; position:absolute; top:0; left:-100%; width:100%; height:100%;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+    transition:left 0.4s;
+}
+.spin-btn:hover:not(:disabled)::before { left:100%; }
+.spin-btn:hover:not(:disabled) {
+    background:linear-gradient(135deg, rgba(0,255,255,0.22), rgba(255,0,255,0.18));
+    box-shadow:0 0 40px rgba(0,255,255,0.2), 0 0 20px rgba(255,0,255,0.1);
+    transform:scale(1.02);
+}
+.spin-btn:disabled { opacity:0.35; cursor:not-allowed; transform:none; border-color:#333; color:#444; background:#111; box-shadow:none; }
+
+/* ── TIRETTE ── */
+.lever-area { display:flex; flex-direction:column; align-items:center; position:relative; }
+.lever-track {
+    width:20px; height:220px;
+    background:linear-gradient(180deg, #14162a, #0d0f1a);
+    border:1px solid #252535; border-radius:10px; position:relative;
+    box-shadow:inset 0 0 12px rgba(0,0,0,0.7), 0 0 10px rgba(0,0,0,0.5);
+}
+.lever-ball {
+    width:46px; height:46px; border-radius:50%;
+    background:radial-gradient(circle at 38% 35%, #ff7777, #cc1111 50%, #7a0000);
+    border:2px solid rgba(255,255,255,0.25);
+    box-shadow:0 0 25px rgba(255,30,0,0.7), 0 4px 12px rgba(0,0,0,0.6);
+    position:absolute; left:50%; top:10px; transform:translateX(-50%);
+    transition:top 0.12s ease, box-shadow 0.2s; cursor:pointer;
+}
+.lever-ball:hover { box-shadow:0 0 35px rgba(255,30,0,1), 0 4px 12px rgba(0,0,0,0.6); top:7px; }
+.lever-ball.pulled { top:160px; }
+.lever-ball.spinning { cursor:not-allowed; }
+.lever-arm { width:4px; height:100%; position:absolute; left:50%; transform:translateX(-50%); background:linear-gradient(180deg,#2a2a3a,#1a1a2a); border-radius:2px; z-index:-1; }
+.lever-label { font-family:'Bebas Neue'; font-size:10px; letter-spacing:3px; color:#2a2a3a; margin-top:10px; text-align:center; }
+.lever-fixed { position:fixed; right:55px; top:50%; transform:translateY(-50%); z-index:50; }
+
+/* ── TABLEAU GAINS ── */
+.pay-table {
+    background:linear-gradient(160deg, #0d0f1a 0%, #12141f 100%);
+    border:1px solid #1f2833; border-radius:16px; padding:18px 16px;
+    width:240px; flex-shrink:0;
+    box-shadow:inset 0 0 20px rgba(0,0,0,0.4);
+}
+.pay-table-title {
+    font-family:'Bebas Neue'; font-size:18px; letter-spacing:3px; color:#FF00FF;
+    border-bottom:1px solid #1f2833; padding-bottom:10px; margin-bottom:12px; text-align:center;
+}
+.pay-row { display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
 .pay-row:last-child { border-bottom:none; }
 .pay-symbols { display:flex; gap:3px; align-items:center; }
-.pay-symbols img { width:28px; height:28px; object-fit:cover; border-radius:4px; border:1px solid #2a2a3a; }
-.pay-mult { font-family:'Bebas Neue'; font-size:18px; color:#00FFFF; }
-.pay-row.jackpot-row .pay-mult { color:#FF00FF; text-shadow:0 0 8px #FF00FF; font-size:20px; }
+.pay-symbols img { width:30px; height:30px; object-fit:cover; border-radius:4px; border:1px solid #2a2a3a; }
+.pay-mult { font-family:'Bebas Neue'; font-size:19px; color:#00FFFF; }
+.pay-row.jackpot-row .pay-mult { color:#FF00FF; text-shadow:0 0 10px #FF00FF; font-size:21px; }
 .pay-row.jackpot-row .pay-symbols { animation:floatEmoji 2s ease-in-out infinite; }
 @keyframes floatEmoji{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
-.pay-note { margin-top:10px; font-size:10px; color:#333; text-align:center; letter-spacing:1px; font-family:'Bebas Neue'; }
+.pay-note { margin-top:10px; font-size:10px; color:#2a2a3a; text-align:center; letter-spacing:1px; font-family:'Bebas Neue'; }
 
-.history { background:linear-gradient(160deg, #0d0f1a 0%, #12141f 100%); border:1px solid #1f2833; border-radius:16px; padding:16px; width:230px; flex-shrink:0; box-shadow:inset 0 0 20px rgba(0,0,0,0.4); max-height:340px; overflow:hidden; }
+/* ── HISTORIQUE ── */
+.history {
+    background:linear-gradient(160deg, #0d0f1a 0%, #12141f 100%);
+    border:1px solid #1f2833; border-radius:16px; padding:16px;
+    width:240px; flex-shrink:0;
+    box-shadow:inset 0 0 20px rgba(0,0,0,0.4);
+    max-height:420px; overflow:hidden;
+}
 .history-title { font-family:'Bebas Neue'; font-size:15px; letter-spacing:3px; color:#444; margin-bottom:10px; text-align:center; }
 .history-list { display:flex; flex-direction:column; gap:5px; }
-.history-item { display:flex; justify-content:space-between; align-items:flex-start; padding:6px 8px; border-radius:5px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.03); animation:itemPop 0.25s ease; }
+.history-item { display:flex; justify-content:space-between; align-items:flex-start; padding:7px 8px; border-radius:6px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.03); animation:itemPop 0.25s ease; }
 @keyframes itemPop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
 .history-item.h-win { border-color:rgba(255,215,0,0.2); background:rgba(255,215,0,0.05); }
 .history-item.h-jackpot { border-color:rgba(255,0,255,0.3); background:rgba(255,0,255,0.07); }
 .history-symbols { display:flex; gap:4px; align-items:flex-start; }
 .sym-thumb { display:flex; flex-direction:column; align-items:center; gap:2px; }
-.sym-thumb img { width:30px; height:30px; object-fit:cover; border-radius:4px; border:1px solid #2a2a3a; }
+.sym-thumb img { width:32px; height:32px; object-fit:cover; border-radius:4px; border:1px solid #2a2a3a; }
 .sym-name { font-family:'Bebas Neue'; font-size:9px; color:#555; line-height:1; }
 .history-item.h-win .sym-name { color:#aa8800; }
 .history-item.h-jackpot .sym-name { color:#aa00aa; }
-.history-result { font-family:'Bebas Neue'; font-size:13px; color:#444; padding-top:8px; }
+.history-result { font-family:'Bebas Neue'; font-size:13px; color:#444; padding-top:10px; }
 .history-item.h-win .history-result { color:#FFD700; }
 .history-item.h-jackpot .history-result { color:#FF00FF; }
 
@@ -183,11 +375,11 @@ h1 { font-family:'Bebas Neue'; font-size:38px; letter-spacing:4px; background:li
 #win-flash.active { opacity:1; animation:flashAnim 0.6s ease-out forwards; }
 @keyframes flashAnim{0%{opacity:0.8}100%{opacity:0}}
 #confetti-canvas { position:fixed; inset:0; pointer-events:none; z-index:800; }
-#notif { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(60px); background:#0d0f1a; border:1px solid #2a2a3a; border-radius:8px; padding:10px 24px; font-family:'Bebas Neue'; font-size:16px; letter-spacing:2px; color:#fff; z-index:1000; transition:transform 0.3s ease; pointer-events:none; }
+#notif { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(60px); background:#0d0f1a; border:1px solid #2a2a3a; border-radius:8px; padding:10px 24px; font-family:'Bebas Neue'; font-size:16px; letter-spacing:2px; color:#fff; z-index:1200; transition:transform 0.3s ease; pointer-events:none; }
 #notif.show { transform:translateX(-50%) translateY(0); }
 
 /* ── JACKPOT OVERLAY ── */
-#jackpot-overlay { display:none; position:fixed; inset:0; z-index:1000; align-items:center; justify-content:center; flex-direction:column; background:rgba(0,0,0,0.85); }
+#jackpot-overlay { display:none; position:fixed; inset:0; z-index:1000; align-items:center; justify-content:center; flex-direction:column; background:rgba(0,0,0,0.88); }
 #jackpot-overlay.active { display:flex; animation:jOverlayIn 0.3s ease; }
 @keyframes jOverlayIn{from{opacity:0}to{opacity:1}}
 #jackpot-overlay .j-rays { position:absolute; inset:0; pointer-events:none; background:conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(255,0,255,0.06) 10deg, transparent 20deg, transparent 30deg, rgba(255,0,255,0.06) 40deg, transparent 50deg, transparent 60deg, rgba(255,0,255,0.06) 70deg, transparent 80deg, transparent 90deg, rgba(255,0,255,0.06) 100deg, transparent 110deg, transparent 120deg, rgba(255,0,255,0.06) 130deg, transparent 140deg, transparent 150deg, rgba(255,0,255,0.06) 160deg, transparent 170deg, transparent 180deg, rgba(255,0,255,0.06) 190deg, transparent 200deg, transparent 210deg, rgba(255,0,255,0.06) 220deg, transparent 230deg, transparent 240deg, rgba(255,0,255,0.06) 250deg, transparent 260deg, transparent 270deg, rgba(255,0,255,0.06) 280deg, transparent 290deg, transparent 300deg, rgba(255,0,255,0.06) 310deg, transparent 320deg, transparent 330deg, rgba(255,0,255,0.06) 340deg, transparent 350deg, transparent 360deg); animation:jRaysSpin 4s linear infinite; }
@@ -205,19 +397,19 @@ h1 { font-family:'Bebas Neue'; font-size:38px; letter-spacing:4px; background:li
 #jackpot-overlay.jackpot .j-amount { color:#FF00FF; }
 #jackpot-overlay.maxi .j-amount { color:#FFD700; }
 #jackpot-overlay .j-imgs { display:flex; gap:16px; margin-top:24px; position:relative; z-index:2; animation:jSubIn 0.5s 0.4s ease both; }
-#jackpot-overlay .j-imgs img { width:120px; height:120px; object-fit:cover; border-radius:12px; border:3px solid rgba(255,255,255,0.3); box-shadow:0 0 30px rgba(255,255,255,0.2); }
+#jackpot-overlay .j-imgs img { width:130px; height:130px; object-fit:cover; border-radius:12px; border:3px solid rgba(255,255,255,0.3); box-shadow:0 0 30px rgba(255,255,255,0.2); }
 #jackpot-overlay.jackpot .j-imgs img { border-color:#FF00FF; box-shadow:0 0 30px rgba(255,0,255,0.5); }
 #jackpot-overlay.maxi .j-imgs img { border-color:#FFD700; box-shadow:0 0 40px rgba(255,215,0,0.7); }
-#jackpot-overlay .j-close { margin-top:32px; position:relative; z-index:2; font-family:'Bebas Neue'; font-size:18px; letter-spacing:3px; padding:12px 40px; border-radius:8px; border:2px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.1); color:#fff; transition:0.2s; animation:jSubIn 0.5s 0.7s ease both; cursor:pointer; }
-#jackpot-overlay .j-close:hover { background:rgba(255,255,255,0.2); border-color:#fff; }
+#jackpot-overlay .j-close { margin-top:32px; position:relative; z-index:2; font-family:'Bebas Neue'; font-size:18px; letter-spacing:3px; padding:12px 44px; border-radius:8px; border:2px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.08); color:#fff; transition:0.2s; animation:jSubIn 0.5s 0.7s ease both; cursor:pointer; }
+#jackpot-overlay .j-close:hover { background:rgba(255,255,255,0.18); border-color:#fff; }
 
-@media (max-width:1200px) { .leaderboard { display:none; } .game-wrapper { padding-left:20px; } }
-@media (max-width:900px) { .pay-table, .history { display:none; } .machine { min-width:unset; width:100%; max-width:500px; } }
+@media (max-width:1300px) { .leaderboard { display:none; } .game-wrapper { padding-left:20px; } }
+@media (max-width:1000px) { .pay-table { display:none; } }
+@media (max-width:850px) { .history { display:none; } .machine { min-width:unset; width:100%; } }
 </style>
 </head>
 <body>
 
-<!-- JACKPOT OVERLAY -->
 <div id="jackpot-overlay">
     <div class="j-rays"></div>
     <div class="j-title" id="j-title">JACKPOT !</div>
@@ -227,42 +419,43 @@ h1 { font-family:'Bebas Neue'; font-size:38px; letter-spacing:4px; background:li
     <button class="j-close" onclick="closeJackpot()">ENCAISSER →</button>
 </div>
 
-<!-- RETOUR HUB -->
 <a id="hub-link" href="../index.html">◀ HUB</a>
-
-<!-- CANVAS FOND -->
 <canvas id="bg-canvas"></canvas>
 <canvas id="confetti-canvas"></canvas>
 <div id="win-flash"></div>
 <div id="notif"></div>
 
-<!-- HEADER -->
 <header>
     <h1>GAMBLE LE JEJ</h1>
     <div class="header-sub">🎰 CASINO OFFICIEL CDSI GAMES · L'ARGENT EST RÉEL</div>
 </header>
 
-<!-- LAYOUT PRINCIPAL -->
-
-<!-- LEADERBOARD FIXE GAUCHE (hors du flux) -->
+<!-- LEADERBOARD FIXE GAUCHE -->
 <div class="leaderboard">
-    <div class="lb-header">
-        <div class="lb-title">🏆 TOP SEMAINE</div>
-        <div class="lb-week" id="lb-week-label">SEMAINE —</div>
-        <div class="lb-reset" id="lb-reset-label">reset dans —</div>
-    </div>
-    <div class="lb-list" id="lb-list">
-        <div class="lb-loading">
-            <div class="lb-loading-dot"></div>
-            <div class="lb-loading-dot"></div>
-            <div class="lb-loading-dot"></div>
+    <div class="lb-top-bar"></div>
+    <div class="lb-inner">
+        <div class="lb-header">
+            <div class="lb-title">🏆 TOP SEMAINE</div>
+            <div class="lb-meta">
+                <div class="lb-week" id="lb-week-label">SEMAINE —</div>
+            </div>
+            <div class="lb-reset" id="lb-reset-label">reset dans —</div>
+        </div>
+        <div class="lb-sep"></div>
+        <div class="lb-list" id="lb-list">
+            <div class="lb-loading">
+                <div class="lb-loading-dot"></div>
+                <div class="lb-loading-dot"></div>
+                <div class="lb-loading-dot"></div>
+            </div>
         </div>
     </div>
 </div>
 
+<!-- LAYOUT PRINCIPAL -->
 <div class="game-wrapper">
 
-    <!-- ══ GAINS (GAUCHE) ══ -->
+    <!-- GAINS GAUCHE -->
     <div class="pay-table">
         <div class="pay-table-title">GAINS</div>
         <div class="pay-row jackpot-row">
@@ -298,17 +491,17 @@ h1 { font-family:'Bebas Neue'; font-size:38px; letter-spacing:4px; background:li
             <span class="pay-mult">×5</span>
         </div>
         <div class="pay-row">
-            <span class="pay-symbols" style="font-size:12px;color:#555;letter-spacing:1px;">✦✦ paire</span>
+            <span class="pay-symbols" style="font-size:12px;color:#444;letter-spacing:1px;">✦✦ paire</span>
             <span class="pay-mult">×2</span>
         </div>
         <div class="pay-note">TOUTE PAIRE GAGNE ×2</div>
     </div>
 
-    <!-- ══ MACHINE (CENTRE) ══ -->
+    <!-- MACHINE CENTRE -->
     <div class="machine">
-        <div class="machine-title">· INSÉREZ MISE ET TIREZ ·</div>
+        <div class="machine-title">· CASINO BINGOUDALO · INSÉREZ ET TIREZ ·</div>
 
-        <div class="reels-frame">
+        <div class="reels-frame" id="reels-frame">
             <div class="payline" id="payline"></div>
             <div class="reels">
                 <div class="reel-container"><div class="reel" id="reel-0"></div></div>
@@ -335,24 +528,24 @@ h1 { font-family:'Bebas Neue'; font-size:38px; letter-spacing:4px; background:li
         </div>
 
         <div class="bet-controls">
-            <span style="font-family:'Bebas Neue';font-size:12px;letter-spacing:2px;color:#444;">MISE :</span>
-            <button class="bet-btn" onclick="setBet(10)">10 M$</button>
-            <button class="bet-btn active" onclick="setBet(50)">50 M$</button>
-            <button class="bet-btn" onclick="setBet(100)">100 M$</button>
-            <button class="bet-btn" onclick="setBet(500)">500 M$</button>
-            <button class="bet-btn" style="color:#FFD700;border-color:#FFD700;" onclick="setBet('ALL')">ALL IN</button>
+            <span class="bet-label">MISE :</span>
+            <button class="bet-btn" onclick="setBet(10)">10</button>
+            <button class="bet-btn active" onclick="setBet(50)">50</button>
+            <button class="bet-btn" onclick="setBet(100)">100</button>
+            <button class="bet-btn" onclick="setBet(500)">500</button>
+            <button class="bet-btn" style="color:#FFD700;border-color:rgba(255,215,0,0.4);" onclick="setBet('ALL')">ALL IN</button>
         </div>
 
         <button class="spin-btn" id="spin-btn" onclick="spin()">🎰 JOUER</button>
     </div>
 
-    <!-- ══ HISTORIQUE (DROITE) ══ -->
+    <!-- HISTORIQUE DROITE -->
     <div class="history">
         <div class="history-title">HISTORIQUE</div>
         <div class="history-list" id="history-list"></div>
     </div>
 
-    <!-- TIRETTE FIXE DROITE -->
+    <!-- TIRETTE FIXE -->
     <div class="lever-fixed">
         <div class="lever-area">
             <div class="lever-track">
@@ -397,8 +590,24 @@ function updateWeekLabels() {
     const { num } = getISOWeekInfo();
     document.getElementById('lb-week-label').textContent = `SEMAINE ${num}`;
     const days = getDaysUntilMonday();
-    document.getElementById('lb-reset-label').textContent = days === 0 ? 'reset ce soir minuit' : `reset dans ${days} jour${days>1?'s':''}`;
+    document.getElementById('lb-reset-label').textContent =
+        days === 0 ? 'reset ce soir minuit' : `reset dans ${days} jour${days>1?'s':''}`;
 }
+
+// ── SYMBOLES ──
+const SYMBOLS = [
+    { id:'jej',        src:'images/jej.jpg',        weight:5,  payout:50 },
+    { id:'franck',     src:'images/franck.webp',    weight:3,  payout:30 },
+    { id:'yassine',    src:'images/yassine.webp',   weight:4,  payout:20 },
+    { id:'costermans', src:'images/costermans.jpg', weight:6,  payout:15 },
+    { id:'dayoub',     src:'images/dayoub.webp',    weight:9,  payout:10 },
+    { id:'wilbaut',    src:'images/wilbaut.webp',   weight:10, payout:8  },
+    { id:'bouzaidi',   src:'images/bouzaidi.webp',  weight:9,  payout:6  },
+    { id:'marwane',    src:'images/marwane.jpg',    weight:10, payout:5  },
+];
+const TOTAL_WEIGHT = SYMBOLS.reduce((a,s) => a+s.weight, 0);
+function getPayouts(id) { return SYMBOLS.find(s=>s.id===id)?.payout || 5; }
+function symSrc(id) { return SYMBOLS.find(s=>s.id===id)?.src || ''; }
 
 // ── LEADERBOARD ──
 async function fetchLeaderboard() {
@@ -406,15 +615,16 @@ async function fetchLeaderboard() {
     try {
         const { data, error } = await sb
             .from('gamble_leaderboard')
-            .select('pseudo, amount')
+            .select('pseudo, amount, combo')
             .eq('week_key', weekKey)
             .order('amount', { ascending: false })
             .limit(20);
         if (error) throw error;
         renderLeaderboard(data || []);
     } catch(e) {
-        console.error('LB fetch error', e);
-        document.getElementById('lb-list').innerHTML = '<div class="lb-empty">ERREUR CHARGEMENT</div>';
+        console.error('LB fetch error:', e);
+        document.getElementById('lb-list').innerHTML =
+            '<div class="lb-empty">TABLE INTROUVABLE<br>VOIR README</div>';
     }
 }
 
@@ -432,42 +642,69 @@ function renderLeaderboard(entries) {
         const topClass = rank <= 3 ? `lb-top${rank}` : '';
         const meClass = isMe ? 'lb-me' : '';
         const rankDisplay = medals[rank-1] || rank;
-        const crown = rank === 1 ? '<span style="font-size:12px;">👑</span>' : '';
+
+        // Combo images
+        let comboHTML = '';
+        if (entry.combo) {
+            const ids = entry.combo.split(',');
+            comboHTML = `<div class="lb-combo">
+                ${ids.map(id => `<img src="${symSrc(id)}" title="${id}">`).join('')}
+                <span class="lb-combo-label">COMBO</span>
+            </div>`;
+        }
+
         list.innerHTML += `
         <div class="lb-item ${topClass} ${meClass}" data-pseudo="${entry.pseudo}">
-            <span class="lb-rank">${rankDisplay}</span>
-            <span class="lb-pseudo">${entry.pseudo}${isMe ? ' ◀' : ''}</span>
-            ${crown}
-            <span class="lb-amount">+${entry.amount}</span>
+            <div class="lb-row1">
+                <span class="lb-rank">${rankDisplay}</span>
+                <span class="lb-pseudo">${entry.pseudo}${isMe ? ' ◀' : ''}</span>
+                <span class="lb-amount">+${entry.amount} M$</span>
+            </div>
+            ${comboHTML}
         </div>`;
     });
 }
 
-async function submitToLeaderboard(winAmount) {
+// ── UPSERT LEADERBOARD : 1 seul score par joueur = le meilleur ──
+async function submitToLeaderboard(winAmount, results) {
     const { key: weekKey } = getISOWeekInfo();
+    const combo = results.join(','); // ex: "jej,jej,jej"
+
     try {
-        // Récupère le meilleur coup existant de ce joueur cette semaine
-        const { data: existing } = await sb
+        // Cherche l'entrée existante de ce joueur cette semaine
+        const { data: existing, error: fetchErr } = await sb
             .from('gamble_leaderboard')
             .select('id, amount')
             .eq('week_key', weekKey)
             .eq('pseudo', myPseudo)
-            .order('amount', { ascending: false })
-            .limit(1);
+            .maybeSingle(); // retourne null si pas trouvé, sans throw
 
-        const best = existing && existing.length > 0 ? existing[0] : null;
+        if (fetchErr) throw fetchErr;
 
-        // Toujours insérer — le leaderboard garde les 20 meilleurs COUPS (pas joueurs)
-        await sb.from('gamble_leaderboard').insert({
-            pseudo: myPseudo,
-            amount: winAmount,
-            week_key: weekKey,
-            created_at: new Date().toISOString()
-        });
+        if (!existing) {
+            // Pas encore d'entrée → on insère
+            await sb.from('gamble_leaderboard').insert({
+                pseudo: myPseudo,
+                amount: winAmount,
+                combo: combo,
+                week_key: weekKey,
+                created_at: new Date().toISOString()
+            });
+        } else if (winAmount > existing.amount) {
+            // Nouveau record → on met à jour
+            await sb.from('gamble_leaderboard').update({
+                amount: winAmount,
+                combo: combo,
+                created_at: new Date().toISOString()
+            }).eq('id', existing.id);
+        } else {
+            // Score inférieur au record → on ne fait rien
+            return;
+        }
 
         await fetchLeaderboard();
 
-        // Flash si ce coup apparaît dans le top
+        // Flash de la propre entrée
         setTimeout(() => {
             document.querySelectorAll('.lb-item').forEach(item => {
                 if (item.dataset.pseudo === myPseudo) {
@@ -476,9 +713,10 @@ async function submitToLeaderboard(winAmount) {
                     item.classList.add('lb-new');
                 }
             });
-        }, 100);
+        }, 150);
+
     } catch(e) {
-        console.error('LB insert error', e);
+        console.error('LB submit error:', e);
     }
 }
 
@@ -491,8 +729,6 @@ window.onload = async () => {
     await fetchUserWallet();
     await fetchLeaderboard();
     initReels();
-
-    // Rafraîchit le leaderboard toutes les 30s
     setInterval(fetchLeaderboard, 30000);
 };
 
@@ -507,28 +743,14 @@ async function updateUserWallet(newAmount) {
     updateUI();
 }
 
-// ── SYMBOLES ──
-const SYMBOLS = [
-    { id:'jej',        src:'images/jej.jpg',        weight:5,  payout:50 },
-    { id:'franck',     src:'images/franck.webp',    weight:3,  payout:30 },
-    { id:'yassine',    src:'images/yassine.webp',   weight:4,  payout:20 },
-    { id:'costermans', src:'images/costermans.jpg', weight:6,  payout:15 },
-    { id:'dayoub',     src:'images/dayoub.webp',    weight:9,  payout:10 },
-    { id:'wilbaut',    src:'images/wilbaut.webp',   weight:10, payout:8  },
-    { id:'bouzaidi',   src:'images/bouzaidi.webp',  weight:9,  payout:6  },
-    { id:'marwane',    src:'images/marwane.jpg',    weight:10, payout:5  },
-];
-const TOTAL_WEIGHT = SYMBOLS.reduce((a,s) => a+s.weight, 0);
-function getPayouts(id) { return SYMBOLS.find(s=>s.id===id)?.payout || 5; }
-
 // ── BG CANVAS ──
 const bgC = document.getElementById('bg-canvas');
 const bgCtx = bgC.getContext('2d');
 let particles = [];
-function resizeBg() { bgC.width=window.innerWidth; bgC.height=window.innerHeight; }
-resizeBg(); window.addEventListener('resize', resizeBg);
+function resizeBg(){bgC.width=window.innerWidth;bgC.height=window.innerHeight;}
+resizeBg(); window.addEventListener('resize',resizeBg);
 for(let i=0;i<60;i++) particles.push({x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,r:Math.random()*1.5+0.5,vx:(Math.random()-0.5)*0.3,vy:(Math.random()-0.5)*0.3,a:Math.random()});
-function drawBg() {
+function drawBg(){
     bgCtx.clearRect(0,0,bgC.width,bgC.height);
     particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=bgC.width;if(p.x>bgC.width)p.x=0;if(p.y<0)p.y=bgC.height;if(p.y>bgC.height)p.y=0;bgCtx.beginPath();bgCtx.arc(p.x,p.y,p.r,0,Math.PI*2);bgCtx.fillStyle=`rgba(0,255,255,${p.a*0.8})`;bgCtx.fill();});
     requestAnimationFrame(drawBg);
@@ -536,9 +758,9 @@ function drawBg() {
 drawBg();
 
 // ── CONFETTIS ──
-const confC = document.getElementById('confetti-canvas');
-const confCtx = confC.getContext('2d');
-let confettiPieces = [];
+const confC=document.getElementById('confetti-canvas');
+const confCtx=confC.getContext('2d');
+let confettiPieces=[];
 function resizeConf(){confC.width=window.innerWidth;confC.height=window.innerHeight;}
 resizeConf(); window.addEventListener('resize',resizeConf);
 function launchConfetti(big=false){
@@ -549,26 +771,32 @@ function launchConfetti(big=false){
 }
 let confAnimId=null;
 function animConfetti(){
-    if(confAnimId) cancelAnimationFrame(confAnimId);
+    if(confAnimId)cancelAnimationFrame(confAnimId);
     confCtx.clearRect(0,0,confC.width,confC.height);
     confettiPieces=confettiPieces.filter(p=>p.life>0);
     confettiPieces.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.4;p.vx*=0.99;p.rot+=p.rotV;p.life-=0.012;confCtx.save();confCtx.globalAlpha=p.life;confCtx.translate(p.x,p.y);confCtx.rotate(p.rot*Math.PI/180);confCtx.fillStyle=p.color;confCtx.fillRect(-p.size/2,-p.size/2,p.size,p.size*0.5);confCtx.restore();});
-    if(confettiPieces.length>0) confAnimId=requestAnimationFrame(animConfetti);
+    if(confettiPieces.length>0)confAnimId=requestAnimationFrame(animConfetti);
     else{confCtx.clearRect(0,0,confC.width,confC.height);confAnimId=null;}
 }
 
 // ── ROULEAUX ──
 function pickSymbol(){let r=Math.random()*TOTAL_WEIGHT;for(let s of SYMBOLS){r-=s.weight;if(r<=0)return s.id;}return SYMBOLS[SYMBOLS.length-1].id;}
-function makeCell(symId){const cell=document.createElement('div');cell.className='reel-cell';const sym=SYMBOLS.find(s=>s.id===symId);if(sym){const img=document.createElement('img');img.src=sym.src;img.alt=sym.id;cell.appendChild(img);}return cell;}
+
+function makeCell(symId){
+    const cell=document.createElement('div');cell.className='reel-cell';
+    const sym=SYMBOLS.find(s=>s.id===symId);
+    if(sym){const img=document.createElement('img');img.src=sym.src;img.alt=sym.id;cell.appendChild(img);}
+    return cell;
+}
 function buildReel(id){const reel=document.getElementById(`reel-${id}`);reel.innerHTML='';for(let i=0;i<20;i++)reel.appendChild(makeCell(pickSymbol()));}
 function initReels(){for(let i=0;i<3;i++)buildReel(i);}
 
 function spinReel(reelId,finalSymId,duration){
     return new Promise(resolve=>{
         const reel=document.getElementById(`reel-${reelId}`);
-        const cellH=110,cellCount=20;
+        const cellH=140,cellCount=20;
         reel.innerHTML='';
-        for(let i=0;i<cellCount;i++) reel.appendChild(makeCell(pickSymbol()));
+        for(let i=0;i<cellCount;i++)reel.appendChild(makeCell(pickSymbol()));
         reel.appendChild(makeCell(finalSymId));
         reel.dataset.result=finalSymId;
         reel.style.transition='none';
@@ -589,7 +817,7 @@ function animLever(cb){
 
 // ── SPIN ──
 async function spin(){
-    if(spinning) return;
+    if(spinning)return;
     await fetchUserWallet();
     let actualBet=bet==='ALL'?myWallet:bet;
     if(actualBet<=0||myWallet<actualBet){showNotif('❌ SOLDE M$ INSUFFISANT !');return;}
@@ -600,7 +828,8 @@ async function spin(){
     document.getElementById('lever-ball').classList.add('spinning');
     document.getElementById('result-msg').className='result-msg';
     document.getElementById('result-msg').textContent='…';
-    document.getElementById('payline').classList.remove('win');
+    const frame=document.getElementById('reels-frame');
+    frame.classList.remove('win-frame');
     animLever();
 
     const results=[pickSymbol(),pickSymbol(),pickSymbol()];
@@ -611,7 +840,7 @@ async function spin(){
     const win=calcWin(results,actualBet);
     if(win>0){
         await updateUserWallet(myWallet+win);
-        submitToLeaderboard(win); // pas de await = non bloquant
+        submitToLeaderboard(win, results); // non bloquant
     }
 
     addHistory(results,win,actualBet);
@@ -631,7 +860,7 @@ function calcWin(results,betAmount){
 
 function showResult(results,win){
     const msg=document.getElementById('result-msg');
-    const payline=document.getElementById('payline');
+    const frame=document.getElementById('reels-frame');
     const lastWin=document.getElementById('last-win-val');
     const[a,b,c]=results;
     const isJackpot=a===b&&b===c;
@@ -641,12 +870,14 @@ function showResult(results,win){
         const mult=getPayouts(a);const isMaxi=mult===50;
         msg.textContent=isMaxi?`MAXI JACKPOT !!! ×${mult} → +${win} M$`:`JACKPOT ! ×${mult} → +${win} M$`;
         msg.className='result-msg jackpot';
-        payline.classList.add('win');lastWin.textContent=`+${win}`;lastWin.className='stat-value win';
+        frame.classList.add('win-frame');
+        lastWin.textContent=`+${win}`;lastWin.className='stat-value win';
         launchConfetti(true);showJackpotOverlay(a,win,isMaxi);
     } else if(isPair){
         msg.textContent=`PAIRE ! ×2 → +${win} M$`;
         msg.className='result-msg win';
-        payline.classList.add('win');lastWin.textContent=`+${win}`;lastWin.className='stat-value win';
+        frame.classList.add('win-frame');
+        lastWin.textContent=`+${win}`;lastWin.className='stat-value win';
         document.getElementById('win-flash').classList.add('active');
         setTimeout(()=>document.getElementById('win-flash').classList.remove('active'),500);
         if(win>=100)launchConfetti(false);
@@ -683,7 +914,7 @@ function addHistory(results,win,betAmount){
     const isJackpot=results[0]===results[1]&&results[1]===results[2];
     const isPair=!isJackpot&&(results[0]===results[1]||results[1]===results[2]||results[0]===results[2]);
     history.unshift({results,win,betAmount,isJackpot,isPair});
-    if(history.length>6)history.pop();
+    if(history.length>7)history.pop();
     const list=document.getElementById('history-list');list.innerHTML='';
     history.forEach(h=>{
         const cls=h.isJackpot?'h-jackpot':h.isPair?'h-win':'h-lose';
