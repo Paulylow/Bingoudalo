@@ -1114,13 +1114,13 @@ function triggerBourse() {
     o.style.left = (m + Math.random()*(window.innerWidth-m*2)) + 'px';
     o.style.top  = (m + Math.random()*(window.innerHeight-m*2)) + 'px';
     o.style.display = 'flex';
-    // Pourcentage aléatoire entre 5% et 15% du score actuel
-    const pct = 5 + Math.random()*10;
-    o.dataset.pct = pct.toFixed(1);
+    // 200% du score actuel
+    const pct = 200;
+    o.dataset.pct = pct;
     const gain = Math.floor(score * pct / 100);
     const gainStr = gain.toLocaleString('fr-FR');
     document.getElementById('bourse-gain').textContent =
-        '💰 BOURSE ! Clique pour +' + gainStr + ' pts (' + pct.toFixed(0) + '% de ton score) !';
+        '💰 BOURSE ! Clique pour +' + gainStr + ' pts (x2 de ton score) !';
     document.getElementById('bourse-gain').style.display = 'block';
     showNotif('💰 LA BOURSE SPAWNE ! CLIQUE VITE !');
     // Disparaît après 15 secondes si pas cliquée
