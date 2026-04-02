@@ -36,16 +36,16 @@ header {
 h1 { font-family:'Bebas Neue'; font-size:38px; letter-spacing:4px; background:linear-gradient(90deg,#00FFFF,#FF00FF); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
 .header-sub { font-size:12px; color:#555; letter-spacing:2px; font-family:'Bebas Neue'; margin-top:2px; }
 
-.game-wrapper { flex:1; display:flex; align-items:center; justify-content:center; position:relative; z-index:1; padding:16px 20px; gap:20px; }
+.game-wrapper { flex:1; display:flex; align-items:center; justify-content:center; position:relative; z-index:1; padding:16px 140px 16px 260px; gap:22px; }
 
-/* ── LEADERBOARD ── */
+/* ── LEADERBOARD FIXE GAUCHE ── */
 .leaderboard {
-    background:linear-gradient(160deg, #0d0f1a 0%, #12141f 100%);
-    border:1px solid #1f2833; border-radius:16px; padding:18px 14px;
-    width:210px; flex-shrink:0;
-    box-shadow:inset 0 0 20px rgba(0,0,0,0.4), 0 0 30px rgba(255,215,0,0.03);
+    position:fixed; left:0; top:80px; bottom:0; width:245px; z-index:100;
+    background:linear-gradient(180deg, #0d0f1a 0%, #0b0c10 100%);
+    border-right:1px solid #1f2833;
+    padding:18px 14px;
     display:flex; flex-direction:column;
-    max-height:calc(100vh - 120px);
+    overflow:hidden;
 }
 .lb-header {
     display:flex; flex-direction:column; align-items:center; gap:4px;
@@ -149,32 +149,32 @@ h1 { font-family:'Bebas Neue'; font-size:38px; letter-spacing:4px; background:li
 @keyframes msgPop{0%{transform:scale(0.7);opacity:0}100%{transform:scale(1);opacity:1}}
 
 /* ── TABLEAU GAINS + HISTORIQUE ── */
-.pay-table { background:linear-gradient(160deg, #0d0f1a 0%, #12141f 100%); border:1px solid #1f2833; border-radius:16px; padding:16px 14px; width:196px; flex-shrink:0; box-shadow:inset 0 0 20px rgba(0,0,0,0.4); }
-.pay-table-title { font-family:'Bebas Neue'; font-size:15px; letter-spacing:3px; color:#FF00FF; border-bottom:1px solid #1f2833; padding-bottom:8px; margin-bottom:10px; text-align:center; }
-.pay-row { display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.03); }
+.pay-table { background:linear-gradient(160deg, #0d0f1a 0%, #12141f 100%); border:1px solid #1f2833; border-radius:16px; padding:18px 16px; width:230px; flex-shrink:0; box-shadow:inset 0 0 20px rgba(0,0,0,0.4); }
+.pay-table-title { font-family:'Bebas Neue'; font-size:18px; letter-spacing:3px; color:#FF00FF; border-bottom:1px solid #1f2833; padding-bottom:10px; margin-bottom:12px; text-align:center; }
+.pay-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
 .pay-row:last-child { border-bottom:none; }
-.pay-symbols { display:flex; gap:2px; align-items:center; }
-.pay-symbols img { width:19px; height:19px; object-fit:cover; border-radius:2px; border:1px solid #2a2a3a; }
-.pay-mult { font-family:'Bebas Neue'; font-size:14px; color:#00FFFF; }
-.pay-row.jackpot-row .pay-mult { color:#FF00FF; text-shadow:0 0 8px #FF00FF; }
+.pay-symbols { display:flex; gap:3px; align-items:center; }
+.pay-symbols img { width:28px; height:28px; object-fit:cover; border-radius:4px; border:1px solid #2a2a3a; }
+.pay-mult { font-family:'Bebas Neue'; font-size:18px; color:#00FFFF; }
+.pay-row.jackpot-row .pay-mult { color:#FF00FF; text-shadow:0 0 8px #FF00FF; font-size:20px; }
 .pay-row.jackpot-row .pay-symbols { animation:floatEmoji 2s ease-in-out infinite; }
 @keyframes floatEmoji{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
-.pay-note { margin-top:8px; font-size:9px; color:#333; text-align:center; letter-spacing:1px; font-family:'Bebas Neue'; }
+.pay-note { margin-top:10px; font-size:10px; color:#333; text-align:center; letter-spacing:1px; font-family:'Bebas Neue'; }
 
-.history { background:linear-gradient(160deg, #0d0f1a 0%, #12141f 100%); border:1px solid #1f2833; border-radius:16px; padding:14px; width:196px; flex-shrink:0; box-shadow:inset 0 0 20px rgba(0,0,0,0.4); max-height:270px; overflow:hidden; }
-.history-title { font-family:'Bebas Neue'; font-size:13px; letter-spacing:3px; color:#444; margin-bottom:9px; text-align:center; }
-.history-list { display:flex; flex-direction:column; gap:4px; }
-.history-item { display:flex; justify-content:space-between; align-items:flex-start; padding:5px 6px; border-radius:5px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.03); animation:itemPop 0.25s ease; }
+.history { background:linear-gradient(160deg, #0d0f1a 0%, #12141f 100%); border:1px solid #1f2833; border-radius:16px; padding:16px; width:230px; flex-shrink:0; box-shadow:inset 0 0 20px rgba(0,0,0,0.4); max-height:340px; overflow:hidden; }
+.history-title { font-family:'Bebas Neue'; font-size:15px; letter-spacing:3px; color:#444; margin-bottom:10px; text-align:center; }
+.history-list { display:flex; flex-direction:column; gap:5px; }
+.history-item { display:flex; justify-content:space-between; align-items:flex-start; padding:6px 8px; border-radius:5px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.03); animation:itemPop 0.25s ease; }
 @keyframes itemPop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
 .history-item.h-win { border-color:rgba(255,215,0,0.2); background:rgba(255,215,0,0.05); }
 .history-item.h-jackpot { border-color:rgba(255,0,255,0.3); background:rgba(255,0,255,0.07); }
 .history-symbols { display:flex; gap:4px; align-items:flex-start; }
 .sym-thumb { display:flex; flex-direction:column; align-items:center; gap:2px; }
-.sym-thumb img { width:25px; height:25px; object-fit:cover; border-radius:3px; border:1px solid #2a2a3a; }
-.sym-name { font-family:'Bebas Neue'; font-size:8px; color:#555; line-height:1; }
+.sym-thumb img { width:30px; height:30px; object-fit:cover; border-radius:4px; border:1px solid #2a2a3a; }
+.sym-name { font-family:'Bebas Neue'; font-size:9px; color:#555; line-height:1; }
 .history-item.h-win .sym-name { color:#aa8800; }
 .history-item.h-jackpot .sym-name { color:#aa00aa; }
-.history-result { font-family:'Bebas Neue'; font-size:11px; color:#444; padding-top:6px; }
+.history-result { font-family:'Bebas Neue'; font-size:13px; color:#444; padding-top:8px; }
 .history-item.h-win .history-result { color:#FFD700; }
 .history-item.h-jackpot .history-result { color:#FF00FF; }
 
@@ -211,7 +211,7 @@ h1 { font-family:'Bebas Neue'; font-size:38px; letter-spacing:4px; background:li
 #jackpot-overlay .j-close { margin-top:32px; position:relative; z-index:2; font-family:'Bebas Neue'; font-size:18px; letter-spacing:3px; padding:12px 40px; border-radius:8px; border:2px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.1); color:#fff; transition:0.2s; animation:jSubIn 0.5s 0.7s ease both; cursor:pointer; }
 #jackpot-overlay .j-close:hover { background:rgba(255,255,255,0.2); border-color:#fff; }
 
-@media (max-width:1200px) { .leaderboard { display:none; } }
+@media (max-width:1200px) { .leaderboard { display:none; } .game-wrapper { padding-left:20px; } }
 @media (max-width:900px) { .pay-table, .history { display:none; } .machine { min-width:unset; width:100%; max-width:500px; } }
 </style>
 </head>
@@ -243,25 +243,68 @@ h1 { font-family:'Bebas Neue'; font-size:38px; letter-spacing:4px; background:li
 </header>
 
 <!-- LAYOUT PRINCIPAL -->
-<div class="game-wrapper">
 
-    <!-- ══ LEADERBOARD SEMAINE ══ -->
-    <div class="leaderboard">
-        <div class="lb-header">
-            <div class="lb-title">🏆 TOP SEMAINE</div>
-            <div class="lb-week" id="lb-week-label">SEMAINE —</div>
-            <div class="lb-reset" id="lb-reset-label">reset dans —</div>
-        </div>
-        <div class="lb-list" id="lb-list">
-            <div class="lb-loading">
-                <div class="lb-loading-dot"></div>
-                <div class="lb-loading-dot"></div>
-                <div class="lb-loading-dot"></div>
-            </div>
+<!-- LEADERBOARD FIXE GAUCHE (hors du flux) -->
+<div class="leaderboard">
+    <div class="lb-header">
+        <div class="lb-title">🏆 TOP SEMAINE</div>
+        <div class="lb-week" id="lb-week-label">SEMAINE —</div>
+        <div class="lb-reset" id="lb-reset-label">reset dans —</div>
+    </div>
+    <div class="lb-list" id="lb-list">
+        <div class="lb-loading">
+            <div class="lb-loading-dot"></div>
+            <div class="lb-loading-dot"></div>
+            <div class="lb-loading-dot"></div>
         </div>
     </div>
+</div>
 
-    <!-- ══ MACHINE ══ -->
+<div class="game-wrapper">
+
+    <!-- ══ GAINS (GAUCHE) ══ -->
+    <div class="pay-table">
+        <div class="pay-table-title">GAINS</div>
+        <div class="pay-row jackpot-row">
+            <span class="pay-symbols"><img src="images/jej.jpg"><img src="images/jej.jpg"><img src="images/jej.jpg"></span>
+            <span class="pay-mult">×50</span>
+        </div>
+        <div class="pay-row jackpot-row">
+            <span class="pay-symbols"><img src="images/franck.webp"><img src="images/franck.webp"><img src="images/franck.webp"></span>
+            <span class="pay-mult">×30</span>
+        </div>
+        <div class="pay-row">
+            <span class="pay-symbols"><img src="images/yassine.webp"><img src="images/yassine.webp"><img src="images/yassine.webp"></span>
+            <span class="pay-mult">×20</span>
+        </div>
+        <div class="pay-row">
+            <span class="pay-symbols"><img src="images/costermans.jpg"><img src="images/costermans.jpg"><img src="images/costermans.jpg"></span>
+            <span class="pay-mult">×15</span>
+        </div>
+        <div class="pay-row">
+            <span class="pay-symbols"><img src="images/dayoub.webp"><img src="images/dayoub.webp"><img src="images/dayoub.webp"></span>
+            <span class="pay-mult">×10</span>
+        </div>
+        <div class="pay-row">
+            <span class="pay-symbols"><img src="images/wilbaut.webp"><img src="images/wilbaut.webp"><img src="images/wilbaut.webp"></span>
+            <span class="pay-mult">×8</span>
+        </div>
+        <div class="pay-row">
+            <span class="pay-symbols"><img src="images/bouzaidi.webp"><img src="images/bouzaidi.webp"><img src="images/bouzaidi.webp"></span>
+            <span class="pay-mult">×6</span>
+        </div>
+        <div class="pay-row">
+            <span class="pay-symbols"><img src="images/marwane.jpg"><img src="images/marwane.jpg"><img src="images/marwane.jpg"></span>
+            <span class="pay-mult">×5</span>
+        </div>
+        <div class="pay-row">
+            <span class="pay-symbols" style="font-size:12px;color:#555;letter-spacing:1px;">✦✦ paire</span>
+            <span class="pay-mult">×2</span>
+        </div>
+        <div class="pay-note">TOUTE PAIRE GAGNE ×2</div>
+    </div>
+
+    <!-- ══ MACHINE (CENTRE) ══ -->
     <div class="machine">
         <div class="machine-title">· INSÉREZ MISE ET TIREZ ·</div>
 
@@ -303,7 +346,13 @@ h1 { font-family:'Bebas Neue'; font-size:38px; letter-spacing:4px; background:li
         <button class="spin-btn" id="spin-btn" onclick="spin()">🎰 JOUER</button>
     </div>
 
-    <!-- TIRETTE FIXE -->
+    <!-- ══ HISTORIQUE (DROITE) ══ -->
+    <div class="history">
+        <div class="history-title">HISTORIQUE</div>
+        <div class="history-list" id="history-list"></div>
+    </div>
+
+    <!-- TIRETTE FIXE DROITE -->
     <div class="lever-fixed">
         <div class="lever-area">
             <div class="lever-track">
@@ -311,55 +360,6 @@ h1 { font-family:'Bebas Neue'; font-size:38px; letter-spacing:4px; background:li
                 <div class="lever-ball" id="lever-ball" onclick="spin()"></div>
             </div>
             <div class="lever-label">TIRER</div>
-        </div>
-    </div>
-
-    <!-- ══ PANNEAU DROITE : GAINS + HISTORIQUE ══ -->
-    <div style="display:flex;flex-direction:column;align-items:center;gap:14px;">
-        <div class="pay-table">
-            <div class="pay-table-title">GAINS</div>
-            <div class="pay-row jackpot-row">
-                <span class="pay-symbols"><img src="images/jej.jpg"><img src="images/jej.jpg"><img src="images/jej.jpg"></span>
-                <span class="pay-mult">×50</span>
-            </div>
-            <div class="pay-row jackpot-row">
-                <span class="pay-symbols"><img src="images/franck.webp"><img src="images/franck.webp"><img src="images/franck.webp"></span>
-                <span class="pay-mult">×30</span>
-            </div>
-            <div class="pay-row">
-                <span class="pay-symbols"><img src="images/yassine.webp"><img src="images/yassine.webp"><img src="images/yassine.webp"></span>
-                <span class="pay-mult">×20</span>
-            </div>
-            <div class="pay-row">
-                <span class="pay-symbols"><img src="images/costermans.jpg"><img src="images/costermans.jpg"><img src="images/costermans.jpg"></span>
-                <span class="pay-mult">×15</span>
-            </div>
-            <div class="pay-row">
-                <span class="pay-symbols"><img src="images/dayoub.webp"><img src="images/dayoub.webp"><img src="images/dayoub.webp"></span>
-                <span class="pay-mult">×10</span>
-            </div>
-            <div class="pay-row">
-                <span class="pay-symbols"><img src="images/wilbaut.webp"><img src="images/wilbaut.webp"><img src="images/wilbaut.webp"></span>
-                <span class="pay-mult">×8</span>
-            </div>
-            <div class="pay-row">
-                <span class="pay-symbols"><img src="images/bouzaidi.webp"><img src="images/bouzaidi.webp"><img src="images/bouzaidi.webp"></span>
-                <span class="pay-mult">×6</span>
-            </div>
-            <div class="pay-row">
-                <span class="pay-symbols"><img src="images/marwane.jpg"><img src="images/marwane.jpg"><img src="images/marwane.jpg"></span>
-                <span class="pay-mult">×5</span>
-            </div>
-            <div class="pay-row">
-                <span class="pay-symbols" style="font-size:11px;color:#555;letter-spacing:1px;">✦✦ paire</span>
-                <span class="pay-mult">×2</span>
-            </div>
-            <div class="pay-note">TOUTE PAIRE GAGNE ×2</div>
-        </div>
-
-        <div class="history">
-            <div class="history-title">HISTORIQUE</div>
-            <div class="history-list" id="history-list"></div>
         </div>
     </div>
 
