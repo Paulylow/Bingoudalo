@@ -304,8 +304,8 @@ h1 {
     border:1px solid #1f2833;
     border-radius:16px;
     padding:20px;
-    min-width:160px;
-    max-width:180px;
+    min-width:200px;
+    max-width:220px;
     box-shadow:inset 0 0 20px rgba(0,0,0,0.4);
     max-height:360px;
     overflow:hidden;
@@ -319,8 +319,8 @@ h1 {
 .history-list { display:flex; flex-direction:column; gap:6px; }
 
 .history-item {
-    display:flex; justify-content:space-between; align-items:center;
-    padding:4px 8px; border-radius:5px;
+    display:flex; justify-content:space-between; align-items:flex-start;
+    padding:6px 8px; border-radius:5px;
     background:rgba(255,255,255,0.02);
     font-size:11px; border:1px solid rgba(255,255,255,0.03);
     animation:itemPop 0.25s ease;
@@ -330,9 +330,13 @@ h1 {
 .history-item.h-win { border-color:rgba(255,215,0,0.2); background:rgba(255,215,0,0.05); }
 .history-item.h-jackpot { border-color:rgba(255,0,255,0.3); background:rgba(255,0,255,0.07); }
 .history-item.h-lose { border-color:rgba(255,255,255,0.02); }
-.history-symbols { display:flex; gap:2px; align-items:center; }
-.history-symbols img { width:18px; height:18px; object-fit:cover; border-radius:2px; }
-.history-result { font-family:'Bebas Neue'; font-size:12px; color:#444; }
+.history-symbols { display:flex; gap:6px; align-items:flex-start; }
+.sym-thumb { display:flex; flex-direction:column; align-items:center; gap:2px; }
+.sym-thumb img { width:30px; height:30px; object-fit:cover; border-radius:4px; border:1px solid #2a2a3a; }
+.sym-name { font-family:'Bebas Neue'; font-size:9px; letter-spacing:0.5px; color:#555; line-height:1; }
+.history-item.h-win .sym-name { color:#aa8800; }
+.history-item.h-jackpot .sym-name { color:#aa00aa; }
+.history-result { font-family:'Bebas Neue'; font-size:13px; color:#444; padding-top:8px; }
 .history-item.h-win .history-result { color:#FFD700; }
 .history-item.h-jackpot .history-result { color:#FF00FF; }
 
@@ -798,7 +802,9 @@ function resetCredits() {
 /* ── HISTORIQUE ── */
 function symImg(id) {
     const s = SYMBOLS.find(x=>x.id===id);
-    return s ? `<img src="${s.src}" alt="${id}">` : id;
+    if (!s) return id;
+    const name = s.id.charAt(0).toUpperCase() + s.id.slice(1,4);
+    return `<span class="sym-thumb"><img src="${s.src}" alt="${id}"><span class="sym-name">${name}</span></span>`;
 }
 
 function addHistory(results, win) {
