@@ -370,9 +370,145 @@ h1 {
     .pay-table, .history { display:none; }
     .machine { min-width:unset; width:100%; max-width:500px; }
 }
+
+/* ── TIRETTE FIXE ── */
+.lever-fixed {
+    position:fixed; right:60px; top:50%; transform:translateY(-50%);
+    display:flex; flex-direction:column; align-items:center; gap:0;
+    z-index:50;
+}
+
+/* ── JACKPOT OVERLAY ── */
+#jackpot-overlay {
+    display:none; position:fixed; inset:0; z-index:1000;
+    align-items:center; justify-content:center; flex-direction:column;
+    background:rgba(0,0,0,0.85);
+    animation:jOverlayIn 0.3s ease;
+}
+#jackpot-overlay.active { display:flex; }
+@keyframes jOverlayIn { from{opacity:0} to{opacity:1} }
+
+#jackpot-overlay .j-bg {
+    position:absolute; inset:0; pointer-events:none; overflow:hidden;
+}
+
+#jackpot-overlay .j-title {
+    font-family:'Bebas Neue'; letter-spacing:8px; text-align:center;
+    position:relative; z-index:2;
+    animation:jTitlePop 0.5s cubic-bezier(.17,.89,.32,1.28);
+}
+@keyframes jTitlePop {
+    0%{transform:scale(0.2) rotate(-10deg);opacity:0}
+    70%{transform:scale(1.1) rotate(2deg)}
+    100%{transform:scale(1) rotate(0deg);opacity:1}
+}
+
+#jackpot-overlay.jackpot .j-title {
+    font-size:100px;
+    background:linear-gradient(180deg,#FF00FF,#ff88ff,#FF00FF);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    text-shadow:none; filter:drop-shadow(0 0 40px #FF00FF);
+}
+#jackpot-overlay.maxi .j-title {
+    font-size:90px;
+    background:linear-gradient(180deg,#FFD700,#fff,#FFD700);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 0 60px #FFD700);
+    animation:jTitlePop 0.5s cubic-bezier(.17,.89,.32,1.28), jGoldPulse 0.8s ease-in-out infinite alternate;
+}
+@keyframes jGoldPulse { from{filter:drop-shadow(0 0 30px #FFD700)} to{filter:drop-shadow(0 0 80px #FFD700)} }
+
+#jackpot-overlay .j-subtitle {
+    font-family:'Bebas Neue'; letter-spacing:6px; font-size:28px;
+    color:#fff; opacity:0.8; position:relative; z-index:2;
+    margin-top:-10px;
+    animation:jSubIn 0.5s 0.3s ease both;
+}
+@keyframes jSubIn { from{opacity:0;transform:translateY(20px)} to{opacity:0.8;transform:translateY(0)} }
+
+#jackpot-overlay.maxi .j-subtitle {
+    color:#FFD700; font-size:32px; opacity:1;
+}
+
+#jackpot-overlay .j-amount {
+    font-family:'Bebas Neue'; font-size:52px; letter-spacing:4px;
+    color:#fff; margin-top:16px; position:relative; z-index:2;
+    animation:jSubIn 0.5s 0.5s ease both;
+}
+#jackpot-overlay.jackpot .j-amount { color:#FF00FF; }
+#jackpot-overlay.maxi .j-amount { color:#FFD700; }
+
+#jackpot-overlay .j-imgs {
+    display:flex; gap:16px; margin-top:24px; position:relative; z-index:2;
+    animation:jSubIn 0.5s 0.4s ease both;
+}
+#jackpot-overlay .j-imgs img {
+    width:120px; height:120px; object-fit:cover; border-radius:12px;
+    border:3px solid rgba(255,255,255,0.3);
+    box-shadow:0 0 30px rgba(255,255,255,0.2);
+}
+#jackpot-overlay.jackpot .j-imgs img { border-color:#FF00FF; box-shadow:0 0 30px rgba(255,0,255,0.5); }
+#jackpot-overlay.maxi .j-imgs img { border-color:#FFD700; box-shadow:0 0 40px rgba(255,215,0,0.7); }
+
+#jackpot-overlay .j-close {
+    margin-top:32px; position:relative; z-index:2;
+    font-family:'Bebas Neue'; font-size:18px; letter-spacing:3px;
+    padding:12px 40px; border-radius:8px; border:2px solid rgba(255,255,255,0.3);
+    background:rgba(255,255,255,0.1); color:#fff;
+    transition:0.2s; animation:jSubIn 0.5s 0.7s ease both;
+}
+#jackpot-overlay .j-close:hover { background:rgba(255,255,255,0.2); border-color:#fff; }
+
+/* Rayons lumineux derrière */
+#jackpot-overlay .j-rays {
+    position:absolute; inset:0; pointer-events:none;
+    background:conic-gradient(from 0deg at 50% 50%,
+        transparent 0deg, rgba(255,0,255,0.06) 10deg, transparent 20deg,
+        transparent 30deg, rgba(255,0,255,0.06) 40deg, transparent 50deg,
+        transparent 60deg, rgba(255,0,255,0.06) 70deg, transparent 80deg,
+        transparent 90deg, rgba(255,0,255,0.06) 100deg, transparent 110deg,
+        transparent 120deg, rgba(255,0,255,0.06) 130deg, transparent 140deg,
+        transparent 150deg, rgba(255,0,255,0.06) 160deg, transparent 170deg,
+        transparent 180deg, rgba(255,0,255,0.06) 190deg, transparent 200deg,
+        transparent 210deg, rgba(255,0,255,0.06) 220deg, transparent 230deg,
+        transparent 240deg, rgba(255,0,255,0.06) 250deg, transparent 260deg,
+        transparent 270deg, rgba(255,0,255,0.06) 280deg, transparent 290deg,
+        transparent 300deg, rgba(255,0,255,0.06) 310deg, transparent 320deg,
+        transparent 330deg, rgba(255,0,255,0.06) 340deg, transparent 350deg, transparent 360deg
+    );
+    animation:jRaysSpin 4s linear infinite;
+}
+#jackpot-overlay.maxi .j-rays {
+    background:conic-gradient(from 0deg at 50% 50%,
+        transparent 0deg, rgba(255,215,0,0.08) 10deg, transparent 20deg,
+        transparent 30deg, rgba(255,215,0,0.08) 40deg, transparent 50deg,
+        transparent 60deg, rgba(255,215,0,0.08) 70deg, transparent 80deg,
+        transparent 90deg, rgba(255,215,0,0.08) 100deg, transparent 110deg,
+        transparent 120deg, rgba(255,215,0,0.08) 130deg, transparent 140deg,
+        transparent 150deg, rgba(255,215,0,0.08) 160deg, transparent 170deg,
+        transparent 180deg, rgba(255,215,0,0.08) 190deg, transparent 200deg,
+        transparent 210deg, rgba(255,215,0,0.08) 220deg, transparent 230deg,
+        transparent 240deg, rgba(255,215,0,0.08) 250deg, transparent 260deg,
+        transparent 270deg, rgba(255,215,0,0.08) 280deg, transparent 290deg,
+        transparent 300deg, rgba(255,215,0,0.08) 310deg, transparent 320deg,
+        transparent 330deg, rgba(255,215,0,0.08) 340deg, transparent 350deg, transparent 360deg
+    );
+}
+@keyframes jRaysSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
 </style>
 </head>
 <body>
+
+<!-- JACKPOT OVERLAY -->
+<div id="jackpot-overlay">
+    <div class="j-rays"></div>
+    <div class="j-title" id="j-title">JACKPOT !</div>
+    <div class="j-subtitle" id="j-subtitle">TRIPLE IDENTIQUE</div>
+    <div class="j-imgs" id="j-imgs"></div>
+    <div class="j-amount" id="j-amount">+0 CRÉDITS</div>
+    <button class="j-close" onclick="closeJackpot()">CONTINUER →</button>
+</div>
 
 <!-- RETOUR HUB -->
 <a id="hub-link" href="../../index.html">◀ HUB</a>
@@ -481,10 +617,8 @@ h1 {
         <button class="spin-btn" id="spin-btn" onclick="spin()">🎰 JOUER</button>
     </div>
 
-    <!-- PANNEAU DROITE : TIRETTE + HISTORIQUE -->
-    <div style="display:flex;flex-direction:column;align-items:center;gap:20px;">
-
-        <!-- TIRETTE -->
+    <!-- TIRETTE FIXE -->
+    <div class="lever-fixed">
         <div class="lever-area">
             <div class="lever-track" id="lever-track">
                 <div class="lever-arm"></div>
@@ -492,6 +626,10 @@ h1 {
             </div>
             <div class="lever-label">TIRER</div>
         </div>
+    </div>
+
+    <!-- PANNEAU DROITE : HISTORIQUE SEULEMENT -->
+    <div style="display:flex;flex-direction:column;align-items:center;">
 
         <!-- HISTORIQUE -->
         <div class="history">
@@ -763,14 +901,14 @@ function showResult(results, win) {
 
     if (isJackpot) {
         const mult = getPayouts(a);
-        msg.textContent = `JACKPOT ! ×${mult} → +${win} CRÉDITS`;
+        const isMaxi = mult === 50;
+        msg.textContent = isMaxi ? `MAXI JACKPOT !!! ×${mult} → +${win} CRÉDITS` : `JACKPOT ! ×${mult} → +${win} CRÉDITS`;
         msg.className = 'result-msg jackpot';
         payline.classList.add('win');
         lastWin.textContent = `+${win}`;
         lastWin.className = 'stat-value win';
-        document.getElementById('win-flash').classList.add('active');
-        setTimeout(() => document.getElementById('win-flash').classList.remove('active'), 700);
-        launchConfetti(mult >= 20);
+        launchConfetti(true);
+        showJackpotOverlay(a, win, isMaxi);
     } else if (isPair) {
         msg.textContent = `PAIRE ! ×2 → +${win} CRÉDITS`;
         msg.className = 'result-msg win';
@@ -834,6 +972,44 @@ function addHistory(results, win) {
             <span class="history-result">${label}</span>
         </div>`;
     });
+}
+
+/* ── JACKPOT OVERLAY ── */
+function showJackpotOverlay(symId, win, isMaxi) {
+    const overlay = document.getElementById('jackpot-overlay');
+    const sym = SYMBOLS.find(s => s.id === symId);
+
+    overlay.className = 'active ' + (isMaxi ? 'maxi' : 'jackpot');
+
+    document.getElementById('j-title').textContent = isMaxi ? 'MAXI JACKPOT !!!' : 'JACKPOT !';
+    document.getElementById('j-subtitle').textContent = isMaxi
+        ? `× 50 — COMBINAISON ULTIME`
+        : `× ${getPayouts(symId)} — TRIPLE IDENTIQUE`;
+    document.getElementById('j-amount').textContent = `+ ${win} CRÉDITS`;
+
+    const imgs = document.getElementById('j-imgs');
+    imgs.innerHTML = '';
+    for (let i = 0; i < 3; i++) {
+        const img = document.createElement('img');
+        img.src = sym ? sym.src : '';
+        img.alt = symId;
+        imgs.appendChild(img);
+    }
+
+    // Confettis continus pendant l'overlay
+    if (isMaxi) {
+        const blastInterval = setInterval(() => {
+            if (!overlay.classList.contains('active')) { clearInterval(blastInterval); return; }
+            launchConfetti(true);
+        }, 800);
+        overlay._blastInterval = blastInterval;
+    }
+}
+
+function closeJackpot() {
+    const overlay = document.getElementById('jackpot-overlay');
+    if (overlay._blastInterval) { clearInterval(overlay._blastInterval); overlay._blastInterval = null; }
+    overlay.className = '';
 }
 
 /* ── NOTIF ── */
