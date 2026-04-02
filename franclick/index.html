@@ -442,6 +442,32 @@ body.mega #mega-timer { display:block; }
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-track{background:#0b0c10}
 ::-webkit-scrollbar-thumb{background:#1f2833;border-radius:3px}
+
+/* ── BOURSE ORB ── */
+#bourse-orb {
+    position:fixed; z-index:503; width:80px; height:80px;
+    display:none; align-items:center; justify-content:center;
+    background:transparent; border:none;
+}
+#bourse-orb-inner {
+    width:80px; height:80px; border-radius:50%;
+    overflow:hidden; border:3px solid #ffd700;
+    display:flex; align-items:center; justify-content:center;
+    flex-direction:column; pointer-events:none;
+    animation:bourseGlow .9s ease-in-out infinite alternate;
+    background:#1a1400;
+}
+#bourse-orb-inner img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+#bourse-orb-inner .bourse-emoji { font-size:36px; }
+@keyframes bourseGlow{0%{filter:drop-shadow(0 0 6px #ffd700)}100%{filter:drop-shadow(0 0 22px #ffee88)}}
+
+/* Bandeau gain bourse */
+#bourse-gain {
+    display:none; position:fixed; bottom:30px; left:50%; transform:translateX(-50%);
+    background:rgba(20,14,0,.95); color:#ffd700; font-family:'Bebas Neue';
+    font-size:17px; letter-spacing:2px; padding:8px 20px; border-radius:8px;
+    z-index:504; white-space:nowrap; border:2px solid #ffd700;
+}
 </style>
 </head>
 <body>
@@ -482,6 +508,16 @@ body.mega #mega-timer { display:block; }
 </div>
 
 <div id="bonus-orb" onclick="activateBonus()"><div id="bonus-orb-inner"><div class="ob-icon">⚡</div><div>BONUS<br>x2 !</div></div></div>
+
+<div id="bourse-orb" onclick="clickBourse()">
+    <div id="bourse-orb-inner">
+        <!-- Si tu as bourse.jpg dans franclick/images/, elle s'affiche ici -->
+        <img src="images/bourse.jpg" alt="Bourse"
+             onerror="this.style.display='none';document.getElementById('bourse-fallback').style.display='block'">
+        <span id="bourse-fallback" class="bourse-emoji" style="display:none">💰</span>
+    </div>
+</div>
+<div id="bourse-gain"></div>
 
 <div id="fraude-orb" onclick="catchFraude()">
     <img src="fraude/Bouzaidi_Mohamed_Amine.webp" alt="La Fraude" style="width:100%;height:100%;object-fit:cover;display:block;">
@@ -656,6 +692,9 @@ const BOURRINE_MS = 30000;
 let bpsMultiplier = 1;
 
 let bonusOn=false, bonusSecTimer=0, bonusDelay=30+Math.floor(Math.random()*150);
+// Bourse : spawn toutes les 1-10 min, dure 15s, donne 5-15% du score actuel
+let bourseOn=false, bourseSecTimer=0, bourseDelay=60+Math.floor(Math.random()*540);
+let bourseTimeout=null;
 let fraudeEscapeCount=0; // compteur de fraudes ratées
 let bonusCollectedCount=0; // compteur de bonus collectés
 let milestoneCollectedSet=new Set(); // memes vus
@@ -850,9 +889,13 @@ setInterval(() => {
     bonusSecTimer++;
     fraudeSecTimer++;
     megaSecTimer++;
-    if (!bonusOn && !megaOn && bonusSecTimer >= bonusDelay) triggerBonus();
+    bourseSecTimer++;
+    // Mutex strict : un seul "gros event" à la fois (bonus, mega, bourse)
+    const bigEventActive = bonusOn || megaOn || megaActive || bourseOn;
+    if (!bigEventActive && bonusSecTimer >= bonusDelay) triggerBonus();
     if (!fraudeOn && fraudeSecTimer >= fraudeDelay) triggerFraude();
-    if (!megaOn && !bonusOn && megaSecTimer >= megaDelay) triggerMegaBonus();
+    if (!bigEventActive && megaSecTimer >= megaDelay) triggerMegaBonus();
+    if (!bigEventActive && bourseSecTimer >= bourseDelay) triggerBourse();
 }, 1000);
 
 // Sauvegarde Locale toutes les 5s
@@ -1061,6 +1104,52 @@ function setFranckyImg(src) {
     if (!img) return;
     img.onerror = () => { img.src = '../bingoudalo/avatar/francky.jpg'; img.onerror = null; };
     img.src = src;
+}
+
+// ── BOURSE ──
+function triggerBourse() {
+    bourseOn = true;
+    const o = document.getElementById('bourse-orb');
+    const m = 80;
+    o.style.left = (m + Math.random()*(window.innerWidth-m*2)) + 'px';
+    o.style.top  = (m + Math.random()*(window.innerHeight-m*2)) + 'px';
+    o.style.display = 'flex';
+    // Pourcentage aléatoire entre 5% et 15% du score actuel
+    const pct = 5 + Math.random()*10;
+    o.dataset.pct = pct.toFixed(1);
+    const gain = Math.floor(score * pct / 100);
+    const gainStr = gain.toLocaleString('fr-FR');
+    document.getElementById('bourse-gain').textContent =
+        '💰 BOURSE ! Clique pour +' + gainStr + ' pts (' + pct.toFixed(0) + '% de ton score) !';
+    document.getElementById('bourse-gain').style.display = 'block';
+    showNotif('💰 LA BOURSE SPAWNE ! CLIQUE VITE !');
+    // Disparaît après 15 secondes si pas cliquée
+    if (bourseTimeout) clearTimeout(bourseTimeout);
+    bourseTimeout = setTimeout(() => {
+        if (!bourseOn) return;
+        bourseOn = false;
+        document.getElementById('bourse-orb').style.display = 'none';
+        document.getElementById('bourse-gain').style.display = 'none';
+        showNotif('💸 La bourse a coulé... tu as raté du pognon !');
+        scheduleBourse();
+    }, 15000);
+}
+function clickBourse() {
+    if (!bourseOn) return;
+    bourseOn = false;
+    if (bourseTimeout) { clearTimeout(bourseTimeout); bourseTimeout = null; }
+    document.getElementById('bourse-orb').style.display = 'none';
+    document.getElementById('bourse-gain').style.display = 'none';
+    const pct = parseFloat(document.getElementById('bourse-orb').dataset.pct || 10);
+    const gain = Math.floor(score * pct / 100);
+    score += gain;
+    updateScoreUI();
+    showNotif('💰 +' + gain.toLocaleString('fr-FR') + ' pts ! La bourse a bien bossé !');
+    scheduleBourse();
+}
+function scheduleBourse() {
+    bourseSecTimer = 0;
+    bourseDelay = 60 + Math.floor(Math.random()*540); // 1-10 min
 }
 
 // ── MEGA BONUS ──
