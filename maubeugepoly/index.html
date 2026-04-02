@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDSI GAMES - Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* COULEUR UNIQUE : ORANGE/JAUNE */
+        :root { --orange: #f39c12; --yellow: #f1c40f; --text: #ffffff; }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        
+        body { 
+            background: linear-gradient(-45deg, #1a0509, #4a1010, #80231c, #9c3f00);
+            background-size: 400% 400%; animation: fondChaud 15s ease infinite;
+            color: var(--text); font-family: 'DM Sans', sans-serif; 
+            min-height: 100vh; overflow-x: hidden; display: flex;
+        }
+        @keyframes fondChaud { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        /* VUES */
+        #authView, #appView { width: 100%; display: none; flex-direction: column; align-items: center; }
+        #authView.active { display: flex; justify-content: center; height: 100vh; }
+        #appView.active { display: flex; }
+
+        /* AUTHENTIFICATION */
+        .auth-card {
+            background: rgba(20, 20, 30, 0.8); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 40px; width: 100%; max-width: 400px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8); text-align: center;
+        }
+        .auth-logo-img { max-width: 250px; margin-bottom: 25px; filter: drop-shadow(0 0 15px rgba(243, 156, 18, 0.7)); }
+        
+        .auth-input { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 15px; color: white; margin-bottom: 15px; font-size: 16px; outline: none; transition: 0.3s; text-align: center;}
+        .auth-input:focus { border-color: var(--orange); box-shadow: 0 0 15px rgba(243, 156, 18, 0.3); }
+        
+        .auth-btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; cursor: pointer; transition: 0.2s; font-size: 16px; margin-bottom: 10px; }
+        
+        .btn-solid { background: var(--orange); color: black; box-shadow: 0 5px 15px rgba(243, 156, 18, 0.3); }
+        .btn-solid:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(243, 156, 18, 0.6); }
+        
+        .btn-outline { background: transparent; border: 2px solid var(--orange); color: var(--orange); }
+        .btn-outline:hover { background: var(--orange); color: white; box-shadow: 0 0 20px rgba(243, 156, 18, 0.5); }
+        
+        .error-msg { color: #ff4444; font-size: 14px; margin-bottom: 15px; min-height: 20px; font-weight: bold; }
+
+        /* BOUTONS FLOTTANTS (PROFIL & LEADERBOARD) */
+        #floatingControls {
+            display: none; position: absolute; top: 30px; right: 40px; gap: 20px; z-index: 50; flex-direction: row;
+        }
+        .floating-btn {
+            width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--orange); cursor: pointer;
+            box-shadow: 0 0 20px rgba(243, 156, 18, 0.5); transition: 0.3s; background: rgba(0,0,0,0.8);
+            display: flex; align-items: center; justify-content: center; font-size: 30px;
+        }
+        .floating-btn:hover { transform: scale(1.1); box-shadow: 0 0 30px rgba(243, 156, 18, 0.8); }
+        .floating-btn img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+
+        /* APP VIEW */
+        .main-container { display: flex; width: 100%; max-width: 1400px; margin: 0 auto; padding: 20px; flex-direction: column; align-items: center; }
+        .main-logo { max-width: 400px; margin-bottom: 50px; margin-top: 30px; filter: drop-shadow(0 0 20px rgba(243, 156, 18, 0.8)); }
+        
+        .games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; width: 100%; max-width: 1200px; margin-bottom: 50px; }
+        .game-card { background: rgba(20, 20, 20, 0.6); border-radius: 15px; overflow: hidden; text-decoration: none; color: white; border: 2px solid rgba(255, 255, 255, 0.1); transition: 0.3s; backdrop-filter: blur(5px); }
+        .game-card:hover { transform: translateY(-10px); border-color: var(--yellow); box-shadow: 0 15px 30px rgba(243, 156, 18, 0.5); }
+        .game-thumbnail { width: 100%; height: 180px; object-fit: cover; border-bottom: 2px solid rgba(243, 156, 18, 0.6); }
+        .game-info { padding: 15px; text-align: center; }
+        .game-info h2 { margin: 0 0 5px 0; font-family: 'Bebas Neue'; font-size: 28px; color: var(--yellow); letter-spacing: 1px;}
+        .game-info span { font-size: 13px; color: #aaa; }
+
+        /* MODALS COMMUNS */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-content { 
+            background: rgba(20, 20, 30, 0.9); border: 2px solid var(--orange); border-radius: 20px; padding: 30px; 
+            width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 0 50px rgba(243, 156, 18, 0.3);
+            position: relative;
+        }
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 30px; cursor: pointer; color: #aaa; transition: 0.2s; }
+        .close-btn:hover { color: red; }
+        .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 600px) { .modal-grid { grid-template-columns: 1fr; } }
+
+        /* MODAL PROFIL */
+        .modal-header { display: flex; flex-direction: column; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; margin-bottom: 20px; }
+        .modal-avatar { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--orange); object-fit: cover; margin-bottom: 10px;}
+        .modal-pseudo { font-family: 'Bebas Neue'; font-size: 40px; color: white; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+
+        .stats-section { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); }
+        .stats-section h3 { font-family: 'Bebas Neue'; color: var(--orange); margin-bottom: 15px; font-size: 24px; letter-spacing: 1px; text-align: center; text-shadow: 0 0 10px rgba(243, 156, 18, 0.5);}
+        .stat-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding: 8px 0; }
+        .stat-row:last-child { border-bottom: none; }
+        .stat-label { font-size: 13px; color: #bbb; text-transform: uppercase; }
+        .stat-value { font-family: 'Bebas Neue'; font-size: 24px; color: var(--yellow); }
+
+        .edit-section { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); }
+        .edit-section h3 { font-family: 'Bebas Neue'; color: var(--yellow); margin-bottom: 15px; font-size: 24px; letter-spacing: 1px; text-align: center; text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);}
+        .edit-input { width: 100%; background: #000; border: 1px solid #333; border-radius: 5px; padding: 10px; color: white; margin-bottom: 10px; font-size: 14px; text-align: center; }
+        .edit-input:focus { border-color: var(--yellow); outline: none; box-shadow: 0 0 10px rgba(241, 196, 15, 0.2); }
+
+        .avatar-picker { margin-top: 20px; text-align: center; }
+        .avatar-grid-container { display: none; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 10px; margin-top: 15px; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);}
+        .avatar-option { width: 60px; height: 60px; border-radius: 50%; cursor: pointer; object-fit: cover; border: 2px solid transparent; transition: 0.2s; }
+        .avatar-option:hover { transform: scale(1.1); border-color: var(--orange); }
+        .avatar-option.selected { border-color: var(--yellow); box-shadow: 0 0 15px var(--yellow); }
+        .logout-btn { margin-top: 20px; width: 100%; padding: 12px; background: rgba(255,0,0,0.05); border: 1px solid #ff4444; color: #ff4444; border-radius: 5px; cursor: pointer; text-transform: uppercase; font-weight: bold; transition: 0.2s; }
+        .logout-btn:hover { background: #ff4444; color: white; box-shadow: 0 0 15px rgba(255,68,68,0.5);}
+
+        /* MODAL LEADERBOARD */
+        .lb-section { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); }
+        .lb-section h3 { font-family: 'Bebas Neue'; color: var(--orange); margin-bottom: 15px; font-size: 26px; text-align: center; border-bottom: 1px solid rgba(243,156,18,0.3); padding-bottom: 5px; letter-spacing: 1px;}
+        .lb-list { display: flex; flex-direction: column; gap: 8px; }
+        .lb-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; background: rgba(255,255,255,0.05); border-radius: 8px; }
+        .lb-row.first { background: rgba(241,196,15,0.15); border: 1px solid var(--yellow); box-shadow: 0 0 10px rgba(241, 196, 15, 0.2); }
+        .lb-player { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 14px;}
+        .lb-player img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid #555;}
+        .lb-row.first .lb-player img { border-color: var(--yellow); }
+        .lb-score { font-family: 'Bebas Neue'; font-size: 20px; color: var(--text); }
+        .lb-row.first .lb-score { color: var(--yellow); }
+
+    </style>
+</head>
+<body>
+
+    <div id="floatingControls">
+        <div class="floating-btn" onclick="openLeaderboardModal()" title="Classement Général">
+            🏆
+        </div>
+        <div class="floating-btn" onclick="openProfileModal()" title="Mon Profil">
+            <img id="floatingAvatarSrc" src="" alt="Profil">
+        </div>
+    </div>
+
+    <div id="authView" class="screen active">
+        <div class="auth-card">
+            <img src="images/cdsi-games-logo.png" alt="CDSI GAMES" class="auth-logo-img">
+            <p style="color: #aaa; margin-bottom: 20px; font-size: 14px;">Connecte-toi pour sauvegarder tes stats</p>
+            
+            <div id="errorMsg" class="error-msg"></div>
+            
+            <input type="text" id="pseudoInput" class="auth-input" placeholder="Pseudo" maxlength="15">
+            <input type="password" id="passwordInput" class="auth-input" placeholder="Mot de passe">
+            
+            <button class="auth-btn btn-solid" onclick="login()">Se Connecter</button>
+            <button class="auth-btn btn-outline" onclick="register()">Créer un compte</button>
+        </div>
+    </div>
+
+    <div id="appView" class="screen">
+        <div class="main-container">
+            
+            <img src="images/cdsi-games-logo.png" alt="CDSI GAMES" class="main-logo" onerror="this.src='https://via.placeholder.com/400x150/111/f1c40f?text=CDSI+GAMES'">
+            
+            <div class="games-grid">
+                <a href="bingoudalo/index.html" class="game-card">
+                    <img src="images/bingoudalo-vignette.png" class="game-thumbnail" onerror="this.src='https://via.placeholder.com/400x190/111/fff?text=BINGOUDALO'">
+                    <div class="game-info"><h2>Bingoudalo</h2><span>Jeu multijoueur</span></div>
+                </a>
+                <a href="kavale/index.html" class="game-card">
+                    <img src="images/kavale-vignette.png" class="game-thumbnail" onerror="this.src='https://via.placeholder.com/400x190/111/fff?text=KAVALE'">
+                    <div class="game-info"><h2>Kavale</h2><span>Arène multijoueur</span></div>
+                </a>
+                <a href="franclick/index.html" class="game-card">
+                    <img src="images/franclick-vignette.png" class="game-thumbnail" onerror="this.src='https://via.placeholder.com/400x190/111/fff?text=FRANCLICK'">
+                    <div class="game-info"><h2>Franclick</h2><span>Clicker Solo</span></div>
+                </a>
+                <a href="wanted/index.html" class="game-card">
+                    <img src="images/wanted-vignette.jpg" class="game-thumbnail" onerror="this.src='https://via.placeholder.com/400x190/111/fff?text=WANTED'">
+                    <div class="game-info"><h2>Wanted Dayoub</h2><span>Réflexe Multijoueur</span></div>
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="profileModal" class="modal" onclick="if(event.target === this) closeProfileModal()">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeProfileModal()">&times;</span>
+            
+            <div class="modal-header">
+                <img src="" id="modalAvatar" class="modal-avatar">
+                <div class="modal-pseudo" id="modalPseudo">PSEUDO</div>
+            </div>
+
+            <div class="modal-grid">
+                <div class="stats-section">
+                    <h3>Palmarès</h3>
+                    <div class="stat-row"><span class="stat-label">Kavale</span><span class="stat-value" id="statKavale">0</span></div>
+                    <div class="stat-row"><span class="stat-label">Bingoudalo</span><span class="stat-value" id="statBingo">0</span></div>
+                    <div class="stat-row"><span class="stat-label">Wanted</span><span class="stat-value" id="statWanted">0</span></div>
+                    <div class="stat-row"><span class="stat-label">Franclick</span><span class="stat-value" id="statFranclick" style="color:var(--yellow);">0</span></div>
+                </div>
+
+                <div class="edit-section">
+                    <h3>Modifier Profil</h3>
+                    <input type="text" id="editPseudo" class="edit-input" placeholder="Nouveau Pseudo">
+                    <input type="password" id="editPassword" class="edit-input" placeholder="Nouveau Mot de passe (optionnel)">
+                    <button class="auth-btn btn-solid" style="font-size: 13px; padding: 10px;" onclick="saveProfileChanges()">Enregistrer</button>
+                </div>
+            </div>
+
+            <div class="avatar-picker">
+                <button class="auth-btn btn-outline" style="font-size: 13px; padding: 10px; width: auto;" onclick="toggleAvatarGrid()">Changer d'avatar de profil</button>
+                <div class="avatar-grid-container" id="avatarGridContainer">
+                    </div>
+            </div>
+
+            <button class="logout-btn" onclick="logout()">Déconnexion</button>
+        </div>
+    </div>
+
+    <div id="leaderboardModal" class="modal" onclick="if(event.target === this) closeLeaderboardModal()">
+        <div class="modal-content" style="max-width: 700px;">
+            <span class="close-btn" onclick="closeLeaderboardModal()">&times;</span>
+            
+            <h2 style="font-family: 'Bebas Neue'; font-size: 50px; color: var(--yellow); text-align: center; margin-bottom: 30px; text-shadow: 0 0 15px rgba(241,196,15,0.5); letter-spacing: 2px;">CLASSEMENT GÉNÉRAL</h2>
+
+            <div class="modal-grid">
+                <div class="lb-section">
+                    <h3>Bingoudalo</h3>
+                    <div id="lb-bingo" class="lb-list">Chargement...</div>
+                </div>
+                <div class="lb-section">
+                    <h3>Kavale</h3>
+                    <div id="lb-kavale" class="lb-list">Chargement...</div>
+                </div>
+                <div class="lb-section">
+                    <h3>Wanted Dayoub</h3>
+                    <div id="lb-wanted" class="lb-list">Chargement...</div>
+                </div>
+                <div class="lb-section">
+                    <h3>Franclick</h3>
+                    <div id="lb-franclick" class="lb-list">Chargement...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // --- CONFIGURATION SUPABASE ---
+    const SUPABASE_URL = 'https://pdybshweyfvxzvngnuxe.supabase.co'; 
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkeWJzaHdleWZ2eHp2bmdudXhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDg2MDAsImV4cCI6MjA5MDUyNDYwMH0.u442X28Mhs-4T-tydabnMm8now8VfAEeNU-Sicuipq4'; 
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let currentUser = null;
+    let tempSelectedAvatar = null;
+
+    // TOUTES LES PHOTOS CONNUES
+    const AVATARS = [
+        'bingoudalo/avatar/9k.png', 'bingoudalo/avatar/bbc.png', 'bingoudalo/avatar/christophe.jpg', 
+        'bingoudalo/avatar/coudoux.png', 'bingoudalo/avatar/elian.jpg', 'bingoudalo/avatar/elian.png',
+        'bingoudalo/avatar/ellio.png', 'bingoudalo/avatar/epstein.jpg', 'bingoudalo/avatar/epstein.png',
+        'bingoudalo/avatar/matheo.jpg', 'bingoudalo/avatar/paulin.jpg', 'bingoudalo/avatar/paulin.png',
+        'bingoudalo/avatar/paulo1.jpg', 'bingoudalo/avatar/tom.jpg', 'bingoudalo/avatar/tom.png',
+        'bingoudalo/avatar/wilbaut_suss.jpg', 'bingoudalo/avatar/wilbaut_suss.png', 'bingoudalo/avatar/francky.jpg',
+        'bingoudalo/avatar/affronte.jpg', 'bingoudalo/avatar/dayoub.jpg', 'bingoudalo/avatar/dayoub.png'
+    ];
+
+    // --- FONCTION DE HASHAGE (SHA-256) ---
+    async function hashPassword(password) {
+        const msgBuffer = new TextEncoder().encode(password);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // --- INITIALISATION ---
+    window.onload = () => {
+        const savedPseudo = localStorage.getItem('cdsi_logged_user');
+        if(savedPseudo) {
+            loadUserProfile(savedPseudo);
+        } else {
+            showView('authView');
+        }
+        
+        document.getElementById('avatarGridContainer').innerHTML = AVATARS.map(src => 
+            `<img src="${src}" class="avatar-option" onclick="selectTempAvatar('${src}', this)" onerror="this.style.display='none'">`
+        ).join('');
+    };
+
+    function showView(id) {
+        document.getElementById('authView').classList.remove('active');
+        document.getElementById('appView').classList.remove('active');
+        document.getElementById(id).classList.add('active');
+    }
+
+    function showError(msg) {
+        document.getElementById('errorMsg').innerText = msg;
+    }
+
+    // --- AUTHENTIFICATION ---
+    async function login() {
+        const pseudo = document.getElementById('pseudoInput').value.trim();
+        const pwd = document.getElementById('passwordInput').value;
+        if(!pseudo || !pwd) return showError("Remplis tous les champs.");
+
+        // On hash le mot de passe avant de le comparer
+        const hashedPwd = await hashPassword(pwd);
+
+        const { data, error } = await sb.from('cdsi_users').select('*').eq('pseudo', pseudo).single();
+        
+        if(error || !data) return showError("Ce pseudo n'existe pas.");
+        
+        // Comparaison avec le hash en base de données
+        if(data.password !== hashedPwd) return showError("Mot de passe incorrect.");
+
+        localStorage.setItem('cdsi_logged_user', pseudo);
+        currentUser = data;
+        onLoginSuccess();
+    }
+
+    async function register() {
+        const pseudo = document.getElementById('pseudoInput').value.trim();
+        const pwd = document.getElementById('passwordInput').value;
+        if(!pseudo || !pwd) return showError("Remplis tous les champs.");
+
+        const { data: existing } = await sb.from('cdsi_users').select('pseudo').eq('pseudo', pseudo).maybeSingle();
+        if(existing) return showError("Ce pseudo est déjà pris !");
+
+        // On hash le mot de passe avant la création
+        const hashedPwd = await hashPassword(pwd);
+
+        const newUser = {
+            pseudo: pseudo, 
+            password: hashedPwd, // Enregistrement sécurisé
+            avatar: 'bingoudalo/avatar/paulo1.jpg', 
+            kavale_wins: 0, bingoudalo_wins: 0, wanted_wins: 0, franclick_score: 0
+        };
+
+        const { error } = await sb.from('cdsi_users').insert([newUser]);
+        if(error) return showError("Erreur lors de la création.");
+
+        localStorage.setItem('cdsi_logged_user', pseudo);
+        currentUser = newUser;
+        onLoginSuccess();
+    }
+
+    function onLoginSuccess() {
+        document.getElementById('floatingControls').style.display = 'flex';
+        updateDashboardUI();
+        showView('appView');
+    }
+
+    function logout() {
+        localStorage.removeItem('cdsi_logged_user');
+        currentUser = null;
+        document.getElementById('pseudoInput').value = '';
+        document.getElementById('passwordInput').value = '';
+        document.getElementById('floatingControls').style.display = 'none';
+        closeProfileModal();
+        closeLeaderboardModal();
+        showError("");
+        showView('authView');
+    }
+
+    async function loadUserProfile(pseudo) {
+        const { data, error } = await sb.from('cdsi_users').select('*').eq('pseudo', pseudo).single();
+        if(error || !data) {
+            logout();
+        } else {
+            currentUser = data;
+            onLoginSuccess();
+        }
+    }
+
+    // --- GESTION DU PROFIL (MODAL) ---
+    function updateDashboardUI() {
+        if(!currentUser) return;
+        
+        document.getElementById('floatingAvatarSrc').src = currentUser.avatar || 'https://via.placeholder.com/70';
+        
+        document.getElementById('modalAvatar').src = currentUser.avatar || 'https://via.placeholder.com/100';
+        document.getElementById('modalPseudo').innerText = currentUser.pseudo;
+        
+        document.getElementById('editPseudo').value = currentUser.pseudo;
+        // On vide le mot de passe par sécurité
+        document.getElementById('editPassword').value = '';
+        document.getElementById('editPassword').placeholder = "Nouveau Mot de passe (optionnel)";
+        tempSelectedAvatar = currentUser.avatar;
+
+        document.getElementById('statKavale').innerText = currentUser.kavale_wins;
+        document.getElementById('statBingo').innerText = currentUser.bingoudalo_wins;
+        document.getElementById('statWanted').innerText = currentUser.wanted_wins;
+        document.getElementById('statFranclick').innerText = Math.floor(currentUser.franclick_score);
+    }
+
+    function openProfileModal() {
+        updateDashboardUI();
+        document.getElementById('profileModal').style.display = 'flex';
+        document.getElementById('avatarGridContainer').style.display = 'none';
+    }
+
+    function closeProfileModal() {
+        document.getElementById('profileModal').style.display = 'none';
+    }
+
+    function toggleAvatarGrid() {
+        const grid = document.getElementById('avatarGridContainer');
+        grid.style.display = grid.style.display === 'grid' ? 'none' : 'grid';
+    }
+
+    function selectTempAvatar(src, imgElement) {
+        tempSelectedAvatar = src;
+        document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected'));
+        imgElement.classList.add('selected');
+    }
+
+    async function saveProfileChanges() {
+        let newPseudo = document.getElementById('editPseudo').value.trim();
+        let newPassInput = document.getElementById('editPassword').value;
+
+        if(!newPseudo) return alert("Le pseudo ne peut pas être vide.");
+
+        if(newPseudo !== currentUser.pseudo) {
+             const { data: existing } = await sb.from('cdsi_users').select('pseudo').eq('pseudo', newPseudo).maybeSingle();
+             if(existing) return alert("Ce pseudo est déjà pris par quelqu'un d'autre !");
+        }
+
+        let updateData = {
+             pseudo: newPseudo, 
+             avatar: tempSelectedAvatar
+        };
+
+        // Si l'utilisateur change son mot de passe, on le hash avant de l'envoyer
+        if(newPassInput) {
+            updateData.password = await hashPassword(newPassInput);
+        }
+
+        const { error } = await sb.from('cdsi_users').update(updateData).eq('pseudo', currentUser.pseudo);
+
+        if(error) return alert("Erreur lors de la sauvegarde.");
+
+        currentUser.pseudo = newPseudo;
+        if(newPassInput) currentUser.password = updateData.password;
+        currentUser.avatar = tempSelectedAvatar;
+        localStorage.setItem('cdsi_logged_user', newPseudo);
+
+        alert("Profil mis à jour avec succès !");
+        updateDashboardUI();
+        document.getElementById('avatarGridContainer').style.display = 'none';
+    }
+
+    // --- GESTION DU LEADERBOARD (MODAL) ---
+    function openLeaderboardModal() {
+        document.getElementById('leaderboardModal').style.display = 'flex';
+        fetchLeaderboards();
+    }
+
+    function closeLeaderboardModal() {
+        document.getElementById('leaderboardModal').style.display = 'none';
+    }
+
+    async function fetchLeaderboards() {
+        const { data, error } = await sb.from('cdsi_users').select('*');
+        if (error || !data) return;
+
+        document.getElementById('lb-bingo').innerHTML = renderLbList(data, 'bingoudalo_wins', 'victoires');
+        document.getElementById('lb-kavale').innerHTML = renderLbList(data, 'kavale_wins', 'victoires');
+        document.getElementById('lb-wanted').innerHTML = renderLbList(data, 'wanted_wins', 'victoires');
+        document.getElementById('lb-franclick').innerHTML = renderLbList(data, 'franclick_score', 'pts');
+    }
+
+    function renderLbList(users, field, suffix) {
+        let sorted = [...users].sort((a, b) => (b[field] || 0) - (a[field] || 0));
+        sorted = sorted.filter(u => (u[field] || 0) > 0).slice(0, 5);
+
+        if (sorted.length === 0) {
+            return "<div style='text-align:center; color:#aaa; font-size: 13px; padding: 15px;'>Aucun score enregistré</div>";
+        }
+
+        return sorted.map((u, i) => {
+            let rankClass = i === 0 ? 'first' : '';
+            return `
+            <div class="lb-row ${rankClass}">
+                <div class="lb-player">
+                    <span style="color:#aaa; width: 15px;">${i+1}.</span>
+                    <img src="${u.avatar || 'https://via.placeholder.com/28'}" onerror="this.src='https://via.placeholder.com/28'">
+                    ${u.pseudo}
+                </div>
+                <div class="lb-score">${Math.floor(u[field])} ${suffix}</div>
+            </div>`;
+        }).join('');
+    }
+
+</script>
+</body>
+</html>
