@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CARREFOUR MAUBEUGE 📉</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'DM Sans', sans-serif; }
+  body { background: #0e0e12; color: #fff; padding: 20px; padding-top: 70px; display: flex; flex-direction: column; align-items: center; }
+  
+  .top-bar { position: fixed; top: 0; left: 0; width: 100%; padding: 15px 30px; background: rgba(20,20,25,0.9); backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); z-index: 100;}
+  .logo { font-size: 24px; font-weight: 700; color: #27ae60; letter-spacing: -1px;}
+  .wallet-pill { background: rgba(39, 174, 96, 0.1); border: 1px solid #27ae60; padding: 8px 15px; border-radius: 20px; color: #2ecc71; font-weight: bold; }
+  .hub-link { color: #aaa; text-decoration: none; font-weight: bold; transition: 0.2s;}
+  .hub-link:hover { color: #fff; }
+
+  .container { width: 100%; max-width: 1000px; display: flex; flex-direction: column; gap: 30px; }
+  
+  .controls { display: flex; justify-content: space-between; align-items: center; }
+  button { padding: 12px 24px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 14px;}
+  .btn-green { background: #27ae60; color: white; }
+  .btn-green:hover { background: #2ecc71; box-shadow: 0 0 15px rgba(46, 204, 113, 0.4); }
+  .btn-red { background: #c0392b; color: white; }
+  .btn-red:hover { background: #e74c3c; box-shadow: 0 0 15px rgba(231, 76, 60, 0.4); }
+
+  .market-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+  
+  .market-card { background: #1a1a24; border: 1px solid #2a2a35; border-radius: 12px; padding: 20px; cursor: pointer; transition: 0.2s; }
+  .market-card:hover { border-color: #27ae60; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+  .market-title { font-size: 18px; font-weight: 700; margin-bottom: 15px; line-height: 1.3;}
+  
+  .odds-bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 10px; background: #333;}
+  .odds-yes { background: #27ae60; transition: width 0.5s; }
+  .odds-no { background: #c0392b; transition: width 0.5s; }
+  
+  .stats-row { display: flex; justify-content: space-between; font-size: 13px; color: #888; }
+  .yes-text { color: #2ecc71; font-weight: bold; }
+  .no-text { color: #e74c3c; font-weight: bold; }
+
+  /* DETAIL MODAL */
+  .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 200; justify-content: center; align-items: center; padding: 20px;}
+  .modal-content { background: #1a1a24; border: 1px solid #333; border-radius: 16px; width: 100%; max-width: 800px; padding: 30px; position: relative; max-height: 90vh; overflow-y: auto;}
+  .close-btn { position: absolute; top: 20px; right: 20px; font-size: 24px; color: #888; cursor: pointer; }
+  
+  .chart-container { width: 100%; height: 300px; margin-top: 20px; margin-bottom: 30px;}
+  
+  .bet-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #111; padding: 20px; border-radius: 12px;}
+  .input-bet { width: 100%; background: #222; border: 1px solid #444; color: white; padding: 15px; border-radius: 8px; font-size: 18px; text-align: center; margin-bottom: 10px;}
+  
+  /* CREATE MODAL */
+  .form-group { margin-bottom: 15px; text-align: left; }
+  .form-group label { display: block; margin-bottom: 5px; color: #aaa; font-size: 14px;}
+  .form-input { width: 100%; background: #111; border: 1px solid #333; color: white; padding: 12px; border-radius: 8px; font-size: 16px;}
+  
+  .admin-panel { margin-top: 20px; padding: 15px; background: rgba(241, 196, 15, 0.1); border: 1px solid #f1c40f; border-radius: 8px; display: none;}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+    <a href="../index.html" class="hub-link">← HUB</a>
+    <div class="logo">CARREFOUR MAUBEUGE</div>
+    <div class="wallet-pill" id="myWallet">0 M$</div>
+</div>
+
+<div class="container">
+    <div class="controls">
+        <h2 style="font-size: 28px;">Marchés Actifs</h2>
+        <button class="btn-green" onclick="document.getElementById('createModal').style.display='flex'">+ CRÉER UN PARI</button>
+    </div>
+
+    <div class="market-grid" id="marketGrid">
+        <!-- Rempli en JS -->
+        <p style="color: #aaa;">Chargement des marchés...</p>
+    </div>
+</div>
+
+<!-- MODAL CREATION -->
+<div class="modal" id="createModal">
+    <div class="modal-content" style="max-width: 500px;">
+        <span class="close-btn" onclick="document.getElementById('createModal').style.display='none'">&times;</span>
+        <h2 style="margin-bottom: 20px;">Lancer un nouveau marché</h2>
+        <div class="form-group">
+            <label>La question (ex: Le prof arrive avant 8h40 ?)</label>
+            <input type="text" id="newMarketTitle" class="form-input" placeholder="Question...">
+        </div>
+        <button class="btn-green" style="width: 100%; margin-top: 10px;" onclick="createMarket()">OUVRIR LE MARCHÉ</button>
+    </div>
+</div>
+
+<!-- MODAL DETAIL & CHART -->
+<div class="modal" id="detailModal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeDetailModal()">&times;</span>
+        <h2 id="detailTitle" style="font-size: 24px; padding-right: 30px;">Titre du pari</h2>
+        
+        <div class="chart-container">
+            <canvas id="oddsChart"></canvas>
+        </div>
+
+        <div class="bet-controls">
+            <div>
+                <h3 class="yes-text" style="text-align: center; margin-bottom: 10px;">OUI (<span id="detailYesPct">50</span>%)</h3>
+                <input type="number" id="betYesAmount" class="input-bet" placeholder="Mise en M$">
+                <button class="btn-green" style="width: 100%;" onclick="placeBet('yes')">PARIER OUI</button>
+            </div>
+            <div>
+                <h3 class="no-text" style="text-align: center; margin-bottom: 10px;">NON (<span id="detailNoPct">50</span>%)</h3>
+                <input type="number" id="betNoAmount" class="input-bet" placeholder="Mise en M$">
+                <button class="btn-red" style="width: 100%;" onclick="placeBet('no')">PARIER NON</button>
+            </div>
+        </div>
+
+        <!-- ZONE RÉSERVÉE À PAULO -->
+        <div class="admin-panel" id="adminPanel">
+            <h3 style="color: #f1c40f; margin-bottom: 10px;">⚖️ RÉSOLUTION (ADMIN PAULO)</h3>
+            <p style="font-size: 13px; color: #ccc; margin-bottom: 10px;">Clôturer le pari et distribuer l'argent aux gagnants.</p>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-green" style="flex: 1;" onclick="resolveMarket('yes')">RÉSOUDRE : OUI GAGNE</button>
+                <button class="btn-red" style="flex: 1;" onclick="resolveMarket('no')">RÉSOUDRE : NON GAGNE</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://pdybshweyfvxzvngnuxe.supabase.co'; 
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkeWJzaHdleWZ2eHp2bmdudXhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDg2MDAsImV4cCI6MjA5MDUyNDYwMH0.u442X28Mhs-4T-tydabnMm8now8VfAEeNU-Sicuipq4'; 
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const MARKET_ID = 'carrefour_main_market';
+
+let myPseudo = '';
+let myWallet = 0;
+let marketsData = {};
+let currentMarketId = null;
+let chartInstance = null;
+
+window.onload = async () => {
+    myPseudo = localStorage.getItem('cdsi_logged_user');
+    if (!myPseudo || myPseudo === 'null') { window.location.href = '../index.html'; return; }
+    
+    await fetchUserWallet();
+    await loadMarkets();
+    
+    // Auto-refresh léger toutes les 3 secondes pour voir les courbes bouger
+    setInterval(loadMarkets, 3000);
+};
+
+async function fetchUserWallet() {
+    const { data } = await sb.from('cdsi_users').select('wallet').eq('pseudo', myPseudo).single();
+    if(data) {
+        myWallet = parseFloat(data.wallet);
+        document.getElementById('myWallet').innerText = Math.floor(myWallet) + " M$";
+    }
+}
+
+async function fetchMarketState() {
+    const {data} = await sb.from('bingo_state').select('data').eq('id', MARKET_ID).maybeSingle();
+    return data?.data || { markets: {} };
+}
+
+async function saveMarketState(newState) {
+    await sb.from('bingo_state').upsert({ id: MARKET_ID, data: newState, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+}
+
+// --- LOGIQUE DU MARCHÉ ---
+async function loadMarkets() {
+    const state = await fetchMarketState();
+    marketsData = state.markets || {};
+    renderMarketGrid();
+    
+    // Mettre à jour le modal détaillé s'il est ouvert
+    if (currentMarketId && marketsData[currentMarketId]) {
+        updateDetailModalData(marketsData[currentMarketId]);
+    }
+}
+
+function renderMarketGrid() {
+    const grid = document.getElementById('marketGrid');
+    let html = "";
+    
+    const activeMarkets = Object.entries(marketsData).filter(([id, m]) => !m.resolved).reverse();
+    
+    if (activeMarkets.length === 0) {
+        grid.innerHTML = "<p style='color:#888;'>Aucun pari en cours. Crées-en un !</p>";
+        return;
+    }
+
+    activeMarkets.forEach(([id, m]) => {
+        let totalPool = m.poolYes + m.poolNo;
+        let yesPct = totalPool === 0 ? 50 : Math.round((m.poolYes / totalPool) * 100);
+        let noPct = 100 - yesPct;
+
+        html += `
+        <div class="market-card" onclick="openDetailModal('${id}')">
+            <div class="market-title">${m.title}</div>
+            <div class="odds-bar">
+                <div class="odds-yes" style="width: ${yesPct}%;"></div>
+                <div class="odds-no" style="width: ${noPct}%;"></div>
+            </div>
+            <div class="stats-row">
+                <span class="yes-text">OUI ${yesPct}%</span>
+                <span>Vol: ${Math.floor(totalPool)} M$</span>
+                <span class="no-text">NON ${noPct}%</span>
+            </div>
+            <div style="font-size: 11px; color:#555; margin-top: 10px; text-align:right;">Créé par ${m.creator}</div>
+        </div>`;
+    });
+    grid.innerHTML = html;
+}
+
+async function createMarket() {
+    const title = document.getElementById('newMarketTitle').value.trim();
+    if (!title) return alert("Mets une question !");
+    
+    const state = await fetchMarketState();
+    if(!state.markets) state.markets = {};
+    
+    const newId = 'mkt_' + Date.now();
+    state.markets[newId] = {
+        title: title,
+        creator: myPseudo,
+        poolYes: 0,
+        poolNo: 0,
+        resolved: false,
+        winner: null,
+        history: [{ time: new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'}), yesPct: 50 }],
+        bets: {} // Pour traquer qui a misé quoi
+    };
+
+    await saveMarketState(state);
+    document.getElementById('createModal').style.display = 'none';
+    document.getElementById('newMarketTitle').value = "";
+    loadMarkets();
+}
+
+// --- LE DÉTAIL DU PARI (MODAL & GRAPHIQUE) ---
+function openDetailModal(id) {
+    currentMarketId = id;
+    const m = marketsData[id];
+    
+    document.getElementById('detailModal').style.display = 'flex';
+    document.getElementById('detailTitle').innerText = m.title;
+    
+    // Afficher le panel Admin si c'est Paulo (Ajuste l'orthographe exacte de ton pseudo administrateur ici !)
+    if (myPseudo.toLowerCase() === 'paulo') {
+        document.getElementById('adminPanel').style.display = 'block';
+    } else {
+        document.getElementById('adminPanel').style.display = 'none';
+    }
+
+    updateDetailModalData(m);
+    initChart(m.history);
+}
+
+function closeDetailModal() {
+    document.getElementById('detailModal').style.display = 'none';
+    currentMarketId = null;
+    if (chartInstance) chartInstance.destroy();
+}
+
+function updateDetailModalData(m) {
+    let totalPool = m.poolYes + m.poolNo;
+    let yesPct = totalPool === 0 ? 50 : Math.round((m.poolYes / totalPool) * 100);
+    let noPct = 100 - yesPct;
+    
+    document.getElementById('detailYesPct').innerText = yesPct;
+    document.getElementById('detailNoPct').innerText = noPct;
+
+    // Maj du graph si ouvert
+    if (chartInstance) {
+        chartInstance.data.labels = m.history.map(h => h.time);
+        chartInstance.data.datasets[0].data = m.history.map(h => h.yesPct);
+        chartInstance.update('none'); // Update sans animation lourde
+    }
+}
+
+function initChart(historyData) {
+    if (chartInstance) chartInstance.destroy();
+    
+    const ctx = document.getElementById('oddsChart').getContext('2d');
+    chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: historyData.map(h => h.time),
+            datasets: [{
+                label: '% Probabilité OUI',
+                data: historyData.map(h => h.yesPct),
+                borderColor: '#27ae60',
+                backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3, // Courbe douce
+                pointRadius: 0, // Cache les points pour faire propre
+                pointHoverRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { min: 0, max: 100, ticks: { color: '#888', callback: v => v + '%' }, grid: { color: '#222' } },
+                x: { ticks: { color: '#888' }, grid: { display: false } }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+}
+
+// --- PRENDRE UN PARI ---
+async function placeBet(choice) {
+    const inputId = choice === 'yes' ? 'betYesAmount' : 'betNoAmount';
+    const amountStr = document.getElementById(inputId).value;
+    const amount = parseFloat(amountStr);
+
+    if (!amount || amount <= 0) return alert("Mise invalide !");
+    if (amount > myWallet) return alert("Tu n'as pas assez d'argent sur ton compte !");
+
+    // 1. Retirer l'argent du joueur
+    const newWallet = myWallet - amount;
+    await sb.from('cdsi_users').update({ wallet: newWallet }).eq('pseudo', myPseudo);
+    await fetchUserWallet(); // Refresh UI
+
+    // 2. Mettre à jour le marché global
+    let state = await fetchMarketState();
+    let m = state.markets[currentMarketId];
+    
+    if(m.resolved) return alert("Ce pari est déjà clôturé !");
+
+    if (choice === 'yes') m.poolYes += amount;
+    else m.poolNo += amount;
+
+    // Enregistrer le pari du joueur
+    if (!m.bets[myPseudo]) m.bets[myPseudo] = { yes: 0, no: 0 };
+    m.bets[myPseudo][choice] += amount;
+
+    // Enregistrer le point d'historique pour la courbe
+    let totalPool = m.poolYes + m.poolNo;
+    let yesPct = Math.round((m.poolYes / totalPool) * 100);
+    m.history.push({ time: new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'}), yesPct: yesPct });
+
+    await saveMarketState(state);
+    
+    document.getElementById(inputId).value = "";
+    loadMarkets(); // Refresh
+}
+
+// --- PAULO : RÉSOUDRE LE PARI ET PAYER ---
+async function resolveMarket(winningChoice) {
+    if(!confirm("ATTENTION ADMIN : Tu vas clôturer ce pari et distribuer l'argent. Sûr de toi ?")) return;
+
+    let state = await fetchMarketState();
+    let m = state.markets[currentMarketId];
+    
+    if (m.resolved) return alert("Déjà résolu.");
+
+    m.resolved = true;
+    m.winner = winningChoice;
+
+    let totalPool = m.poolYes + m.poolNo;
+    let winningPool = winningChoice === 'yes' ? m.poolYes : m.poolNo;
+
+    // Si personne n'a parié sur le choix gagnant, l'argent est perdu (ou on pourrait rembourser, mais gardons la banque riche)
+    if (winningPool > 0) {
+        // Distribution
+        for (let playerPseudo in m.bets) {
+            let playerBet = m.bets[playerPseudo];
+            let betOnWinner = winningChoice === 'yes' ? playerBet.yes : playerBet.no;
+            
+            if (betOnWinner > 0) {
+                // Règle du pari mutuel : Part du gâteau = (Ma mise / Pool Gagnant) * Total Pool
+                let sharePercentage = betOnWinner / winningPool;
+                let payout = totalPool * sharePercentage;
+                
+                // On va chercher le solde actuel du gagnant et on lui ajoute ses gains
+                const { data } = await sb.from('cdsi_users').select('wallet').eq('pseudo', playerPseudo).single();
+                if (data) {
+                    let updatedWallet = parseFloat(data.wallet) + payout;
+                    await sb.from('cdsi_users').update({ wallet: updatedWallet }).eq('pseudo', playerPseudo);
+                }
+            }
+        }
+    }
+
+    await saveMarketState(state);
+    closeDetailModal();
+    loadMarkets();
+    await fetchUserWallet(); // Maj du solde de Paulo au cas où il a joué
+    alert(`Marché résolu ! Les gains de ${Math.floor(totalPool)} M$ ont été distribués aux gagnants.`);
+}
+</script>
+</body>
+</html>
