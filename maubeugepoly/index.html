@@ -58,13 +58,12 @@
   }
   .corner { font-size: 12px; }
   
-  .color-bar { position: absolute; border-color: #000; border-style: solid; }
-  .cb-top { top: 0; left: 0; width: 100%; height: 20%; border-width: 0 0 2px 0; }
-  .cb-bottom { bottom: 0; left: 0; width: 100%; height: 20%; border-width: 2px 0 0 0; }
-  .cb-left { top: 0; left: 0; width: 20%; height: 100%; border-width: 0 2px 0 0; }
-  .cb-right { top: 0; right: 0; width: 20%; height: 100%; border-width: 0 0 0 2px; }
+  .color-bar { position: absolute; border-color: #000; border-style: solid; display: flex; align-items: center; justify-content: center; font-size: 10px; letter-spacing: 1px;}
+  .cb-top { top: 0; left: 0; width: 100%; height: 20%; border-width: 0 0 2px 0; flex-direction: row;}
+  .cb-bottom { bottom: 0; left: 0; width: 100%; height: 20%; border-width: 2px 0 0 0; flex-direction: row;}
+  .cb-left { top: 0; left: 0; width: 20%; height: 100%; border-width: 0 2px 0 0; flex-direction: column;}
+  .cb-right { top: 0; right: 0; width: 20%; height: 100%; border-width: 0 0 0 2px; flex-direction: column;}
   
-  /* COULEURS DES QUARTIERS */
   .cyan { background-color: #00bcd4; }
   .marron { background-color: #8b4513; }
   .vert { background-color: #27ae60; }
@@ -80,14 +79,12 @@
   .txt-rot-left { transform: rotate(90deg); display: inline-block; }
   .txt-rot-right { transform: rotate(-90deg); display: inline-block; }
 
-  /* BADGE PROPRIÉTAIRE */
   .owner-badge { position: absolute; font-size: 8px; background: rgba(0,0,0,0.8); color: var(--gold); padding: 2px 4px; border-radius: 4px; z-index: 2; text-transform: uppercase; font-family: 'Bebas Neue'; letter-spacing: 1px;}
   .row-bottom .owner-badge { top: 25%; }
   .row-top .owner-badge { bottom: 25%; }
   .col-left .owner-badge { left: 25%; transform: rotate(-90deg); }
   .col-right .owner-badge { right: 25%; transform: rotate(90deg); }
 
-  /* ZONE DES PIONS */
   .players-zone { position: absolute; z-index: 5; display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; transition: 0.3s; }
   .pz-bottom { bottom: 2px; left: 2px; right: 2px; }
   .pz-top { top: 2px; left: 2px; right: 2px; }
@@ -98,18 +95,11 @@
   .token { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 5px rgba(0,0,0,0.8); object-fit: cover; background: #222; transform: scale(1); transition: transform 0.1s;}
   .token.hop { transform: scale(1.3) translateY(-5px); box-shadow: 0 10px 15px rgba(0,0,0,0.5); border-color: var(--gold); }
 
-  /* LE CENTRE DU PLATEAU */
   .center-logo { grid-column: 2 / 7; grid-row: 2 / 7; background: var(--board-bg); display: flex; align-items: center; justify-content: center; border: none; position: relative; }
   .center-logo h1 { font-family: 'Bebas Neue'; font-size: 55px; color: #c0392b; transform: rotate(-45deg); text-shadow: 2px 2px 0px #fff; margin: 0; }
   
-  .action-log {
-      position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-      background: rgba(0,0,0,0.8); color: var(--gold); padding: 10px 20px; border-radius: 10px;
-      font-family: 'Bebas Neue'; font-size: 20px; letter-spacing: 1px; border: 1px solid var(--gold);
-      box-shadow: 0 0 15px rgba(255,215,0,0.3); text-align: center; width: 80%;
-  }
+  .action-log { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: var(--gold); padding: 10px 20px; border-radius: 10px; font-family: 'Bebas Neue'; font-size: 20px; letter-spacing: 1px; border: 1px solid var(--gold); box-shadow: 0 0 15px rgba(255,215,0,0.3); text-align: center; width: 80%; }
 
-  /* PANNEAU LATÉRAL */
   .side-panel { display: flex; flex-direction: column; gap: 20px; width: 250px; }
   @media (max-width: 950px) { .game-layout { flex-direction: column; } }
   
@@ -117,13 +107,26 @@
   .die { background: white; border-radius: 10px; width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; color: black; font-size: 30px; font-weight: bold; box-shadow: inset 0 0 10px rgba(0,0,0,0.2), 0 5px 10px rgba(0,0,0,0.5); border: 1px solid #ccc;}
   .turn-indicator { font-family: 'Bebas Neue'; font-size: 28px; color: var(--gold); text-align: center; margin-bottom: 15px; border-bottom: 2px solid rgba(255,215,0,0.3); padding-bottom: 5px;}
 
-  /* FENÊTRE D'ACHAT */
+  /* FENÊTRES MODALES (ACHAT / INVENTAIRE / CHANCE) */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(5px);}
-  .modal-buy { background: rgba(20,20,30,0.95); border: 2px solid var(--gold); border-radius: 15px; padding: 30px; text-align: center; width: 90%; max-width: 400px; box-shadow: 0 0 40px rgba(255,215,0,0.4); }
-  .modal-buy h2 { font-family: 'Bebas Neue'; color: #fff; font-size: 35px; margin-bottom: 10px; letter-spacing: 1px;}
-  .modal-buy p { color: #aaa; margin-bottom: 20px; font-size: 18px;}
-  .modal-buy .price { font-family: 'Bebas Neue'; font-size: 45px; color: var(--gold); margin-bottom: 20px; }
+  .modal-box { background: rgba(20,20,30,0.95); border: 2px solid var(--gold); border-radius: 15px; padding: 30px; text-align: center; width: 90%; max-width: 400px; box-shadow: 0 0 40px rgba(255,215,0,0.4); position: relative; max-height: 80vh; overflow-y: auto;}
+  .modal-box h2 { font-family: 'Bebas Neue'; color: #fff; font-size: 35px; margin-bottom: 10px; letter-spacing: 1px;}
+  .modal-box p { color: #aaa; margin-bottom: 20px; font-size: 18px;}
+  .modal-box .price { font-family: 'Bebas Neue'; font-size: 45px; color: var(--gold); margin-bottom: 20px; }
   .btn-group { display: flex; gap: 15px; }
+  
+  /* CARTES INVENTAIRE */
+  .prop-card { background: #111; border: 1px solid #333; border-radius: 8px; margin-bottom: 15px; overflow: hidden; text-align: left;}
+  .prop-header { height: 30px; }
+  .prop-body { padding: 10px; display: flex; justify-content: space-between; align-items: center;}
+  .prop-info h4 { font-size: 16px; color: white; margin-bottom: 4px;}
+  .prop-info span { font-size: 12px; color: var(--gold); }
+  .close-btn { position: absolute; top: 10px; right: 15px; font-size: 24px; color: #aaa; cursor: pointer; }
+
+  /* CARTE CHANCE */
+  #chanceModal .modal-box { border-color: #ff9800; box-shadow: 0 0 40px rgba(255, 152, 0, 0.5); }
+  #chanceModal h2 { color: #ff9800; }
+  .chance-text { font-size: 22px !important; color: white !important; font-weight: bold; margin: 30px 0 !important; line-height: 1.4;}
 
 </style>
 </head>
@@ -151,26 +154,25 @@
 
 <!-- LE JEU -->
 <div class="screen" id="screenGame" style="max-width: 1200px; margin-top: 20px;">
-    
     <div class="game-layout">
         
         <!-- LE PLATEAU -->
         <div class="board-container">
             <!-- LIGNE HAUT -->
             <div class="square corner" id="cell-12" style="grid-column: 1; grid-row: 1;"><div class="sq-content">PARC<br>GRATUIT</div><div class="players-zone pz-center"></div></div>
-            <div class="square row-top" id="cell-13" style="grid-column: 2; grid-row: 1;"><div class="color-bar cb-bottom rouge"></div><div class="sq-content">IUT DE<br>MAUBEUGE</div><div class="players-zone pz-top"></div></div>
+            <div class="square row-top" id="cell-13" style="grid-column: 2; grid-row: 1;"><div class="color-bar cb-bottom rouge" id="house-13"></div><div class="sq-content">IUT DE<br>MAUBEUGE</div><div class="players-zone pz-top"></div></div>
             <div class="square row-top" id="cell-14" style="grid-column: 3; grid-row: 1;"><div class="sq-content">CAISSE DE<br>COMMU</div><div class="players-zone pz-top"></div></div>
-            <div class="square row-top" id="cell-15" style="grid-column: 4; grid-row: 1;"><div class="color-bar cb-bottom rouge"></div><div class="sq-content">MAISON<br>CORINNE</div><div class="players-zone pz-top"></div></div>
+            <div class="square row-top" id="cell-15" style="grid-column: 4; grid-row: 1;"><div class="color-bar cb-bottom rouge" id="house-15"></div><div class="sq-content">MAISON<br>CORINNE</div><div class="players-zone pz-top"></div></div>
             <div class="square row-top" id="cell-16" style="grid-column: 5; grid-row: 1;"><div class="sq-content">GARE DE<br>LOUVROIL</div><div class="players-zone pz-top"></div></div>
-            <div class="square row-top" id="cell-17" style="grid-column: 6; grid-row: 1;"><div class="color-bar cb-bottom bleu"></div><div class="sq-content">ZOO DE<br>MAUBEUGE</div><div class="players-zone pz-top"></div></div>
+            <div class="square row-top" id="cell-17" style="grid-column: 6; grid-row: 1;"><div class="color-bar cb-bottom bleu" id="house-17"></div><div class="sq-content">ZOO DE<br>MAUBEUGE</div><div class="players-zone pz-top"></div></div>
             <div class="square corner" id="cell-18" style="grid-column: 7; grid-row: 1;"><div class="sq-content">ALLEZ EN<br>PRISON</div><div class="players-zone pz-center"></div></div>
 
             <!-- COLONNE DROITE -->
-            <div class="square col-right" id="cell-19" style="grid-column: 7; grid-row: 2;"><div class="color-bar cb-left bleu"></div><div class="sq-content"><span class="txt-rot-left">CLAIR<br>DE LUNE</span></div><div class="players-zone pz-right"></div></div>
+            <div class="square col-right" id="cell-19" style="grid-column: 7; grid-row: 2;"><div class="color-bar cb-left bleu" id="house-19"></div><div class="sq-content"><span class="txt-rot-left">CLAIR<br>DE LUNE</span></div><div class="players-zone pz-right"></div></div>
             <div class="square col-right" id="cell-20" style="grid-column: 7; grid-row: 3;"><div class="sq-content"><span class="txt-rot-left">CHANCE</span></div><div class="players-zone pz-right"></div></div>
             <div class="square col-right" id="cell-21" style="grid-column: 7; grid-row: 4;"><div class="sq-content"><span class="txt-rot-left">STIBUS</span></div><div class="players-zone pz-right"></div></div>
-            <div class="square col-right" id="cell-22" style="grid-column: 7; grid-row: 5;"><div class="color-bar cb-left vert"></div><div class="sq-content"><span class="txt-rot-left">BASIC FIT</span></div><div class="players-zone pz-right"></div></div>
-            <div class="square col-right" id="cell-23" style="grid-column: 7; grid-row: 6;"><div class="color-bar cb-left vert"></div><div class="sq-content"><span class="txt-rot-left">O'TACOS</span></div><div class="players-zone pz-right"></div></div>
+            <div class="square col-right" id="cell-22" style="grid-column: 7; grid-row: 5;"><div class="color-bar cb-left vert" id="house-22"></div><div class="sq-content"><span class="txt-rot-left">BASIC FIT</span></div><div class="players-zone pz-right"></div></div>
+            <div class="square col-right" id="cell-23" style="grid-column: 7; grid-row: 6;"><div class="color-bar cb-left vert" id="house-23"></div><div class="sq-content"><span class="txt-rot-left">O'TACOS</span></div><div class="players-zone pz-right"></div></div>
 
             <!-- CENTRE -->
             <div class="square center-logo">
@@ -179,9 +181,9 @@
             </div>
 
             <!-- COLONNE GAUCHE -->
-            <div class="square col-left" id="cell-11" style="grid-column: 1; grid-row: 2;"><div class="color-bar cb-right marron"></div><div class="sq-content"><span class="txt-rot-right">GARAGE<br>À BITE</span></div><div class="players-zone pz-left"></div></div>
+            <div class="square col-left" id="cell-11" style="grid-column: 1; grid-row: 2;"><div class="color-bar cb-right marron" id="house-11"></div><div class="sq-content"><span class="txt-rot-right">GARAGE<br>À BITE</span></div><div class="players-zone pz-left"></div></div>
             <div class="square col-left" id="cell-10" style="grid-column: 1; grid-row: 3;"><div class="sq-content"><span class="txt-rot-right">CHANCE</span></div><div class="players-zone pz-left"></div></div>
-            <div class="square col-left" id="cell-9" style="grid-column: 1; grid-row: 4;"><div class="color-bar cb-right marron"></div><div class="sq-content"><span class="txt-rot-right">APPART.<br>ELIAN</span></div><div class="players-zone pz-left"></div></div>
+            <div class="square col-left" id="cell-9" style="grid-column: 1; grid-row: 4;"><div class="color-bar cb-right marron" id="house-9"></div><div class="sq-content"><span class="txt-rot-right">APPART.<br>ELIAN</span></div><div class="players-zone pz-left"></div></div>
             <div class="square col-left" id="cell-8" style="grid-column: 1; grid-row: 5;"><div class="sq-content"><span class="txt-rot-right">GARE<br>HAUTMONT</span></div><div class="players-zone pz-left"></div></div>
             <div class="square col-left" id="cell-7" style="grid-column: 1; grid-row: 6;"><div class="sq-content"><span class="txt-rot-right">RADAR N2<br>(Payez 50)</span></div><div class="players-zone pz-left"></div></div>
 
@@ -189,10 +191,9 @@
             <div class="square corner" id="cell-6" style="grid-column: 1; grid-row: 7;"><div class="sq-content">PRISON</div><div class="players-zone pz-center"></div></div>
             <div class="square row-bottom" id="cell-5" style="grid-column: 2; grid-row: 7;"><div class="sq-content">TAXE</div><div class="players-zone pz-bottom"></div></div>
             
-            <!-- NOUVELLES RUES CYAN -->
-            <div class="square row-bottom" id="cell-4" style="grid-column: 3; grid-row: 7;"><div class="color-bar cb-top cyan"></div><div class="sq-content">MONTAGNE<br>DU CRACK</div><div class="players-zone pz-bottom"></div></div>
+            <div class="square row-bottom" id="cell-4" style="grid-column: 3; grid-row: 7;"><div class="color-bar cb-top cyan" id="house-4"></div><div class="sq-content">MONTAGNE<br>DU CRACK</div><div class="players-zone pz-bottom"></div></div>
             <div class="square row-bottom" id="cell-3" style="grid-column: 4; grid-row: 7;"><div class="sq-content">CAISSE DE<br>COMMU</div><div class="players-zone pz-bottom"></div></div>
-            <div class="square row-bottom" id="cell-2" style="grid-column: 5; grid-row: 7;"><div class="color-bar cb-top cyan"></div><div class="sq-content">ÉGOUT QUI<br>PUE LA BITE</div><div class="players-zone pz-bottom"></div></div>
+            <div class="square row-bottom" id="cell-2" style="grid-column: 5; grid-row: 7;"><div class="color-bar cb-top cyan" id="house-2"></div><div class="sq-content">ÉGOUT QUI<br>PUE LA BITE</div><div class="players-zone pz-bottom"></div></div>
             
             <div class="square row-bottom" id="cell-1" style="grid-column: 6; grid-row: 7;"><div class="sq-content">GARE SNCF</div><div class="players-zone pz-bottom"></div></div>
             <div class="square corner" id="cell-0" style="grid-column: 7; grid-row: 7; background: #ffcccc;"><div class="sq-content" style="flex-direction: column;"><strong>DÉPART</strong><br>Recevez 200</div><div class="players-zone pz-center"></div></div>
@@ -212,6 +213,7 @@
             <div class="card" style="padding: 20px; text-align: center;">
                 <h3 style="font-family: 'Bebas Neue'; font-size: 24px; color: #fff; margin-bottom: 5px;">TON COMPTE</h3>
                 <div style="font-family: 'Bebas Neue'; font-size: 40px; color: #27ae60;" id="moneyDisplay">1500 M$</div>
+                <button class="btn-gold" style="margin-top: 15px; font-size: 14px; background: transparent; border: 2px solid var(--gold); color: var(--gold);" onclick="openInventory()">MES TITRES 🏢</button>
             </div>
             
             <button class="btn-gold" style="background:transparent; border:1px solid #ff4444; color:#ff4444;" onclick="resetLobbyForce()">QUITTER LA PARTIE</button>
@@ -222,7 +224,7 @@
 
 <!-- MODAL D'ACHAT -->
 <div class="modal-overlay" id="buyModal">
-    <div class="modal-buy">
+    <div class="modal-box">
         <h2>PROPRIÉTÉ DISPONIBLE</h2>
         <p id="buyModalName">Nom de la rue</p>
         <div class="price" id="buyModalPrice">100 M$</div>
@@ -230,6 +232,26 @@
             <button class="btn-gold" style="background: #27ae60; color: white;" onclick="answerBuy(true)">ACHETER</button>
             <button class="btn-gold" style="background: transparent; border: 2px solid #aaa; color: #aaa;" onclick="answerBuy(false)">PASSER</button>
         </div>
+    </div>
+</div>
+
+<!-- MODAL INVENTAIRE -->
+<div class="modal-overlay" id="inventoryModal">
+    <div class="modal-box" style="max-width: 500px;">
+        <span class="close-btn" onclick="document.getElementById('inventoryModal').style.display='none'">&times;</span>
+        <h2>MES PROPRIÉTÉS</h2>
+        <div id="inventoryList" style="margin-top: 20px; max-height: 50vh; overflow-y: auto;">
+            <!-- Rempli en JS -->
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CHANCE -->
+<div class="modal-overlay" id="chanceModal">
+    <div class="modal-box">
+        <h2>CARTE DINGUERIE</h2>
+        <p class="chance-text" id="chanceText">...</p>
+        <button class="btn-gold" onclick="acceptChance()">J'ASSUME</button>
     </div>
 </div>
 
@@ -246,29 +268,47 @@ let isMaster = false;
 let dbSyncInterval = null; 
 let gameStateLocal = null;
 
-// L'ÉCONOMIE DU JEU (Données des cases)
+// L'ÉCONOMIE DU JEU
 const BOARD_DATA = {
-    1: { name: "Gare SNCF", type: "property", price: 150, rent: 30 },
-    2: { name: "Égout qui pue la bite", type: "property", price: 100, rent: 20 },
-    4: { name: "Montagne du Crack", type: "property", price: 120, rent: 25 },
+    1: { name: "Gare SNCF", type: "property", price: 150, rent: 30, colorClass: "#444" },
+    2: { name: "Égout qui pue la bite", type: "property", price: 100, rent: 20, colorClass: "#00bcd4" },
+    3: { type: "chance" },
+    4: { name: "Montagne du Crack", type: "property", price: 120, rent: 25, colorClass: "#00bcd4" },
     5: { name: "Taxe", type: "tax", amount: 100 },
     7: { name: "Radar N2", type: "tax", amount: 50 },
-    8: { name: "Gare d'Hautmont", type: "property", price: 150, rent: 30 },
-    9: { name: "Appart. Elian", type: "property", price: 180, rent: 40 },
-    11: { name: "Garage à Bite", type: "property", price: 200, rent: 50 },
-    13: { name: "IUT de Maubeuge", type: "property", price: 220, rent: 60 },
-    15: { name: "Maison de Corinne", type: "property", price: 240, rent: 70 },
-    16: { name: "Gare de Louvroil", type: "property", price: 150, rent: 30 },
-    17: { name: "Zoo de Maubeuge", type: "property", price: 260, rent: 80 },
+    8: { name: "Gare d'Hautmont", type: "property", price: 150, rent: 30, colorClass: "#444" },
+    9: { name: "Appart. Elian", type: "property", price: 180, rent: 40, colorClass: "#8b4513" },
+    10: { type: "chance" },
+    11: { name: "Garage à Bite", type: "property", price: 200, rent: 50, colorClass: "#8b4513" },
+    13: { name: "IUT de Maubeuge", type: "property", price: 220, rent: 60, colorClass: "#c0392b" },
+    14: { type: "chance" },
+    15: { name: "Maison de Corinne", type: "property", price: 240, rent: 70, colorClass: "#c0392b" },
+    16: { name: "Gare de Louvroil", type: "property", price: 150, rent: 30, colorClass: "#444" },
+    17: { name: "Zoo de Maubeuge", type: "property", price: 260, rent: 80, colorClass: "#2980b9" },
     18: { name: "Allez en Prison", type: "go_prison" },
-    19: { name: "Clair de Lune", type: "property", price: 300, rent: 100 },
-    21: { name: "Stibus", type: "property", price: 150, rent: 30 },
-    22: { name: "Basic Fit", type: "property", price: 320, rent: 120 },
-    23: { name: "O'Tacos", type: "property", price: 350, rent: 150 }
+    19: { name: "Clair de Lune", type: "property", price: 300, rent: 100, colorClass: "#2980b9" },
+    20: { type: "chance" },
+    21: { name: "Stibus", type: "property", price: 150, rent: 30, colorClass: "#444" },
+    22: { name: "Basic Fit", type: "property", price: 320, rent: 120, colorClass: "#27ae60" },
+    23: { name: "O'Tacos", type: "property", price: 350, rent: 150, colorClass: "#27ae60" }
 };
+
+const CHANCE_CARDS = [
+    { text: "Tu reçois une bourse du CROUS, encaisse 150 M$.", effect: (p) => p.money += 150 },
+    { text: "T'as grillé les 12 feux de l'avenue, paie 50 M$.", effect: (p) => p.money -= 50 },
+    { text: "Dayoub a vu ton brouille, file direct en prison.", effect: (p) => p.position = 6 },
+    { text: "Tu gagnes le concours de développé couché au Basic Fit, encaisse 100 M$.", effect: (p) => p.money += 100 },
+    { text: "Tu viens d'écouter l'EP de Matteo, va en prison sans passer par la case départ.", effect: (p) => p.position = 6 },
+    { text: "Le fou de l'IUT te parle pendant 3 jours, va en prison pour fuir.", effect: (p) => p.position = 6 },
+    { text: "Bar-mitsva d'Étienne, lâche 50 M$ pour le cadeau.", effect: (p) => p.money -= 50 },
+    { text: "Erreur de la banque de Maubeuge en ta faveur, reçois 60 M$.", effect: (p) => p.money += 60 },
+    { text: "T'as vomi devant le O'Tacos, paie 30 M$ de nettoyage.", effect: (p) => p.money -= 30 },
+    { text: "Elian a inondé son appartement, paie 50 M$ pour les dégâts.", effect: (p) => p.money -= 50 }
+];
 
 let visualPositions = {}; 
 let isAnimating = false;
+let currentChanceCard = null;
 
 // INIT
 window.onload = async () => {
@@ -297,7 +337,7 @@ async function autoJoinLobby() {
     let state = await fetchState();
     
     if(!state || !state.players) {
-        state = { phase: 'lobby', master: myPseudo, players: {}, turnOrder: [], currentTurnIndex: 0, log: "En attente de joueurs...", properties: {} };
+        state = { phase: 'lobby', master: myPseudo, players: {}, turnOrder: [], currentTurnIndex: 0, log: "En attente...", properties: {}, houses: {} };
     } else if (!state.players[state.master] && Object.keys(state.players).length > 0) {
         state.master = Object.keys(state.players)[0];
     } else if (!state.master) {
@@ -338,7 +378,8 @@ async function processState(state) {
     } 
     else if (state.phase === 'playing') {
         if (!state.turnOrder || state.turnOrder.length === 0) { if (isMaster) startGame(); return; }
-        if (!state.properties) state.properties = {}; // Sécurité
+        if (!state.properties) state.properties = {}; 
+        if (!state.houses) state.houses = {}; 
 
         document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
         document.getElementById('screenGame').classList.add('active');
@@ -353,6 +394,7 @@ async function startGame() {
     state.turnOrder = Object.keys(state.players); 
     state.currentTurnIndex = 0;
     state.properties = {};
+    state.houses = {};
     state.log = `C'est à ${state.turnOrder[0]} de commencer !`;
     await updateState(state);
 }
@@ -381,12 +423,27 @@ async function updateBoardUI(state) {
         btn.disabled = true; btn.innerText = "ATTENDS TON TOUR";
     }
 
-    // Affichage des propriétaires
+    // Affichage des propriétaires et des MAISONS 🏠
     document.querySelectorAll('.owner-badge').forEach(e => e.remove());
+    for(let i=0; i<24; i++) {
+        let bar = document.getElementById(`house-${i}`);
+        if(bar) bar.innerHTML = ''; // Reset des maisons
+    }
+
     for (let pos in state.properties) {
         let owner = state.properties[pos];
         let cell = document.getElementById(`cell-${pos}`);
         if(cell) cell.innerHTML += `<div class="owner-badge">${owner.substring(0,4)}</div>`;
+        
+        // Dessiner les maisons
+        if (state.houses[pos] > 0) {
+            let bar = document.getElementById(`house-${pos}`);
+            if(bar) {
+                let housesHTML = "";
+                for(let h=0; h<state.houses[pos]; h++) housesHTML += "🏠";
+                bar.innerHTML = housesHTML;
+            }
+        }
     }
 
     if (!isAnimating) await processMovements(state);
@@ -399,7 +456,12 @@ async function processMovements(state) {
 
     for (let pseudo in state.players) {
         let target = state.players[pseudo].position;
-        if (visualPositions[pseudo] !== target) {
+        // Si téléportation prison directe sans lancer de dé (depuis carte Chance)
+        if (visualPositions[pseudo] !== target && Math.abs(visualPositions[pseudo] - target) > 12) {
+             visualPositions[pseudo] = target;
+             movementHappened = true;
+        } 
+        else if (visualPositions[pseudo] !== target) {
             movementHappened = true;
             await moveTokenStepByStep(pseudo, target);
         }
@@ -408,7 +470,6 @@ async function processMovements(state) {
     isAnimating = false;
     renderTokens(); 
 
-    // SI C'EST MON TOUR ET QUE JE VIENS DE BOUGER, JE DÉCLENCHE L'ACTION DE LA CASE
     if (movementHappened && activePlayer === myPseudo) {
         handleCellAction(state, state.players[myPseudo].position);
     }
@@ -446,9 +507,7 @@ function renderTokens(hoppingPseudo = null) {
 
 // LANCEMENT DES DÉS
 async function rollDice() {
-    const btn = document.getElementById('btnRoll');
-    btn.disabled = true; 
-
+    document.getElementById('btnRoll').disabled = true; 
     const d1 = Math.floor(Math.random() * 6) + 1;
     const d2 = Math.floor(Math.random() * 6) + 1;
     const total = d1 + d2;
@@ -458,7 +517,6 @@ async function rollDice() {
     let oldPos = p.position;
     
     p.position = (p.position + total) % 24;
-    
     if(oldPos + total >= 24) {
         p.money += 200;
         state.log = `${myPseudo} fait ${total} et passe par DÉPART (+200 M$) !`;
@@ -467,21 +525,76 @@ async function rollDice() {
     }
 
     state.lastDice = [d1, d2];
-    
-    // ON SAUVEGARDE DIRECTEMENT POUR LANCER L'ANIMATION (Le tour ne passe pas encore)
     await updateState(state);
 }
 
-// --- LOGIQUE DES CASES (ACHAT, LOYER, TAXES) ---
+// --- INVENTAIRE & MAISONS ---
+function openInventory() {
+    let state = gameStateLocal;
+    if(!state) return;
+    
+    let html = "";
+    for (let pos in state.properties) {
+        if (state.properties[pos] === myPseudo) {
+            let data = BOARD_DATA[pos];
+            let nbHouses = state.houses[pos] || 0;
+            let currentRent = data.rent * (nbHouses + 1); // Loyer * (maisons + 1)
+            
+            // Les gares ne peuvent pas avoir de maisons
+            let buildBtn = "";
+            if (!data.name.includes("Gare") && !data.name.includes("Stibus")) {
+                if (nbHouses < 3) {
+                    buildBtn = `<button class="btn-gold" style="font-size:12px; padding: 5px; width:auto;" onclick="buyHouse(${pos})">Construire (50 M$)</button>`;
+                } else {
+                    buildBtn = `<span style="color:var(--gold); font-size:12px;">MAX MAISONS</span>`;
+                }
+            }
+
+            html += `
+            <div class="prop-card">
+                <div class="prop-header" style="background: ${data.colorClass}"></div>
+                <div class="prop-body">
+                    <div class="prop-info">
+                        <h4>${data.name}</h4>
+                        <span>Loyer actuel : ${currentRent} M$ ${nbHouses > 0 ? '(🏠 x'+nbHouses+')' : ''}</span>
+                    </div>
+                    ${buildBtn}
+                </div>
+            </div>`;
+        }
+    }
+    
+    if(html === "") html = "<p>Tu ne possèdes rien du tout le clochard.</p>";
+    document.getElementById('inventoryList').innerHTML = html;
+    document.getElementById('inventoryModal').style.display = 'flex';
+}
+
+async function buyHouse(pos) {
+    let state = await fetchState();
+    if (state.players[myPseudo].money >= 50) {
+        state.players[myPseudo].money -= 50;
+        if (!state.houses[pos]) state.houses[pos] = 0;
+        state.houses[pos]++;
+        state.log = `${myPseudo} a construit une maison sur ${BOARD_DATA[pos].name} !`;
+        await updateState(state);
+        openInventory(); // Refresh l'UI
+    } else {
+        alert("Pas assez de thunes !");
+    }
+}
+
+// --- LOGIQUE DES CASES ---
 async function handleCellAction(state, pos) {
     const cellData = BOARD_DATA[pos];
     
-    if (!cellData) {
-        // Case vide (Parc, Prison Visite, Chance pour l'instant)
-        if(pos === 3 || pos === 10 || pos === 14 || pos === 20) {
-            state.log = `${myPseudo} tire une carte Chance... (Bientôt dispo) !`;
-        }
-        return endTurn(state);
+    if (!cellData) return endTurn(state);
+
+    if (cellData.type === 'chance') {
+        currentChanceCard = CHANCE_CARDS[Math.floor(Math.random() * CHANCE_CARDS.length)];
+        document.getElementById('chanceText').innerText = currentChanceCard.text;
+        document.getElementById('chanceModal').style.display = 'flex';
+        window.currentChanceState = state;
+        return; // Le tour se finira quand le joueur cliquera sur J'ASSUME
     }
 
     if (cellData.type === 'tax') {
@@ -500,25 +613,32 @@ async function handleCellAction(state, pos) {
         if (state.properties[pos]) {
             let owner = state.properties[pos];
             if (owner !== myPseudo) {
-                // Paiement du loyer
-                state.players[myPseudo].money -= cellData.rent;
-                state.players[owner].money += cellData.rent;
-                state.log = `${myPseudo} paie ${cellData.rent} M$ de loyer à ${owner} !`;
+                let nbHouses = state.houses[pos] || 0;
+                let actualRent = cellData.rent * (nbHouses + 1);
+                state.players[myPseudo].money -= actualRent;
+                state.players[owner].money += actualRent;
+                state.log = `${myPseudo} paie ${actualRent} M$ de loyer à ${owner} !`;
             }
             return endTurn(state);
         } else {
-            // Proposition d'achat
             showBuyModal(state, pos, cellData);
         }
     }
 }
 
-// --- MODAL D'ACHAT ---
+// --- GESTION DES MODALES ---
+async function acceptChance() {
+    document.getElementById('chanceModal').style.display = 'none';
+    let state = window.currentChanceState;
+    state.log = `${myPseudo} pioche : "${currentChanceCard.text}"`;
+    currentChanceCard.effect(state.players[myPseudo]);
+    await endTurn(state);
+}
+
 function showBuyModal(state, pos, cellData) {
     document.getElementById('buyModalName').innerText = cellData.name;
     document.getElementById('buyModalPrice').innerText = cellData.price + " M$";
     document.getElementById('buyModal').style.display = 'flex';
-    
     window.currentBuyState = state;
     window.currentBuyPos = pos;
     window.currentBuyData = cellData;
@@ -527,25 +647,20 @@ function showBuyModal(state, pos, cellData) {
 async function answerBuy(buy) {
     document.getElementById('buyModal').style.display = 'none';
     let state = window.currentBuyState;
-    
     if (buy) {
         if (state.players[myPseudo].money >= window.currentBuyData.price) {
             state.players[myPseudo].money -= window.currentBuyData.price;
             state.properties[window.currentBuyPos] = myPseudo;
             state.log = `${myPseudo} a acheté ${window.currentBuyData.name} !`;
-        } else {
-            alert("Tu n'as pas assez d'argent pour acheter ça !");
-        }
+        } else alert("Tu n'as pas assez d'argent !");
     } else {
         state.log = `${myPseudo} refuse d'acheter ${window.currentBuyData.name}.`;
     }
-    
     endTurn(state);
 }
 
 // --- FIN DU TOUR ---
 async function endTurn(state) {
-    // Si c'est un double, le joueur rejoue ! (Sauf s'il va en prison)
     if (state.lastDice[0] === state.lastDice[1] && BOARD_DATA[state.players[myPseudo].position]?.type !== 'go_prison') {
         state.log += ` DOUBLE ! ${myPseudo} rejoue.`;
     } else {
@@ -554,7 +669,6 @@ async function endTurn(state) {
     await updateState(state);
 }
 
-// ANTI-BUG
 async function resetLobbyForce() {
     if(confirm("Tu veux vraiment quitter et supprimer la salle pour tout le monde ?")) {
         await sb.from('bingo_state').delete().eq('id', GAME_ID);
