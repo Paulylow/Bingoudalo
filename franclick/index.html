@@ -246,6 +246,48 @@ body.bourrine .col-right { border-color:#ff2200; }
 #bonus-orb .ob-icon { font-size:22px; }
 @keyframes orbBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
 
+/* ── MEGA BONUS ORB ── */
+#mega-orb {
+    position:fixed; z-index:502; width:90px; height:90px; border-radius:50%;
+    background:radial-gradient(circle at 38% 38%,#ffffff,#aa00ff 50%,#5500cc);
+    border:3px solid #fff;
+    display:none; align-items:center; justify-content:center; flex-direction:column;
+    font-size:9px; font-weight:bold; color:#fff; text-align:center; line-height:1.3;
+    animation:orbBob 1.5s ease-in-out infinite, megaGlow .6s ease-in-out infinite alternate;
+    filter:drop-shadow(0 0 16px #aa00ff);
+}
+#mega-orb .mo-icon { font-size:28px; }
+@keyframes megaGlow{0%{filter:drop-shadow(0 0 8px #aa00ff)}100%{filter:drop-shadow(0 0 32px #ff88ff)}}
+
+/* ── MODE MEGA ── */
+body.mega { background:#0a001a; }
+body.mega header { background:rgba(60,0,100,.85); border-color:#aa00ff; }
+body.mega h1 {
+    background:linear-gradient(90deg,#aa00ff,#ff88ff);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    animation:hShake .07s infinite;
+}
+body.mega .col-left { border-color:#aa00ff; background:radial-gradient(ellipse at center,#1a0030 0%,#0a001a 100%); }
+body.mega .col-right { border-color:#aa00ff; }
+body.mega .francky-btn { border-color:#aa00ff; box-shadow:0 0 70px rgba(170,0,255,.7), inset 0 0 20px rgba(0,0,0,.6); animation:btnShake .08s infinite; }
+body.mega .ring { border-color:rgba(170,0,255,.7); }
+body.mega .score-number { text-shadow:0 0 22px #aa00ff; color:#e8aaff; }
+body.mega .score-bps { color:#cc66ff; }
+
+#mega-banner {
+    display:none; text-align:center; padding:7px;
+    background:linear-gradient(90deg,#7700cc,#cc00ff,#7700cc);
+    background-size:200%; animation:bScroll 0.8s linear infinite;
+    font-family:'Bebas Neue'; font-size:20px; letter-spacing:3px; color:#fff;
+    position:relative; z-index:10; flex-shrink:0;
+}
+body.mega #mega-banner { display:block; }
+
+/* Timer mega (violet) */
+#mega-timer { display:none; width:190px; height:7px; background:#1a0030; border-radius:4px; overflow:hidden; margin-top:8px; }
+body.mega #mega-timer { display:block; }
+#mega-timer-bar { height:100%; width:100%; background:linear-gradient(90deg,#7700cc,#ff88ff); border-radius:4px; }
+
 /* ── FRAUDE ORB ── */
 #fraude-orb {
     position:fixed; z-index:501; width:74px; height:74px; border-radius:50%;
@@ -302,6 +344,11 @@ body.bourrine .col-right { border-color:#ff2200; }
 <div id="screen-flash"></div>
 <div id="notif"></div>
 
+<div id="mega-orb" onclick="activateMegaBonus()">
+    <div class="mo-icon">💜</div>
+    <div>MEGA<br>x5 !</div>
+</div>
+
 <div id="bonus-orb" onclick="activateBonus()">
     <div class="ob-icon">⚡</div>
     <div>BONUS<br>x2 !</div>
@@ -322,6 +369,7 @@ body.bourrine .col-right { border-color:#ff2200; }
 
 <header><h1>FRANCLICK</h1></header>
 <div id="bourrine-banner">🔥 MODE BOURRINE FRANCKY ! CLIQUE COMME UN MALADE ! 🔥</div>
+<div id="mega-banner">⚡⚡ MEGA BONUS x5 — FRANCKY EST EN FEU ! ⚡⚡</div>
 
 <div class="game-container">
     <div class="col-left" id="colLeft">
@@ -331,6 +379,7 @@ body.bourrine .col-right { border-color:#ff2200; }
             <div class="score-bps" id="bpsDisplay">0 pts / sec</div>
             <div id="multiplier-badge">x2 POINTS !</div>
             <div id="bourrine-timer"><div id="bourrine-timer-bar"></div></div>
+            <div id="mega-timer"><div id="mega-timer-bar"></div></div>
         </div>
         <div class="francky-wrapper" id="franckyWrapper">
             <div class="ring"></div>
@@ -438,8 +487,13 @@ function spawnFx(cx, cy) {
 let score=0, bps=0, clickMult=1, baseClickMult=1, totalClicks=0;
 let isBourrine=false, bourrine_t0=0;
 const BOURRINE_MS = 30000;
+// Multiplicateur BPS actif (1 = normal, 2 = bourrine, 5 = mega)
+let bpsMultiplier = 1;
 
 let bonusOn=false, bonusSecTimer=0, bonusDelay=30+Math.floor(Math.random()*150);
+// Mega bonus
+let megaOn=false, mega_t0=0, megaSecTimer=0;
+let megaDelay=300+Math.floor(Math.random()*300); // 5-10 min
 let fraudeOn=false, fraude_t0=0, fx=0, fy=0, fvx=0, fvy=0;
 const FRAUDE_MS = 10000;
 let fraudeSecTimer=0, fraudeDelay=60+Math.floor(Math.random()*180);
@@ -538,6 +592,12 @@ function raf() {
         document.getElementById('bourrine-timer-bar').style.width = pct+'%';
         if (el >= BOURRINE_MS) deactivateBourrine();
     }
+    if (megaOn) {
+        const mel = now - mega_t0;
+        const mpct = Math.max(0,(BOURRINE_MS-mel)/BOURRINE_MS*100);
+        document.getElementById('mega-timer-bar').style.width = mpct+'%';
+        if (mel >= BOURRINE_MS) deactivateMega();
+    }
 
     if (fraudeOn) {
         fx+=fvx; fy+=fvy;
@@ -567,7 +627,7 @@ function gameTick() {
     const now = performance.now();
     const dt = (now - lastTick) / 1000; // secondes réelles écoulées
     lastTick = now;
-    score += bps * dt;
+    score += bps * bpsMultiplier * dt;
     updateScoreUI(); updateShopColors();
 }
 
@@ -585,8 +645,10 @@ document.addEventListener('visibilitychange', () => {
 setInterval(() => {
     bonusSecTimer++;
     fraudeSecTimer++;
-    if (!bonusOn && bonusSecTimer >= bonusDelay) triggerBonus();
+    megaSecTimer++;
+    if (!bonusOn && !megaOn && bonusSecTimer >= bonusDelay) triggerBonus();
     if (!fraudeOn && fraudeSecTimer >= fraudeDelay) triggerFraude();
+    if (!megaOn && !bonusOn && megaSecTimer >= megaDelay) triggerMegaBonus();
 }, 1000);
 
 // Sauvegarde Locale toutes les 5s
@@ -769,15 +831,70 @@ function scheduleBonus() {
 
 function activateBourrine() {
     isBourrine = true; bourrine_t0 = performance.now();
-    clickMult = baseClickMult * 2; document.body.classList.add('bourrine');
+    clickMult = baseClickMult * 2; bpsMultiplier = 2;
+    document.body.classList.add('bourrine');
+    setFranckyImg('images/francky_diable.jpg');
     flash('rgba(255,20,0,.4)');
     showNotif('🔥 BOURRINE FRANCKY ! x2 PENDANT 30 SEC ! 🔥');
 }
 function deactivateBourrine() {
-    isBourrine = false; clickMult = baseClickMult;
+    isBourrine = false; clickMult = baseClickMult; bpsMultiplier = 1;
     document.body.classList.remove('bourrine');
     document.getElementById('bourrine-timer-bar').style.width = '100%';
+    setFranckyImg('../bingoudalo/avatar/francky.jpg');
     showNotif('😤 Fin du mode BOURRINE... repose-toi !');
+}
+
+// Changer l'image du cercle Francky
+function setFranckyImg(src) {
+    const img = document.querySelector('.francky-btn img');
+    if (img) img.src = src;
+}
+
+// ── MEGA BONUS ──
+function triggerMegaBonus() {
+    megaOn = true;
+    const o = document.getElementById('mega-orb');
+    const m = 100;
+    o.style.left = (m + Math.random()*(window.innerWidth-m*2)) + 'px';
+    o.style.top  = (m + Math.random()*(window.innerHeight-m*2)) + 'px';
+    o.style.display = 'flex';
+    showNotif('💜 UN MEGA BONUS EST APPARU ! CLIQUE VITE !');
+    setTimeout(() => {
+        if (!megaOn || document.getElementById('mega-orb').style.display === 'none') return;
+        megaOn = false;
+        document.getElementById('mega-orb').style.display = 'none';
+        showNotif('💨 Le MEGA BONUS a disparu...');
+        scheduleMega();
+    }, 20000);
+}
+function activateMegaBonus() {
+    if (!megaOn) return;
+    megaOn = false;
+    document.getElementById('mega-orb').style.display = 'none';
+    activateMega();
+    scheduleMega();
+}
+function scheduleMega() {
+    megaSecTimer = 0;
+    megaDelay = 300 + Math.floor(Math.random()*300);
+}
+function activateMega() {
+    isBourrine = false; // désactiver bourrine si actif
+    document.body.classList.remove('bourrine');
+    document.body.classList.add('mega');
+    mega_t0 = performance.now();
+    clickMult = baseClickMult * 5; bpsMultiplier = 5;
+    setFranckyImg('images/francky_megabonus.jpg');
+    flash('rgba(120,0,200,.45)');
+    showNotif('💜 MEGA BONUS x5 — FRANCKY EST EN FEU ! 30 SEC ! 💜');
+}
+function deactivateMega() {
+    megaOn = false; clickMult = baseClickMult; bpsMultiplier = 1;
+    document.body.classList.remove('mega');
+    document.getElementById('mega-timer-bar').style.width = '100%';
+    setFranckyImg('../bingoudalo/avatar/francky.jpg');
+    showNotif('😤 Fin du MEGA BONUS... quelle session !');
 }
 
 function triggerFraude() {
