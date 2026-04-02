@@ -1299,10 +1299,7 @@ async function confirmPrestige() {
     buildings.forEach(b => { b.count = 0; });
     recalcBPS(); renderShop(); renderVisuals(); updateScoreUI();
     updatePrestigeBadge();
-    if (myPseudo) {
-        try { await sb.from('cdsi_users').update({ franclick_score: 0 }).eq('pseudo', myPseudo); } catch(e){}
-    }
-    saveGame();
+    saveGame(); // push la nouvelle save (score 0 + nouveaux tokens) en DB
     showNotif('⭐ PRESTIGE ! +' + tokens + ' tokens — bonus total : +' + Math.round(calcPrestigeBonus()*100) + '% !');
 }
 function updatePrestigeBadge() {
@@ -1314,33 +1311,90 @@ function updatePrestigeBadge() {
 }
 
 /* ── SAUVEGARDE & SYNCHRONISATION DB ── */
-function saveGame() {
-    localStorage.setItem('fc5', _enc({ score, bc:buildings.map(b=>b.count), tc:totalClicks, su:[...unlockedSucces], ac:activeCursor, fec:fraudeEscapeCount, bcc:bonusCollectedCount, mcs:[...milestoneCollectedSet], pt:prestigeTokens, pr:prestigeRuns }));
+function buildSaveData() {
+    return _enc({
+        score,
+        bc: buildings.map(b => b.count),
+        tc: totalClicks,
+        su: [...unlockedSucces],
+        ac: activeCursor,
+        fec: fraudeEscapeCount,
+        bcc: bonusCollectedCount,
+        mcs: [...milestoneCollectedSet],
+        pt: prestigeTokens,
+        pr: prestigeRuns
+    });
 }
 
-function loadGame() {
-    const raw = localStorage.getItem('fc5');
-    if (!raw) return;
-    const d = _dec(raw);
+function saveGame() {
+    const raw = buildSaveData();
+    // 1. Toujours sauvegarder en local (instantané, pas de latence)
+    localStorage.setItem('fc5', raw);
+    // 2. Push vers Supabase en arrière-plan (lié au compte, pas au PC)
+    if (myPseudo) {
+        sb.from('cdsi_users')
+          .update({ franclick_save: raw, franclick_score: Math.floor(score) })
+          .eq('pseudo', myPseudo)
+          .then(({ error }) => { if (error) console.warn('Save DB:', error.message); });
+    }
+}
+
+function applyLoadData(d) {
     if (!d) return;
-    score = d.score || 0;
-    totalClicks = d.tc || 0;
-    if (d.bc) buildings.forEach((b,i) => { b.count = d.bc[i]||0; });
-    if (d.su) d.su.forEach(id => unlockedSucces.add(id));
-    if (d.ac !== undefined) activeCursor = d.ac;
-    if (d.fec) fraudeEscapeCount = d.fec;
-    if (d.bcc) bonusCollectedCount = d.bcc;
+    score        = d.score || 0;
+    totalClicks  = d.tc    || 0;
+    if (d.bc)  buildings.forEach((b,i) => { b.count = d.bc[i] || 0; });
+    if (d.su)  d.su.forEach(id => unlockedSucces.add(id));
+    if (d.ac  !== undefined) activeCursor    = d.ac;
+    if (d.fec !== undefined) fraudeEscapeCount  = d.fec;
+    if (d.bcc !== undefined) bonusCollectedCount = d.bcc;
     if (d.mcs) d.mcs.forEach(s => milestoneCollectedSet.add(s));
-    if (d.pt) prestigeTokens = d.pt;
-    if (d.pr) prestigeRuns = d.pr;
+    if (d.pt  !== undefined) prestigeTokens = d.pt;
+    if (d.pr  !== undefined) prestigeRuns   = d.pr;
     recalcBPS();
 }
 
+async function loadGame() {
+    // Essayer d'abord depuis Supabase (save liée au compte)
+    if (myPseudo) {
+        try {
+            const { data, error } = await sb
+                .from('cdsi_users')
+                .select('franclick_save')
+                .eq('pseudo', myPseudo)
+                .single();
+
+            if (!error && data && data.franclick_save) {
+                const d = _dec(data.franclick_save);
+                if (d) {
+                    applyLoadData(d);
+                    // Mettre à jour le cache local pour les prochains chargements hors-ligne
+                    localStorage.setItem('fc5', data.franclick_save);
+                    console.log('✅ Save chargée depuis Supabase');
+                    return;
+                }
+            }
+        } catch(e) {
+            console.warn('Supabase indispo, fallback local:', e.message);
+        }
+    }
+    // Fallback : localStorage (hors-ligne ou première connexion)
+    const raw = localStorage.getItem('fc5');
+    if (raw) {
+        const d = _dec(raw);
+        applyLoadData(d);
+        console.log('📦 Save chargée depuis localStorage');
+    }
+}
+
 async function syncScoreToDB() {
-    if(!myPseudo) return;
+    // Intégré dans saveGame() — appelé ici uniquement pour le score leaderboard temps réel
+    if (!myPseudo) return;
     try {
-        await sb.from('cdsi_users').update({ franclick_score: score }).eq('pseudo', myPseudo);
-    } catch(e) { console.error("Erreur de synchro score", e); }
+        await sb.from('cdsi_users')
+            .update({ franclick_score: Math.floor(score) })
+            .eq('pseudo', myPseudo);
+    } catch(e) {}
 }
 
 // resetGame remplacé par le système prestige (openPrestigeModal)
@@ -1440,18 +1494,21 @@ window.addEventListener('load', () => {
         return;
     }
 
-    resizeAll(); 
-    loadGame(); 
-    applyCursor();
-    checkSucces();
-    updatePrestigeBadge();
-    renderShop(); 
-    renderVisuals(); 
-    updateScoreUI();
+    resizeAll();
 
-    // Synchro avec Supabase 2 secondes après chargement, puis toutes les 5 minutes (300000ms)
-    setTimeout(syncScoreToDB, 2000);
-    setInterval(syncScoreToDB, 5 * 60 * 1000);
+    // loadGame est async (fetch Supabase) → on attend qu'elle finisse
+    loadGame().then(() => {
+        applyCursor();
+        checkSucces();
+        updatePrestigeBadge();
+        renderShop();
+        renderVisuals();
+        updateScoreUI();
+    });
+
+    // Synchro score leaderboard toutes les 2 min
+    setTimeout(syncScoreToDB, 3000);
+    setInterval(syncScoreToDB, 2 * 60 * 1000);
 });
 </script>
 
