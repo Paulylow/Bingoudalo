@@ -621,22 +621,34 @@ function spawnFx(cx, cy) {
 /* ── Variables jeu ── */
 let score=0, bps=0, clickMult=1, baseClickMult=1, totalClicks=0;
 // Prestige : tokens accumulés sur toutes les runs, bonus permanent
-let prestigeTokens=0;   // total tokens
-let prestigeRuns=0;     // nombre de resets
-// Formule bonus : chaque token = +0.5% sur tous les gains (clic + bps)
-// Token gagnés par run = floor(log10(max_score_de_la_run)) - 5  (min 0)
-// Ex: score 1M (1e6) → log10=6 → 6-5=1 token | score 1B → 4 tokens | score 1T → 7 tokens
+let prestigeTokens=0;
+let prestigeRuns=0;
+
+/* ── FORMULE PRESTIGE basée sur le BPS ──────────────────────────────
+   Tokens gagnés = floor(log10(bps)) - 2  (min 0)
+   Paliers :
+     BPS 1 000     → 1 token  (log=3 → 3-2=1)
+     BPS 10 000    → 2 tokens
+     BPS 100 000   → 3 tokens  (ton niveau actuel = ~5 avec le boost x2 du min)
+     BPS 1 000 000 → 4 tokens
+     BPS 1 G/s     → 7 tokens
+     BPS 1 T/s     → 10 tokens
+   On prend le BPS de base (sans bpsMultiplier du bonus/mega)
+   pour ne pas avantager les prestiges en mode bourrine.
+
+   Bonus par token : +2% sur tous les gains (clic + passif)
+   Plafonné à +200% (100 tokens max utiles)
+──────────────────────────────────────────────────────────────────── */
 function calcPrestigeBonus() {
-    // +0.5% par token, plafonné à +200% (400 tokens max utiles)
-    return Math.min(prestigeTokens * 0.005, 2.0);
+    return Math.min(prestigeTokens * 0.02, 2.0);
 }
 function calcPrestigeMultiplier() {
     return 1 + calcPrestigeBonus();
 }
 function calcTokensForRun() {
-    // Basé sur le score actuel : log10(score) - 5, min 1 si score > 100k
-    if (score < 100000) return 0;
-    return Math.max(1, Math.floor(Math.log10(score)) - 5);
+    // Basé sur le BPS passif réel (sans multiplicateur de mode)
+    if (bps < 1000) return 0;
+    return Math.max(1, Math.floor(Math.log10(bps)) - 2);
 }
 let isBourrine=false, bourrine_t0=0;
 const BOURRINE_MS = 30000;
@@ -1175,12 +1187,12 @@ function openPrestigeModal() {
     const tokens = calcTokensForRun();
     const newTotal = prestigeTokens + tokens;
     const bonusPct = Math.round(calcPrestigeBonus() * 100);
-    const newBonusPct = Math.round(Math.min(newTotal * 0.005, 2.0) * 100);
+    const newBonusPct = Math.round(Math.min(newTotal * 0.02, 2.0) * 100);
     document.getElementById('pm-tokens').textContent = '+' + tokens + ' ✨';
     document.getElementById('pm-detail').textContent =
         tokens === 0
-        ? 'Atteins 100 000 pts pour gagner des tokens !'
-        : 'tokens gagnés cette run (basé sur ton score actuel)';
+        ? 'Atteins 1 000 pts/s pour gagner des tokens !'
+        : 'tokens gagnés (basé sur ton BPS : ' + Math.floor(bps).toLocaleString('fr-FR') + ' pts/s)';
     document.getElementById('pm-total').textContent =
         'Total après : ' + newTotal + ' tokens → +' + newBonusPct + '% gains permanents';
     document.getElementById('prestige-modal').classList.add('open');
