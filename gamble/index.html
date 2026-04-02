@@ -127,9 +127,14 @@ h1 {
 .reel-cell {
     width:110px; height:110px;
     display:flex; align-items:center; justify-content:center;
-    font-size:64px;
     flex-shrink:0;
     background:#08090e;
+    overflow:hidden;
+}
+.reel-cell img {
+    width:100%; height:100%; object-fit:cover;
+    border-radius:4px; pointer-events:none;
+    display:block;
 }
 
 /* ── LIGNE DE MISE ── */
@@ -278,7 +283,8 @@ h1 {
     font-size:13px;
 }
 .pay-row:last-child { border-bottom:none; }
-.pay-symbols { font-size:18px; letter-spacing:2px; }
+.pay-symbols { display:flex; gap:2px; align-items:center; }
+.pay-symbols img { width:22px; height:22px; object-fit:cover; border-radius:3px; border:1px solid #2a2a3a; }
 .pay-mult {
     font-family:'Bebas Neue'; font-size:16px; letter-spacing:1px;
     color:#00FFFF;
@@ -324,7 +330,8 @@ h1 {
 .history-item.h-win { border-color:rgba(255,215,0,0.2); background:rgba(255,215,0,0.05); }
 .history-item.h-jackpot { border-color:rgba(255,0,255,0.3); background:rgba(255,0,255,0.07); }
 .history-item.h-lose { border-color:rgba(255,255,255,0.02); }
-.history-symbols { font-size:14px; }
+.history-symbols { display:flex; gap:2px; align-items:center; }
+.history-symbols img { width:18px; height:18px; object-fit:cover; border-radius:2px; }
 .history-result { font-family:'Bebas Neue'; font-size:12px; color:#444; }
 .history-item.h-win .history-result { color:#FFD700; }
 .history-item.h-jackpot .history-result { color:#FF00FF; }
@@ -385,35 +392,35 @@ h1 {
     <div class="pay-table">
         <div class="pay-table-title">GAINS</div>
         <div class="pay-row jackpot-row">
-            <span class="pay-symbols">🍒🍒🍒</span>
+            <span class="pay-symbols"><img src="images/jej.jpg" alt="jej"><img src="images/jej.jpg" alt="jej"><img src="images/jej.jpg" alt="jej"></span>
             <span class="pay-mult">×50</span>
         </div>
         <div class="pay-row jackpot-row">
-            <span class="pay-symbols">💎💎💎</span>
+            <span class="pay-symbols"><img src="images/franck.webp" alt="franck"><img src="images/franck.webp" alt="franck"><img src="images/franck.webp" alt="franck"></span>
             <span class="pay-mult">×30</span>
         </div>
         <div class="pay-row">
-            <span class="pay-symbols">7️⃣7️⃣7️⃣</span>
+            <span class="pay-symbols"><img src="images/yassine.webp" alt="yassine"><img src="images/yassine.webp" alt="yassine"><img src="images/yassine.webp" alt="yassine"></span>
             <span class="pay-mult">×20</span>
         </div>
         <div class="pay-row">
-            <span class="pay-symbols">⭐⭐⭐</span>
+            <span class="pay-symbols"><img src="images/costermans.jpg" alt="costermans"><img src="images/costermans.jpg" alt="costermans"><img src="images/costermans.jpg" alt="costermans"></span>
             <span class="pay-mult">×15</span>
         </div>
         <div class="pay-row">
-            <span class="pay-symbols">🍋🍋🍋</span>
+            <span class="pay-symbols"><img src="images/dayoub.webp" alt="dayoub"><img src="images/dayoub.webp" alt="dayoub"><img src="images/dayoub.webp" alt="dayoub"></span>
             <span class="pay-mult">×10</span>
         </div>
         <div class="pay-row">
-            <span class="pay-symbols">🍊🍊🍊</span>
+            <span class="pay-symbols"><img src="images/wilbaut.webp" alt="wilbaut"><img src="images/wilbaut.webp" alt="wilbaut"><img src="images/wilbaut.webp" alt="wilbaut"></span>
             <span class="pay-mult">×8</span>
         </div>
         <div class="pay-row">
-            <span class="pay-symbols">🔔🔔🔔</span>
+            <span class="pay-symbols"><img src="images/bouzaidi.webp" alt="bouzaidi"><img src="images/bouzaidi.webp" alt="bouzaidi"><img src="images/bouzaidi.webp" alt="bouzaidi"></span>
             <span class="pay-mult">×6</span>
         </div>
         <div class="pay-row">
-            <span class="pay-symbols">🍇🍇🍇</span>
+            <span class="pay-symbols"><img src="images/marwane.jpg" alt="marwane"><img src="images/marwane.jpg" alt="marwane"><img src="images/marwane.jpg" alt="marwane"></span>
             <span class="pay-mult">×5</span>
         </div>
         <div class="pay-row">
@@ -493,13 +500,19 @@ h1 {
 
 <script>
 /* ── CONFIG ── */
-const SYMBOLS = ['🍒','💎','7️⃣','⭐','🍋','🍊','🔔','🍇'];
-const WEIGHTS  = [  5,   3,   4,   6,   9,   10,   9,  10]; // Fréquence relative
+const SYMBOLS = [
+    { id:'jej',       src:'images/jej.jpg',        weight:5,  payout:50 },
+    { id:'franck',    src:'images/franck.webp',     weight:3,  payout:30 },
+    { id:'yassine',   src:'images/yassine.webp',    weight:4,  payout:20 },
+    { id:'costermans',src:'images/costermans.jpg',  weight:6,  payout:15 },
+    { id:'dayoub',    src:'images/dayoub.webp',     weight:9,  payout:10 },
+    { id:'wilbaut',   src:'images/wilbaut.webp',    weight:10, payout:8  },
+    { id:'bouzaidi',  src:'images/bouzaidi.webp',   weight:9,  payout:6  },
+    { id:'marwane',   src:'images/marwane.jpg',     weight:10, payout:5  },
+];
+const TOTAL_WEIGHT = SYMBOLS.reduce((a,s) => a+s.weight, 0);
 
-const PAYOUTS = {
-    '🍒': 50, '💎': 30, '7️⃣': 20, '⭐': 15,
-    '🍋': 10, '🍊': 8, '🔔': 6, '🍇': 5
-};
+function getPayouts(id) { return SYMBOLS.find(s=>s.id===id)?.payout || 5; }
 
 let credits = 100;
 let bet = 5;
@@ -598,24 +611,32 @@ function animConfetti() {
 
 /* ── INIT ROULEAUX ── */
 function pickSymbol() {
-    const total = WEIGHTS.reduce((a,b) => a+b, 0);
-    let r = Math.random() * total;
-    for (let i=0; i<SYMBOLS.length; i++) {
-        r -= WEIGHTS[i];
-        if (r <= 0) return SYMBOLS[i];
+    let r = Math.random() * TOTAL_WEIGHT;
+    for (let s of SYMBOLS) {
+        r -= s.weight;
+        if (r <= 0) return s.id;
     }
-    return SYMBOLS[SYMBOLS.length-1];
+    return SYMBOLS[SYMBOLS.length-1].id;
+}
+
+function makeCell(symId) {
+    const cell = document.createElement('div');
+    cell.className = 'reel-cell';
+    const sym = SYMBOLS.find(s => s.id === symId);
+    if (sym) {
+        const img = document.createElement('img');
+        img.src = sym.src;
+        img.alt = sym.id;
+        cell.appendChild(img);
+    }
+    return cell;
 }
 
 function buildReel(id) {
     const reel = document.getElementById(`reel-${id}`);
     reel.innerHTML = '';
-    // 20 cellules pour le scroll
     for (let i=0; i<20; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'reel-cell';
-        cell.textContent = pickSymbol();
-        reel.appendChild(cell);
+        reel.appendChild(makeCell(pickSymbol()));
     }
 }
 
@@ -624,39 +645,23 @@ function initReels() {
 }
 
 /* ── LECTURE RÉSULTAT ── */
-function getCurrentSymbol(reelId) {
-    const reel = document.getElementById(`reel-${reelId}`);
-    const cells = reel.querySelectorAll('.reel-cell');
-    // La cellule centrale visible est l'index 1 si on affiche depuis le haut
-    // Après animation on lit le dernier état
-    return reel.dataset.result || cells[cells.length - 1].textContent;
-}
 
 /* ── ANIMATION ROULEAU ── */
-function spinReel(reelId, finalSymbol, duration) {
+function spinReel(reelId, finalSymId, duration) {
     return new Promise(resolve => {
         const reel = document.getElementById(`reel-${reelId}`);
 
-        // Remplir de nouveaux symboles aléatoires + le résultat final à la fin
         reel.innerHTML = '';
         const cellCount = 18;
         for (let i=0; i<cellCount; i++) {
-            const cell = document.createElement('div');
-            cell.className = 'reel-cell';
-            cell.textContent = pickSymbol();
-            reel.appendChild(cell);
+            reel.appendChild(makeCell(pickSymbol()));
         }
-        // Cellule finale = le résultat
-        const finalCell = document.createElement('div');
-        finalCell.className = 'reel-cell';
-        finalCell.textContent = finalSymbol;
-        reel.appendChild(finalCell);
+        reel.appendChild(makeCell(finalSymId));
 
-        reel.dataset.result = finalSymbol;
+        reel.dataset.result = finalSymId;
 
-        // Animation CSS : on fait défiler de haut en bas
         const cellH = 110;
-        const totalH = (cellCount) * cellH; // distance à parcourir
+        const totalH = cellCount * cellH;
         reel.style.transition = 'none';
         reel.style.transform = `translateY(-${totalH}px)`;
 
@@ -725,11 +730,9 @@ async function spin() {
 
 function calcWin(results, bet) {
     const [a, b, c] = results;
-    // Jackpot : 3 identiques
     if (a === b && b === c) {
-        return bet * (PAYOUTS[a] || 5);
+        return bet * getPayouts(a);
     }
-    // Paire
     if (a === b || b === c || a === c) {
         return bet * 2;
     }
@@ -746,7 +749,7 @@ function showResult(results, win) {
     const isPair = !isJackpot && (a===b || b===c || a===c);
 
     if (isJackpot) {
-        const mult = PAYOUTS[a] || 5;
+        const mult = getPayouts(a);
         msg.textContent = `JACKPOT ! ×${mult} → +${win} CRÉDITS`;
         msg.className = 'result-msg jackpot';
         payline.classList.add('win');
@@ -793,6 +796,11 @@ function resetCredits() {
 }
 
 /* ── HISTORIQUE ── */
+function symImg(id) {
+    const s = SYMBOLS.find(x=>x.id===id);
+    return s ? `<img src="${s.src}" alt="${id}">` : id;
+}
+
 function addHistory(results, win) {
     const isJackpot = results[0]===results[1] && results[1]===results[2];
     const isPair = !isJackpot && (results[0]===results[1] || results[1]===results[2] || results[0]===results[2]);
@@ -807,7 +815,7 @@ function addHistory(results, win) {
         const label = h.win > 0 ? `+${h.win}` : `-${bet}`;
         list.innerHTML += `
         <div class="history-item ${cls}">
-            <span class="history-symbols">${h.results.join('')}</span>
+            <span class="history-symbols">${h.results.map(symImg).join('')}</span>
             <span class="history-result">${label}</span>
         </div>`;
     });
