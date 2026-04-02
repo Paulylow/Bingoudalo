@@ -86,9 +86,11 @@
   .coll-card:hover { transform: scale(1.05); z-index: 10; }
   .coll-card img { width: 100%; height: 100%; object-fit: cover; }
   
-  .coll-card.locked { cursor: not-allowed; }
-  .coll-card.locked:hover { transform: none; }
-  .coll-card.locked img { filter: grayscale(100%) brightness(0.2); }
+  /* ANTI SPOIL : Cartes non possédées */
+  .coll-card.locked { background: repeating-linear-gradient(45deg, #111, #111 10px, #222 10px, #222 20px); border-color: #333; display: flex; align-items: center; justify-content: center; cursor: not-allowed;}
+  .coll-card.locked::after { content: '?'; font-family: 'Bebas Neue'; font-size: 60px; color: #444; }
+  .coll-card.locked img { display: none; } /* On cache totalement l'image */
+  .coll-card.locked:hover { transform: none; z-index: 1; }
   
   .coll-card.common { border-color: #bdc3c7; }
   .coll-card.rare { border-color: #3498db; }
@@ -307,14 +309,14 @@ function openCollection() {
     
     let ownedCount = 0;
 
-    // Trier les cartes par Rareté (Décroissant) puis par ID
+    // Trier les cartes par Rareté (Commune d'abord) puis par ID
     const sortedCards = [...CARDS_DB].sort((a, b) => {
         let valA = RARITY_VALUES[a.rarity];
         let valB = RARITY_VALUES[b.rarity];
         if (valA !== valB) {
-            return valB - valA; // Plus grand en premier (Mythic > Legendary...)
+            return valA - valB; // Croissant : Commune(1) -> Mythique(5)
         }
-        return a.id - b.id; // En cas d'égalité, tri par ID (personnage)
+        return a.id - b.id; // En cas d'égalité, tri par ID
     });
 
     sortedCards.forEach(card => {
@@ -326,11 +328,14 @@ function openCollection() {
         let lockedClass = isOwned ? card.rarity : 'locked';
         let badgeHTML = (qty > 1) ? `<div class="dupe-badge">${qty}</div>` : '';
         
-        // Si on possède la carte, on ajoute l'événement de zoom, sinon rien
+        // Texte du survol (anti-spoil)
+        let titleText = isOwned ? `${card.name} (${card.rarity})` : `Carte Mystère`;
+        
+        // Évènement de zoom uniquement si possédée
         let clickEvent = isOwned ? `onclick="openZoom('${card.img}', '${card.name}', '${card.rarity}')"` : '';
 
         grid.innerHTML += `
-            <div class="coll-card ${lockedClass}" title="Carte ${card.id} (${card.rarity})" ${clickEvent}>
+            <div class="coll-card ${lockedClass}" title="${titleText}" ${clickEvent}>
                 ${badgeHTML}
                 <img src="${card.img}" onerror="this.src='https://via.placeholder.com/130x182/222/fff?text=${card.id}'">
             </div>
