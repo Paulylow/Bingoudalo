@@ -290,7 +290,7 @@ body.bourrine .htab, body.mega .htab { color:#ff9900; border-color:rgba(255,150,
 
 /* ── BONUS ORB ── */
 #bonus-orb {
-    position:fixed; z-index:500; width:70px; height:70px;
+    position:fixed; z-index:500; width:90px; height:90px;
     display:none; align-items:center; justify-content:center;
     background:transparent; border:none;
 }
@@ -300,19 +300,21 @@ body.bourrine .htab, body.mega .htab { color:#ff9900; border-color:rgba(255,150,
     border:3px solid rgba(255,255,255,.8);
     display:flex; align-items:center; justify-content:center; flex-direction:column;
     font-size:9px; font-weight:bold; color:#000; text-align:center; line-height:1.3;
-    animation:orbBob 2.5s ease-in-out infinite; filter:drop-shadow(0 0 10px #ffcc00);
+    animation:orbBobSlow 2.5s ease-in-out infinite; filter:drop-shadow(0 0 10px #ffcc00);
     pointer-events:none;
 }
 #bonus-orb .ob-icon { font-size:22px; }
 @keyframes orbBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+@keyframes orbBobSlow{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 
 /* ── MEGA BONUS ORB ── */
-/* Mega-orb : le wrapper est fixe (position stable pour le clic),
-       l'inner fait l'animation visuelle */
+/* Wrapper large qui contient toute la zone d'animation (translateY inclus)
+   pour éviter le bug de hit-box qui faisait "fuir" l'orb */
 #mega-orb {
-    position:fixed; z-index:502; width:90px; height:90px;
+    position:fixed; z-index:502; width:120px; height:120px;
     display:none; align-items:center; justify-content:center;
     background:transparent; border:none;
+    /* Le clic sur toute la zone déclenche activateMegaBonus */
 }
 #mega-orb-inner {
     width:90px; height:90px; border-radius:50%;
@@ -320,10 +322,12 @@ body.bourrine .htab, body.mega .htab { color:#ff9900; border-color:rgba(255,150,
     border:3px solid #fff;
     display:flex; align-items:center; justify-content:center; flex-direction:column;
     font-size:9px; font-weight:bold; color:#fff; text-align:center; line-height:1.3;
-    animation:orbBob 1.5s ease-in-out infinite, megaGlow .6s ease-in-out infinite alternate;
-    pointer-events:none; /* le clic passe au wrapper parent */
+    animation:orbBobSlow 2s ease-in-out infinite, megaGlow .8s ease-in-out infinite alternate;
+    pointer-events:none;
+    flex-shrink:0;
 }
 #mega-orb .mo-icon { font-size:28px; }
+/* Animation plus lente et amplitude réduite à 6px pour rester dans le wrapper */
 @keyframes megaGlow{0%{filter:drop-shadow(0 0 8px #aa00ff)}100%{filter:drop-shadow(0 0 32px #ff88ff)}}
 
 /* ── MODE MEGA ── */
