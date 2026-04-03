@@ -1392,7 +1392,7 @@ async function syncScoreToDB() {
     if (!myPseudo) return;
     try {
         await sb.from('cdsi_users')
-            .update({ franclick_score: Math.floor(score) })
+            .update({ franclick_score: Math.floor(bps) })
             .eq('pseudo', myPseudo);
     } catch(e) {}
 }
