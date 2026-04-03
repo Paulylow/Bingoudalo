@@ -17,7 +17,8 @@
       display: flex; 
       flex-direction: column; 
       align-items: center; 
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: auto; /* AUTORISE LE SCROLL SUR LES PETITS ÉCRANS */
   }
 
   /* --- TOP BAR --- */
@@ -30,40 +31,40 @@
   /* --- GAME AREA --- */
   .game-area { flex: 1; width: 100%; max-width: 1000px; padding-top: 80px; display: flex; flex-direction: column; justify-content: space-between; position: relative;}
   
-  .hand-section { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 250px; position: relative; }
+  .hand-section { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 180px; position: relative; margin-bottom: 10px;}
   
-  /* AVATAR DU CROUPIER */
+  /* AVATAR DU CROUPIER RÉDUIT */
   .dealer-avatar {
-      width: 90px;
-      height: 90px;
+      width: 70px;
+      height: 70px;
       border-radius: 50%;
       border: 3px solid #f1c40f;
       object-fit: cover;
-      margin-bottom: 10px;
+      margin-bottom: 5px;
       box-shadow: 0 5px 15px rgba(0,0,0,0.8);
       background: #111;
   }
 
-  .score-badge { font-family: 'Bebas Neue'; font-size: 24px; background: rgba(0,0,0,0.6); padding: 5px 15px; border-radius: 10px; border: 1px solid #555; margin-bottom: 15px; letter-spacing: 1px;}
+  .score-badge { font-family: 'Bebas Neue'; font-size: 20px; background: rgba(0,0,0,0.6); padding: 5px 15px; border-radius: 10px; border: 1px solid #555; margin-bottom: 10px; letter-spacing: 1px;}
   
-  .cards-container { display: flex; gap: -50px; justify-content: center; height: 160px;}
+  .cards-container { display: flex; gap: -40px; justify-content: center; height: 130px;}
 
-  /* --- CARTES CSS --- */
+  /* --- CARTES CSS RÉDUITES POUR WINDOWS --- */
   .playing-card {
-      width: 110px;
-      height: 160px;
+      width: 90px;
+      height: 130px;
       background: #fff;
-      border-radius: 10px;
+      border-radius: 8px;
       border: 1px solid #ccc;
       box-shadow: 2px 5px 15px rgba(0,0,0,0.5);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 10px;
-      font-size: 24px;
+      padding: 8px;
+      font-size: 20px;
       font-weight: bold;
       position: relative;
-      margin-left: -50px; /* Chevauchement */
+      margin-left: -45px; 
       transition: transform 0.3s;
       animation: dealCard 0.4s ease-out forwards;
   }
@@ -72,11 +73,11 @@
   .playing-card.black { color: #2c3e50; }
   
   .card-top { align-self: flex-start; line-height: 1; }
-  .card-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 50px; opacity: 0.2; }
+  .card-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 40px; opacity: 0.2; }
   .card-bottom { align-self: flex-end; transform: rotate(180deg); line-height: 1;}
 
   .card-hidden {
-      background: repeating-linear-gradient(45deg, #111, #111 10px, #b22222 10px, #b22222 20px);
+      background: repeating-linear-gradient(45deg, #111, #111 8px, #b22222 8px, #b22222 16px);
       border: 2px solid #fff;
       color: transparent !important;
   }
@@ -91,19 +92,20 @@
   .controls-area {
       background: rgba(0,0,0,0.8);
       border-top: 2px solid #f1c40f;
-      padding: 20px;
+      padding: 15px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 15px;
+      gap: 10px;
       border-radius: 20px 20px 0 0;
       box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
+      margin-top: auto; /* Pousse les contrôles vers le bas */
   }
 
-  .betting-phase, .playing-phase { display: flex; gap: 15px; }
+  .betting-phase, .playing-phase { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;}
   .playing-phase { display: none; }
 
-  .btn { font-family: 'Bebas Neue'; font-size: 22px; letter-spacing: 2px; padding: 12px 30px; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
+  .btn { font-family: 'Bebas Neue'; font-size: 20px; letter-spacing: 2px; padding: 10px 25px; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
   
   .btn-bet { background: transparent; border: 2px solid #f1c40f; color: #f1c40f; }
   .btn-bet:hover { background: rgba(241, 196, 15, 0.2); }
@@ -126,7 +128,7 @@
       left: 50%;
       transform: translate(-50%, -50%);
       font-family: 'Bebas Neue';
-      font-size: 60px;
+      font-size: 50px;
       letter-spacing: 4px;
       text-align: center;
       z-index: 50;
@@ -139,7 +141,7 @@
   .msg-lose { color: #e74c3c; text-shadow: 0 0 30px #e74c3c; }
   .msg-push { color: #bdc3c7; }
 
-  .bet-display { font-family: 'Bebas Neue'; font-size: 24px; color: #f1c40f; margin-bottom: 10px; letter-spacing: 1px;}
+  .bet-display { font-family: 'Bebas Neue'; font-size: 22px; color: #f1c40f; margin-bottom: 5px; letter-spacing: 1px;}
 
 </style>
 </head>
@@ -155,8 +157,8 @@
     
     <!-- CROUPIER -->
     <div class="hand-section" id="dealer-section">
-        <!-- IMAGE DU CROUPIER ICI -->
-        <img src="croupier.png" alt="Croupier" class="dealer-avatar" onerror="this.src='https://via.placeholder.com/90x90/111/f1c40f?text=CROUPIER'">
+        <!-- IMAGE DU CROUPIER -->
+        <img src="croupier.png" alt="Croupier" class="dealer-avatar" onerror="this.src='https://via.placeholder.com/70x70/111/f1c40f?text=CROUPIER'">
         
         <div class="score-badge">CROUPIER : <span id="dealer-score">?</span></div>
         <div class="cards-container" id="dealer-cards">
