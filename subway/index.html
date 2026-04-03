@@ -225,10 +225,10 @@ function update() {
   if (slideT>0) slideT--;
 
   // Scroll planks
-  planks = planks.map(z => { z+=spd*1.2; return z>1.05?z-1.05:z; });
+  planks = planks.map(z => { z+=spd*0.7; return z>1.05?z-1.05:z; });
 
   // Obstacles
-  obstacles.forEach(o => o.z+=spd*0.9);
+  obstacles.forEach(o => o.z+=spd*0.55);
   obstacles = obstacles.filter(o => {
     if (o.z>1.08) return false;
     if (!o.hit && invFrames===0 && o.z>0.90 && o.z<1.04) {
@@ -245,7 +245,7 @@ function update() {
   });
 
   // Coins
-  coinObjs.forEach(c=>c.z+=spd*0.9);
+  coinObjs.forEach(c=>c.z+=spd*0.55);
   coinObjs = coinObjs.filter(c => {
     if (c.z>1.08) return false;
     if (c.z>0.90 && c.z<1.04 && Math.round(lerpLane)===c.lane) {
@@ -262,9 +262,9 @@ function update() {
   });
 
   // Spawn
-  const iv=Math.max(Math.round(70-spd*2000),28);
+  const iv=Math.max(Math.round(90-spd*2500),35);
   if (frame%iv===0) spawnObs();
-  if (frame%35===0) spawnCoins();
+  if (frame%42===0) spawnCoins();
 }
 
 function takeHit() {
@@ -295,10 +295,15 @@ function draw() {
   drawGround();
   drawRoad();
   drawPlanks();
-  drawPursuer();
-  coinObjs.slice().sort((a,b)=>a.z-b.z).forEach(c=>drawCoin(c));
-  obstacles.slice().sort((a,b)=>a.z-b.z).forEach(o=>drawObs(o));
-  drawPlayer();
+
+  // Everything in one sorted list back→front (smallest z = farthest = drawn first)
+  const drawList = [];
+  drawList.push({ z: 0.72, fn: drawPursuer });
+  coinObjs.forEach(c => drawList.push({ z: c.z, fn: () => drawCoin(c) }));
+  obstacles.forEach(o => drawList.push({ z: o.z, fn: () => drawObs(o) }));
+  drawList.push({ z: 1.0, fn: drawPlayer }); // player ALWAYS last = always on top
+  drawList.sort((a,b) => a.z - b.z);
+  drawList.forEach(d => d.fn());
 }
 
 function drawSky() {
@@ -402,7 +407,7 @@ function drawCoin(c) {
 
 function drawObs(o) {
   const p=proj(laneToRoad(o.lane), o.z, 0);
-  if(p.s<0.03) return;
+  if(p.s<0.005) return;
   cx.save(); cx.translate(p.x,p.y);
   if(o.type==='barrel') drawBarrel(cx,p.s,o.hit);
   if(o.type==='fence')  drawFence(cx,p.s,o.hit);
