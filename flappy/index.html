@@ -124,25 +124,29 @@
   }
   #toast.show { transform: translateX(-50%) translateY(0); opacity:1; }
 
-  /* ---- PAGE LAYOUT ---- */
+  /* ---- PAGE LAYOUT: game centered, lb fixed left ---- */
   #page-layout {
     position: relative; z-index: 10;
-    display: flex; align-items: flex-start; gap: 20px;
+    display: flex; align-items: center; justify-content: center;
+    width: 100%;
   }
 
   /* ---- LEADERBOARD PANEL ---- */
   #lb-panel {
+    position: fixed;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
     width: 210px;
+    max-height: 82vh;
     background: rgba(10,14,28,0.92);
     border: 1px solid var(--border);
     border-radius: 16px;
     overflow: hidden;
     backdrop-filter: blur(12px);
     box-shadow: 0 0 30px rgba(0,232,255,0.05);
-    flex-shrink: 0;
-    /* vertically align with game shell */
-    align-self: stretch;
     display: flex; flex-direction: column;
+    z-index: 50;
   }
   #lb-panel::before {
     content: ''; display: block; height: 1px;
@@ -485,22 +489,22 @@ const W=canvas.width, H=canvas.height;
 const CYAN='#00E8FF', MAGENTA='#FF2D78', GOLD='#FFD84D', GREEN='#00FF9C';
 
 // Difficulté progressive
-const BASE_SPEED     = 1.8;   // vitesse de départ (lente)
-const MAX_SPEED      = 3.8;   // vitesse max
-const SPEED_PER_PT   = 0.08;  // accélération par point
-const BASE_GAP       = 185;   // gap de départ (large)
-const MIN_GAP        = 120;   // gap minimum
-const GAP_PER_PT     = 1.8;   // réduction du gap par point
-const BASE_INTERVAL  = 110;   // frames entre les tuyaux (fréquence de départ)
-const MIN_INTERVAL   = 64;    // fréquence max
-const INTERVAL_PER_PT= 1.5;
+const BASE_SPEED     = 2.4;   // vitesse de départ
+const MAX_SPEED      = 4.2;   // vitesse max
+const SPEED_PER_PT   = 0.07;  // accélération par point
+const BASE_GAP       = 178;   // gap de départ (large)
+const MIN_GAP        = 118;   // gap minimum
+const GAP_PER_PT     = 1.6;   // réduction du gap par point
+// Espacement entre tuyaux (en pixels) — garanti continu
+const BASE_PIPE_SPACING = 300; // pixels entre tuyaux au départ
+const MIN_PIPE_SPACING  = 200; // espacement minimum
 
 const PIPE_W=64, BIRD_R=26;
 
 let state='idle';
 let bird, pipes, score, bestScore=0, frame=0, raf;
 let particles=[];
-let currentSpeed, currentGap, currentInterval;
+let currentSpeed, currentGap, currentSpacing;
 
 const stars=Array.from({length:70},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.4+0.2,a:Math.random()*0.6+0.1}));
 
@@ -511,9 +515,9 @@ headImg.onload=()=>{headLoaded=true; if(state==='idle') drawIdle();};
 headImg.onerror=()=>{headLoaded=false;};
 
 function getDifficulty() {
-  currentSpeed    = Math.min(BASE_SPEED + score*SPEED_PER_PT, MAX_SPEED);
-  currentGap      = Math.max(BASE_GAP - score*GAP_PER_PT, MIN_GAP);
-  currentInterval = Math.max(Math.floor(BASE_INTERVAL - score*INTERVAL_PER_PT), MIN_INTERVAL);
+  currentSpeed   = Math.min(BASE_SPEED + score*SPEED_PER_PT, MAX_SPEED);
+  currentGap     = Math.max(BASE_GAP - score*GAP_PER_PT, MIN_GAP);
+  currentSpacing = Math.max(BASE_PIPE_SPACING - score*2, MIN_PIPE_SPACING);
 }
 
 // Difficulty level label
@@ -530,6 +534,10 @@ function init() {
   pipes=[]; particles=[];
   score=0; frame=0;
   getDifficulty();
+  // Pre-seed 3 pipes so screen is never empty
+  spawnPipe(W + 80);
+  spawnPipe(W + 80 + currentSpacing);
+  spawnPipe(W + 80 + currentSpacing*2);
   updateHUD();
 }
 
@@ -554,9 +562,19 @@ function updateParticles(){for(let p of particles){p.x+=p.vx;p.y+=p.vy;p.vy+=0.1
 function drawParticles(){for(let p of particles){ctx.save();ctx.globalAlpha=p.life*0.9;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=p.color;ctx.shadowColor=p.color;ctx.shadowBlur=12;ctx.fill();ctx.restore();}}
 
 /* ---- PIPES ---- */
-function spawnPipe(){
+function spawnPipe(xOverride){
   const topH=90+Math.random()*(H-currentGap-180);
-  pipes.push({x:W+10,topH,scored:false});
+  const x = (xOverride !== undefined) ? xOverride : W+10;
+  pipes.push({x, topH, scored:false});
+}
+
+// Ensure pipe continuity: spawn when last pipe has crossed the threshold
+function ensurePipes(){
+  if(pipes.length===0){ spawnPipe(W+10); return; }
+  const last = pipes[pipes.length-1];
+  if(last.x < W - currentSpacing + PIPE_W){
+    spawnPipe(last.x + currentSpacing);
+  }
 }
 
 /* ---- UPDATE ---- */
@@ -565,7 +583,10 @@ function update(){
   getDifficulty();
   bird.vy+=0.38; bird.y+=bird.vy;
   bird.angle=Math.min(Math.max(bird.vy*3.5,-30),80);
-  if(frame%currentInterval===0) spawnPipe();
+
+  // Position-based continuous pipe spawning
+  ensurePipes();
+
   for(let p of pipes){
     p.x-=currentSpeed;
     if(!p.scored&&p.x+PIPE_W<bird.x){p.scored=true;score++;updateHUD(true);earnCoins(1);}
