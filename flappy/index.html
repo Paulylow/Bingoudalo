@@ -802,5 +802,107 @@ function loop(){
 init();
 drawIdle();
 </script>
+
+<!-- =====================================================
+     ANTI DEVTOOLS
+===================================================== -->
+<div id="cheat-screen" style="
+  display:none; position:fixed; inset:0; z-index:99999;
+  background:#060810;
+  flex-direction:column; align-items:center; justify-content:center;
+  font-family:'Orbitron',monospace; text-align:center; padding:40px;
+">
+  <div style="font-size:72px; margin-bottom:24px;">🚫</div>
+  <div style="
+    font-size:clamp(16px,2.5vw,26px); font-weight:900; letter-spacing:4px;
+    background:linear-gradient(90deg,#00E8FF,#FF2D78);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    margin-bottom:16px; line-height:1.3;
+  ">ALORS TU VEUX TRICHER<br>SUR LE FLAPPY JEJ ?</div>
+  <div style="
+    font-family:'Share Tech Mono',monospace; font-size:clamp(13px,1.8vw,18px);
+    color:#FF2D78; letter-spacing:3px; margin-bottom:32px;
+  ">REMETS TON FALZ DE SUITE !</div>
+  <div style="font-size:36px; animation:spin 1s linear infinite; display:inline-block;">🔄</div>
+  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+</div>
+
+<script>
+(function() {
+  const THRESHOLD = 160;
+  let devOpen = false;
+  let gameWasPaused = false;
+
+  function showCheatScreen(show) {
+    const el = document.getElementById('cheat-screen');
+    if (!el) return;
+    if (show && !devOpen) {
+      devOpen = true;
+      el.style.display = 'flex';
+      // Pause the game loop
+      if (typeof raf !== 'undefined' && raf) {
+        cancelAnimationFrame(raf);
+        raf = null;
+        gameWasPaused = true;
+      }
+    } else if (!show && devOpen) {
+      devOpen = false;
+      el.style.display = 'none';
+      // Resume game if it was paused
+      if (gameWasPaused && typeof state !== 'undefined' && state === 'playing') {
+        gameWasPaused = false;
+        loop();
+      }
+    }
+  }
+
+  // Method 1: window size difference (most reliable)
+  function checkSize() {
+    const widthDiff  = window.outerWidth  - window.innerWidth;
+    const heightDiff = window.outerHeight - window.innerHeight;
+    showCheatScreen(widthDiff > THRESHOLD || heightDiff > THRESHOLD);
+  }
+
+  // Method 2: console timing trick
+  let devtoolsOpen = false;
+  const element = new Image();
+  Object.defineProperty(element, 'id', {
+    get: function() {
+      devtoolsOpen = true;
+    }
+  });
+
+  // Method 3: F12 / Ctrl+Shift+I / Ctrl+Shift+J / Ctrl+U key block
+  document.addEventListener('keydown', function(e) {
+    // F12
+    if (e.key === 'F12') {
+      e.preventDefault();
+      showCheatScreen(true);
+      return false;
+    }
+    // Ctrl+Shift+I / Ctrl+Shift+J / Ctrl+Shift+C
+    if (e.ctrlKey && e.shiftKey && ['I','i','J','j','C','c'].includes(e.key)) {
+      e.preventDefault();
+      showCheatScreen(true);
+      return false;
+    }
+    // Ctrl+U (view source)
+    if (e.ctrlKey && ['U','u'].includes(e.key)) {
+      e.preventDefault();
+      return false;
+    }
+  });
+
+  // Method 4: right-click disable
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+  });
+
+  // Poll size check every 500ms
+  setInterval(checkSize, 500);
+  checkSize();
+})();
+</script>
 </body>
 </html>
