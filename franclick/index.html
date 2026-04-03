@@ -592,6 +592,31 @@ document.addEventListener('keydown', e => {
 const _enc = d => btoa(unescape(encodeURIComponent(JSON.stringify(d))));
 const _dec = s => { try { return JSON.parse(decodeURIComponent(escape(atob(s)))); } catch(e){ return null; } };
 
+/* fmt(n) — formate un nombre avec des points comme séparateurs de milliers
+   ex: 1234567 → "1.234.567"  |  1234.5 → "1.234,5" */
+function fmt(n) {
+    if (n === undefined || n === null || isNaN(n)) return '0';
+    const abs = Math.abs(n);
+    // Pour les grands nombres (>= 1 milliard), afficher en notation courte
+    if (abs >= 1e18) return (n/1e18).toFixed(2).replace('.',',') + ' Qi';
+    if (abs >= 1e15) return (n/1e15).toFixed(2).replace('.',',') + ' Qa';
+    if (abs >= 1e12) return (n/1e12).toFixed(2).replace('.',',') + ' T';
+    if (abs >= 1e9)  return (n/1e9).toFixed(2).replace('.',',') + ' G';
+    // Pour les nombres normaux : séparateurs de milliers avec des points
+    const parts = Math.floor(Math.abs(n)).toString().split('');
+    let result = '';
+    parts.forEach((d, i) => {
+        if (i > 0 && (parts.length - i) % 3 === 0) result += '.';
+        result += d;
+    });
+    // Ajouter les décimales si nécessaire
+    const dec = n % 1;
+    if (dec !== 0 && Math.abs(dec) > 0.05) {
+        result += ',' + dec.toFixed(1).slice(2);
+    }
+    return (n < 0 ? '-' : '') + result;
+}
+
 /* ================================================================
    CANVAS
 ================================================================ */
@@ -957,10 +982,10 @@ function recalcBPS() {
     else clickMult = baseClickMult;
 }
 function updateScoreUI() {
-    document.getElementById('scoreDisplay').textContent = Math.floor(score).toLocaleString('fr-FR');
+    document.getElementById('scoreDisplay').textContent = fmt(score);
     const displayBps = Math.floor(bps * bpsMultiplier);
     const bonusLabel = bpsMultiplier > 1 ? ' (x'+bpsMultiplier+')' : '';
-    document.getElementById('bpsDisplay').textContent = displayBps.toLocaleString('fr-FR') + ' pts / sec' + bonusLabel;
+    document.getElementById('bpsDisplay').textContent = fmt(displayBps) + ' pts / sec' + bonusLabel;
     checkSucces();
 }
 function updateShopColors() {
@@ -1001,8 +1026,8 @@ function renderShop() {
             <div class="shop-item-top">
                 <div class="item-info">
                     <h3><img src="${b.icon}" class="shop-icon" onerror="this.style.display='none'" alt="">${b.name}</h3>
-                    <p>${b.clickBonus > 0 ? '+' + (b.clickBonus*100).toFixed(0) + '% clic/unité — clic actuel ×' + clickMult.toFixed(2) : 'Génère ' + (b.bps * calcPrestigeMultiplier()).toFixed(1) + ' pts/s (prestige x' + calcPrestigeMultiplier().toFixed(2) + ')'} — boost ×${getRowMultiplier(b).toFixed(2)} (${b.count%10}/10)</p>
-                    <div class="item-cost">x1 : ${cost1.toLocaleString('fr-FR')} pts</div>
+                    <p>${b.clickBonus > 0 ? '+' + (b.clickBonus*100).toFixed(0) + '% clic/unité — clic actuel ×' + clickMult.toFixed(2) : 'Génère ' + fmt(b.bps * calcPrestigeMultiplier()) + ' pts/s (prestige x' + calcPrestigeMultiplier().toFixed(2) + ')'} — boost ×${getRowMultiplier(b).toFixed(2)} (${b.count%10}/10)</p>
+                    <div class="item-cost">x1 : ${fmt(cost1)} pts</div>
                 </div>
                 <div class="item-count">${b.count}</div>
             </div>
@@ -1032,7 +1057,7 @@ function renderVisuals() {
         const isClickRow = b.clickBonus > 0;
         const statLabel = isClickRow
             ? `<div class="visual-row-bps boosted">clic ×${clickMult.toFixed(2)}</div>`
-            : `<div class="visual-row-bps ${boostedClass}">${rowBps % 1 === 0 ? rowBps : rowBps.toFixed(1)} pts/s</div>`;
+            : `<div class="visual-row-bps ${boostedClass}">${fmt(rowBps)} pts/s</div>`;
 
         let h = `<div class="visual-row" style="background:${b.bg};">`;
         h += `<div class="visual-row-header">
@@ -1118,7 +1143,7 @@ function triggerBourse() {
     const pct = 200;
     o.dataset.pct = pct;
     const gain = Math.floor(score * pct / 100);
-    const gainStr = gain.toLocaleString('fr-FR');
+    const gainStr = fmt(gain);
     document.getElementById('bourse-gain').textContent =
         '💰 BOURSE ! Clique pour +' + gainStr + ' pts (x2 de ton score) !';
     document.getElementById('bourse-gain').style.display = 'block';
@@ -1144,7 +1169,7 @@ function clickBourse() {
     const gain = Math.floor(score * pct / 100);
     score += gain;
     updateScoreUI();
-    showNotif('💰 +' + gain.toLocaleString('fr-FR') + ' pts ! La bourse a bien bossé !');
+    showNotif('💰 +' + fmt(gain) + ' pts ! La bourse a bien bossé !');
     scheduleBourse();
 }
 function scheduleBourse() {
@@ -1233,7 +1258,7 @@ function fraudePunish() {
     flash('rgba(200,0,0,.3)');
     fraudeEscapeCount++;
     checkSucces();
-    showNotif(`❌ LA FRAUDE S'EST ÉCHAPPÉE ! -${lost.toLocaleString('fr-FR')} pts !`);
+    showNotif(`❌ LA FRAUDE S'EST ÉCHAPPÉE ! -${fmt(lost)} pts !`);
     updateScoreUI();
     scheduleFraude();
 }
@@ -1281,7 +1306,7 @@ function openPrestigeModal() {
     document.getElementById('pm-detail').textContent =
         tokens === 0
         ? 'Atteins 1 000 pts/s pour gagner des tokens !'
-        : 'tokens gagnés (basé sur ton BPS : ' + Math.floor(bps).toLocaleString('fr-FR') + ' pts/s)';
+        : 'tokens gagnés (basé sur ton BPS : ' + fmt(Math.floor(bps)) + ' pts/s)';
     document.getElementById('pm-total').textContent =
         'Total après : ' + newTotal + ' tokens → +' + newBonusPct + '% gains permanents';
     document.getElementById('prestige-modal').classList.add('open');
