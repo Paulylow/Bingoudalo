@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WORMZ 💣</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0e0e14; --surface: #16161f; --border: #2a2a3a;
+  --accent: #ff4d6d; --accent2: #ffd166; --accent3: #06d6a0;
+  --purple: #a855f7; --blue: #38bdf8;
+  --text: #f0f0f5; --muted: #6b6b88;
+  --team-red: #ff4d6d; --team-blue: #38bdf8; --team-green: #06d6a0; --team-yellow: #ffd166;
+}
+body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:0; position:relative; overflow:hidden; }
+body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events:none; z-index:0; opacity:0.4; }
+
+button { font-family:'DM Sans',sans-serif; font-weight:700; font-size:13px; letter-spacing:1.5px; text-transform:uppercase; border:none; border-radius:8px; cursor:pointer; padding:12px 24px; transition:all 0.18s ease; }
+.btn-primary { background:var(--accent); color:white; box-shadow:0 4px 24px rgba(255,77,109,0.4); }
+.btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 32px rgba(255,77,109,0.55); }
+.btn-secondary { background:transparent; color:var(--text); border:1.5px solid var(--border); }
+.btn-secondary:hover { border-color:var(--accent2); color:var(--accent2); transform:translateY(-2px); }
+.btn-green { background:var(--accent3); color:#0e0e14; box-shadow:0 4px 24px rgba(6,214,160,0.35); }
+.btn-green:hover { transform:translateY(-2px); }
+button:disabled { opacity:0.35; cursor:not-allowed; transform:none !important; }
+
+/* ── SCREENS ── */
+.screen { display:none; flex-direction:column; align-items:center; width:100%; height:100vh; position:relative; z-index:1; }
+.screen.active { display:flex; }
+
+/* ── LOBBY SCREEN ── */
+#screenLobby { padding:32px 16px; overflow-y:auto; justify-content:flex-start; }
+.logo { font-family:'Bebas Neue',sans-serif; font-size:clamp(52px,10vw,88px); letter-spacing:6px; line-height:1;
+  background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 60%,var(--accent3) 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  filter:drop-shadow(0 0 40px rgba(255,77,109,0.35)); }
+.tagline { color:var(--muted); font-size:13px; letter-spacing:3px; text-transform:uppercase; margin-top:6px; margin-bottom:32px; }
+.lobby-box { width:100%; max-width:600px; background:var(--surface); border:1.5px solid var(--border); border-radius:16px; padding:20px; margin-bottom:20px; }
+.lobby-box h3 { font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:14px; }
+.player-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); font-size:14px; font-weight:500; animation:fadeIn 0.3s ease; }
+.player-row:last-child { border-bottom:none; }
+.badge { font-size:10px; letter-spacing:1px; text-transform:uppercase; padding:3px 8px; border-radius:4px; font-weight:700; margin-left:auto; }
+.badge-master { background:rgba(255,209,102,0.15); color:var(--accent2); border:1px solid rgba(255,209,102,0.3); }
+.badge-ready { background:rgba(6,214,160,0.15); color:var(--accent3); border:1px solid rgba(6,214,160,0.3); }
+.lobby-controls { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; width:100%; max-width:600px; }
+.team-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+
+/* ── CHAR SELECT ── */
+#screenCharSelect { padding:32px 16px; overflow-y:auto; justify-content:flex-start; align-items:center; }
+.char-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(100px,1fr)); gap:12px; width:100%; max-width:600px; margin-bottom:20px; }
+.char-card { background:var(--surface); border:2px solid var(--border); border-radius:12px; padding:16px 10px; text-align:center; cursor:pointer; transition:all 0.2s; }
+.char-card:hover { border-color:var(--accent2); transform:translateY(-3px); }
+.char-card.selected { border-color:var(--accent3); box-shadow:0 0 20px rgba(6,214,160,0.3); background:rgba(6,214,160,0.05); }
+.char-card .char-emoji { font-size:40px; margin-bottom:6px; display:block; }
+.char-card .char-name { font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--muted); }
+.char-card.selected .char-name { color:var(--accent3); }
+
+/* ── GAME SCREEN ── */
+#screenGame { flex-direction:row; overflow:hidden; }
+#gameCanvas { flex:1; display:block; background:#1a2a3a; }
+
+/* ── GAME HUD ── */
+.game-hud { position:fixed; top:0; left:0; right:0; z-index:10; padding:10px 16px; display:flex; align-items:center; gap:12px; background:linear-gradient(to bottom, rgba(14,14,20,0.95), transparent); pointer-events:none; }
+.hud-turn { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:2px; pointer-events:none; }
+.hud-timer { font-family:'Bebas Neue',sans-serif; font-size:36px; letter-spacing:2px; color:var(--accent2); min-width:48px; text-align:center; }
+.hud-timer.urgent { color:var(--accent); animation:timerPulse 0.5s ease infinite alternate; }
+@keyframes timerPulse { from{transform:scale(1)} to{transform:scale(1.1)} }
+.hud-weapon { display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:8px; padding:6px 12px; pointer-events:auto; }
+.hud-weapon-icon { font-size:20px; }
+.hud-weapon-name { font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--accent2); }
+.hud-sep { flex:1; }
+.hud-wind { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+.wind-arrow { font-size:18px; transition:transform 0.3s; }
+
+/* ── PLAYER HEALTH BARS ── */
+.teams-hud { position:fixed; bottom:0; left:0; right:0; z-index:10; padding:10px 16px; background:linear-gradient(to top, rgba(14,14,20,0.95), transparent); display:flex; gap:8px; flex-wrap:wrap; pointer-events:none; }
+.team-hud { background:rgba(22,22,31,0.85); border:1px solid var(--border); border-radius:10px; padding:8px 12px; min-width:140px; }
+.team-hud-name { font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+.worm-hp-row { display:flex; align-items:center; gap:6px; margin:3px 0; }
+.worm-hp-bar { flex:1; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden; }
+.worm-hp-fill { height:100%; border-radius:2px; transition:width 0.3s ease; }
+.worm-name-sm { font-size:10px; color:var(--muted); min-width:60px; }
+.worm-name-sm.active { color:var(--accent2); font-weight:700; }
+
+/* ── WEAPON SELECTOR ── */
+.weapon-tray { position:fixed; top:60px; left:50%; transform:translateX(-50%); z-index:20; display:none; background:var(--surface); border:1.5px solid var(--border); border-radius:16px; padding:16px; gap:12px; flex-wrap:wrap; justify-content:center; max-width:400px; box-shadow:0 8px 40px rgba(0,0,0,0.5); }
+.weapon-tray.visible { display:flex; }
+.weapon-btn { background:rgba(255,255,255,0.05); border:1.5px solid var(--border); border-radius:10px; padding:10px; text-align:center; cursor:pointer; transition:all 0.2s; min-width:70px; }
+.weapon-btn:hover { border-color:var(--accent2); transform:scale(1.05); }
+.weapon-btn.selected-w { border-color:var(--accent3); background:rgba(6,214,160,0.1); }
+.weapon-btn .w-icon { font-size:24px; margin-bottom:2px; display:block; }
+.weapon-btn .w-name { font-size:9px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--muted); }
+.weapon-btn .w-ammo { font-size:10px; color:var(--accent2); margin-top:2px; }
+
+/* ── POWER BAR ── */
+.power-bar-wrap { position:fixed; bottom:60px; left:50%; transform:translateX(-50%); z-index:10; display:flex; align-items:center; gap:10px; background:rgba(14,14,20,0.8); border:1px solid var(--border); border-radius:8px; padding:8px 16px; pointer-events:none; }
+.power-bar-label { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--muted); }
+.power-bar-track { width:120px; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden; }
+.power-bar-fill { height:100%; background:linear-gradient(90deg, var(--accent3), var(--accent2), var(--accent)); border-radius:3px; transition:width 0.05s; }
+.power-bar-val { font-family:'Bebas Neue',sans-serif; font-size:18px; color:var(--accent2); min-width:36px; }
+
+/* ── TURN BANNER ── */
+.turn-banner { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:50; text-align:center; pointer-events:none; opacity:0; transition:opacity 0.3s; }
+.turn-banner.show { opacity:1; animation:bannerPop 2s ease forwards; }
+.turn-banner-title { font-family:'Bebas Neue',sans-serif; font-size:clamp(40px,8vw,72px); letter-spacing:6px; filter:drop-shadow(0 0 30px rgba(255,209,102,0.5)); }
+.turn-banner-sub { font-size:14px; letter-spacing:3px; text-transform:uppercase; color:var(--muted); margin-top:4px; }
+@keyframes bannerPop { 0%{opacity:0;transform:translate(-50%,-50%) scale(0.5)} 15%{opacity:1;transform:translate(-50%,-50%) scale(1.05)} 70%{opacity:1;transform:translate(-50%,-50%) scale(1)} 100%{opacity:0;transform:translate(-50%,-50%) scale(1)} }
+
+/* ── DAMAGE NUMBERS ── */
+.dmg-float { position:fixed; font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:2px; pointer-events:none; z-index:60; animation:dmgFloat 1.5s ease forwards; }
+.dmg-float.heal { color:var(--accent3); }
+.dmg-float.dmg { color:var(--accent); }
+@keyframes dmgFloat { 0%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-60px)} }
+
+/* ── END SCREEN ── */
+#screenEnd { padding:32px 16px; justify-content:center; align-items:center; }
+.end-title { font-family:'Bebas Neue',sans-serif; font-size:clamp(52px,10vw,80px); letter-spacing:6px;
+  background:linear-gradient(135deg,var(--accent2),var(--accent3)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; text-align:center; }
+.end-sub { color:var(--muted); font-size:12px; letter-spacing:3px; text-transform:uppercase; margin-bottom:28px; }
+.end-podium { display:flex; flex-direction:column; gap:10px; width:100%; max-width:500px; margin-bottom:24px; }
+.end-row { display:flex; align-items:center; gap:14px; background:var(--surface); border:1.5px solid var(--border); border-radius:12px; padding:14px 18px; animation:slideUp 0.4s ease both; }
+.end-row.first { border-color:var(--accent2); box-shadow:0 0 24px rgba(255,209,102,0.2); }
+
+/* ── TOAST ── */
+.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--surface); border:1.5px solid var(--border); border-radius:10px; padding:12px 20px; font-size:13px; font-weight:500; color:var(--text); z-index:200; transition:transform 0.3s ease; white-space:nowrap; }
+.toast.show { transform:translateX(-50%) translateY(0); }
+.toast.green { border-color:var(--accent3); color:var(--accent3); }
+
+/* ── AIMING INDICATOR ── */
+#aimIndicator { position:fixed; bottom:130px; left:50%; transform:translateX(-50%); z-index:10; font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); pointer-events:none; opacity:0; transition:opacity 0.3s; }
+#aimIndicator.show { opacity:1; }
+
+@keyframes fadeIn { from{opacity:0;transform:scale(0.9)} to{opacity:1;transform:scale(1)} }
+@keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── MOBILE CONTROLS ── */
+.mobile-controls { position:fixed; bottom:60px; left:0; right:0; z-index:10; display:none; justify-content:space-between; padding:0 16px; pointer-events:none; }
+@media (max-width:768px) { .mobile-controls { display:flex; } }
+.ctrl-btn { background:rgba(22,22,31,0.85); border:1.5px solid var(--border); border-radius:12px; padding:14px 20px; font-size:22px; cursor:pointer; pointer-events:auto; active:transform:scale(0.95); transition:all 0.1s; }
+.ctrl-btn:active { background:rgba(255,77,109,0.2); border-color:var(--accent); }
+.ctrl-center { display:flex; gap:10px; }
+
+/* ─── CAMERA ZOOM HINT ─── */
+.zoom-hint { position:fixed; top:60px; right:16px; z-index:10; font-size:11px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; pointer-events:none; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════ SCREEN: LOBBY ══════════════════════════ -->
+<div class="screen active" id="screenLobby">
+  <div class="logo">WORMZ</div>
+  <div class="tagline">Battle royale au tour par tour • Navigateur</div>
+
+  <div class="lobby-box">
+    <h3>Joueurs connectés</h3>
+    <div id="playersList"><div style="color:var(--muted);font-size:13px">Connexion...</div></div>
+  </div>
+
+  <div class="lobby-box" id="settingsBox" style="display:none">
+    <h3>⚙️ Paramètres (Maître du jeu)</h3>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px">
+      <label style="font-size:13px;color:var(--muted)">Vers par équipe :
+        <select id="wormsPerTeam" style="margin-left:8px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px">
+          <option value="2">2</option>
+          <option value="3" selected>3</option>
+          <option value="4">4</option>
+        </select>
+      </label>
+      <label style="font-size:13px;color:var(--muted)">Tour (sec) :
+        <select id="turnDuration" style="margin-left:8px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px">
+          <option value="30">30</option>
+          <option value="45" selected>45</option>
+          <option value="60">60</option>
+        </select>
+      </label>
+    </div>
+  </div>
+
+  <div class="lobby-controls" id="lobbyControls"></div>
+  <div style="color:var(--muted);font-size:12px;margin-top:10px;text-align:center" id="lobbyHint"></div>
+</div>
+
+<!-- ══════════════════════════ SCREEN: CHAR SELECT ══════════════════════════ -->
+<div class="screen" id="screenCharSelect">
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:4px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px">CHOISIS TON VER</div>
+  <div style="color:var(--muted);font-size:12px;letter-spacing:3px;text-transform:uppercase;margin-bottom:24px" id="charSelectTimer">Temps restant : <span id="charTimerVal" style="color:var(--accent2);font-family:'Bebas Neue';font-size:20px">20</span>s</div>
+  <div class="char-grid" id="charGrid"></div>
+  <button class="btn-green" id="btnConfirmChar" onclick="confirmCharacter()">Confirmer mon personnage ✓</button>
+  <div style="color:var(--muted);font-size:11px;margin-top:10px;text-align:center">Les avatars personnalisés seront bientôt disponibles</div>
+</div>
+
+<!-- ══════════════════════════ SCREEN: GAME ══════════════════════════ -->
+<div class="screen" id="screenGame">
+  <canvas id="gameCanvas"></canvas>
+</div>
+
+<!-- ── GAME HUD (overlays on game screen) ── -->
+<div class="game-hud" id="gameHud" style="display:none">
+  <div class="hud-turn" id="hudTurn">Tour de —</div>
+  <div class="hud-timer" id="hudTimer">45</div>
+  <div class="hud-sep"></div>
+  <div class="hud-wind" id="hudWind"><span class="wind-arrow" id="windArrow">→</span><span id="windVal">0</span> m/s</div>
+  <button class="hud-weapon" id="btnWeapon" onclick="toggleWeaponTray()">
+    <span class="hud-weapon-icon" id="hudWeaponIcon">💣</span>
+    <span class="hud-weapon-name" id="hudWeaponName">Grenade</span>
+  </button>
+</div>
+
+<div class="teams-hud" id="teamsHud" style="display:none" id="teamsHud"></div>
+
+<div class="weapon-tray" id="weaponTray"></div>
+
+<div class="power-bar-wrap" id="powerBarWrap" style="display:none">
+  <span class="power-bar-label">Force</span>
+  <div class="power-bar-track"><div class="power-bar-fill" id="powerBarFill" style="width:0%"></div></div>
+  <span class="power-bar-val" id="powerBarVal">0%</span>
+</div>
+
+<div id="aimIndicator">↑ VISE ↓ TIRER (ESPACE)</div>
+
+<div class="turn-banner" id="turnBanner">
+  <div class="turn-banner-title" id="turnBannerTitle"></div>
+  <div class="turn-banner-sub" id="turnBannerSub"></div>
+</div>
+
+<div class="mobile-controls" id="mobileControls">
+  <button class="ctrl-btn" id="ctrlLeft" ontouchstart="mobileKey('ArrowLeft',true)" ontouchend="mobileKey('ArrowLeft',false)">◀</button>
+  <div class="ctrl-center">
+    <button class="ctrl-btn" ontouchstart="mobileKey('ArrowUp',true)" ontouchend="mobileKey('ArrowUp',false)">▲</button>
+    <button class="ctrl-btn" onclick="mobileFireBtn()">💣</button>
+    <button class="ctrl-btn" ontouchstart="mobileKey('ArrowDown',true)" ontouchend="mobileKey('ArrowDown',false)">▼</button>
+  </div>
+  <button class="ctrl-btn" id="ctrlRight" ontouchstart="mobileKey('ArrowRight',true)" ontouchend="mobileKey('ArrowRight',false)">▶</button>
+</div>
+<div class="zoom-hint">Scroll: zoom · Clic+drag: caméra</div>
+
+<!-- ══════════════════════════ SCREEN: END ══════════════════════════ -->
+<div class="screen" id="screenEnd">
+  <div class="end-title" id="endTitle">Victoire !</div>
+  <div class="end-sub" id="endSub">Partie terminée</div>
+  <div class="end-podium" id="endPodium"></div>
+  <button class="btn-primary" id="btnPlayAgain" onclick="resetGame()">🔄 Rejouer</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════
+//  CONFIG — remplace par tes propres identifiants Supabase
+// ══════════════════════════════════════════════════
+const SUPABASE_URL = 'https://pdybshweyfvxzvngnuxe.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkeWJzaHdleWZ2eHp2bmdudXhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDg2MDAsImV4cCI6MjA5MDUyNDYwMH0.u442X28Mhs-4T-tydabnMm8now8VfAEeNU-Sicuipq4';
+const GAME_ID = 'wormz_main';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ══════════════════════════════════════════════════
+//  CONSTANTES DU JEU
+// ══════════════════════════════════════════════════
+const TEAM_COLORS = ['#ff4d6d','#38bdf8','#06d6a0','#ffd166','#a855f7','#fb923c'];
+const TEAM_NAMES  = ['Rouge','Bleu','Vert','Jaune','Violet','Orange'];
+
+const WORM_RADIUS   = 14;
+const GRAVITY       = 0.35;
+const MOVE_SPEED    = 2.8;
+const JUMP_FORCE    = -7.5;
+const MAP_W         = 2400;
+const MAP_H         = 900;
+const WATER_Y       = MAP_H - 40;
+
+// ══════════════════════════════════════════════════
+//  WEAPONS REGISTRY — extensible !
+//  Pour ajouter une arme : push un objet ici
+// ══════════════════════════════════════════════════
+const WEAPONS = [
+  {
+    id: 'bazooka',
+    name: 'Bazooka',
+    icon: '🚀',
+    ammo: Infinity,
+    damage: 40,
+    blastRadius: 60,
+    projectileSpeed: 12,
+    projectileGravity: 0.2,
+    bounces: 0,
+    delay: 0,           // explosion delay in ms (0 = on impact)
+    color: '#ff4d6d',
+    // Placeholder pour assets futurs : spriteKey: 'bazooka_sprite'
+  },
+  {
+    id: 'grenade',
+    name: 'Grenade',
+    icon: '💣',
+    ammo: 3,
+    damage: 55,
+    blastRadius: 80,
+    projectileSpeed: 10,
+    projectileGravity: 0.3,
+    bounces: 3,
+    delay: 3000,
+    color: '#ffd166',
+  },
+  {
+    id: 'missile',
+    name: 'Missile téléguidé',
+    icon: '🎯',
+    ammo: 1,
+    damage: 70,
+    blastRadius: 90,
+    projectileSpeed: 8,
+    projectileGravity: 0,
+    bounces: 0,
+    delay: 0,
+    guided: true,
+    color: '#a855f7',
+  },
+  {
+    id: 'airmail',
+    name: 'Frappe aérienne',
+    icon: '✈️',
+    ammo: 1,
+    damage: 50,
+    blastRadius: 55,
+    airstrike: true,
+    color: '#38bdf8',
+  },
+  // ── Ajoute tes armes ici dans le futur ──
+  // { id: 'flamethrower', name: 'Lance-flammes', icon: '🔥', ... }
+];
+
+// ══════════════════════════════════════════════════
+//  AVATARS REGISTRY — extensible !
+// ══════════════════════════════════════════════════
+const AVATARS = [
+  { id: 'soldier',  name: 'Soldat',     emoji: '🪖',  color: '#ffd166' },
+  { id: 'zombie',   name: 'Zombie',     emoji: '🧟',  color: '#06d6a0' },
+  { id: 'robot',    name: 'Robot',      emoji: '🤖',  color: '#38bdf8' },
+  { id: 'ninja',    name: 'Ninja',      emoji: '🥷',  color: '#a855f7' },
+  { id: 'alien',    name: 'Alien',      emoji: '👽',  color: '#ff4d6d' },
+  { id: 'pirate',   name: 'Pirate',     emoji: '🏴‍☠️', color: '#fb923c' },
+  { id: 'wizard',   name: 'Mage',       emoji: '🧙',  color: '#ffd166' },
+  { id: 'demon',    name: 'Démon',      emoji: '😈',  color: '#ff4d6d' },
+  // ── Ici tu peux ajouter des sprites personnalisés plus tard ──
+  // { id: 'mychar', name: 'MonPerso', emoji: '?', sprite: 'assets/mychar.png' }
+];
+
+// ══════════════════════════════════════════════════
+//  ÉTAT GLOBAL
+// ══════════════════════════════════════════════════
+let myPseudo = '';
+let myAvatar = null;      // avatar choisi
+let myTeamIndex = -1;
+let isMaster = false;
+let gamePhase = 'lobby';  // lobby | charselect | game | end
+let lastStateStr = '';
+let syncInterval = null;
+let charSelectTimer = null;
+
+// État LOCAL du moteur de jeu
+let G = {
+  teams:      [],   // [{pseudo, color, name, avatar, worms:[{x,y,hp,name,alive}]}]
+  terrain:    [],   // heightmap
+  currentTeam: 0,
+  currentWorm: 0,
+  turnTime:    45,
+  turnEndAt:   0,
+  wind:        0,
+  ammo:        {},  // {weaponId: count}
+  phase:       'move', // move | aiming | flying | wait | dead
+};
+let localActive = false; // est-ce que c'est mon tour ?
+let myWormIndex = -1;
+
+// Moteur canvas
+let canvas, ctx;
+let cam = { x:0, y:0, zoom:1 };
+let keys = {};
+let projectiles = [];
+let particles = [];
+let explosions = [];
+let craters = [];
+let selectedWeapon = WEAPONS[0];
+let aimAngle = 0;  // radians, 0 = droite
+let charging = false;
+let power = 0;
+let turnTimer = null;
+let hudTimerInterval = null;
+let guidedProj = null; // missile téléguidé actif
+
+// Drag camera
+let dragStart = null;
+let camAtDrag = null;
+
+// ══════════════════════════════════════════════════
+//  UTILITAIRES
+// ══════════════════════════════════════════════════
+function showToast(msg, green=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (green?' green':'');
+  setTimeout(()=> t.className='toast', 2800);
+}
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function rand(min,max) { return Math.random()*(max-min)+min; }
+
+// ══════════════════════════════════════════════════
+//  SUPABASE — state management
+// ══════════════════════════════════════════════════
+async function getState() {
+  const {data} = await sb.from('bingo_state').select('data').eq('id',GAME_ID).maybeSingle();
+  return data?.data || null;
+}
+async function setState(d) {
+  await sb.from('bingo_state').upsert({id:GAME_ID, data:d, updated_at:new Date().toISOString()},{onConflict:'id'});
+}
+
+function startSync() {
+  sb.channel('wormz:'+GAME_ID)
+    .on('postgres_changes',{event:'*',schema:'public',table:'bingo_state'},
+      payload=>{ if(payload.new?.data && payload.new.id===GAME_ID) handleStateUpdate(payload.new.data); })
+    .subscribe();
+
+  if(syncInterval) clearInterval(syncInterval);
+  syncInterval = setInterval(async()=>{
+    const state = await getState();
+    if(state) handleStateUpdate(state);
+  }, 2000);
+}
+
+// ══════════════════════════════════════════════════
+//  GESTION D'ÉTAT GLOBAL
+// ══════════════════════════════════════════════════
+function handleStateUpdate(state) {
+  const str = JSON.stringify(state);
+  if(str === lastStateStr) return;
+  lastStateStr = str;
+
+  isMaster = (state.master === myPseudo);
+
+  if(state.phase === 'lobby' && gamePhase !== 'lobby') {
+    gamePhase = 'lobby';
+    showScreen('screenLobby');
+  }
+  if(state.phase === 'lobby') { renderLobby(state); return; }
+
+  if(state.phase === 'charselect' && gamePhase !== 'charselect') {
+    gamePhase = 'charselect';
+    enterCharSelect(state);
+  }
+  if(state.phase === 'charselect') { updateCharSelect(state); return; }
+
+  if(state.phase === 'game' && gamePhase !== 'game') {
+    gamePhase = 'game';
+    startGameFromState(state);
+    return;
+  }
+  if(state.phase === 'game') {
+    syncGameState(state);
+    return;
+  }
+  if(state.phase === 'end' && gamePhase !== 'end') {
+    gamePhase = 'end';
+    showEndScreen(state);
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  LOBBY
+// ══════════════════════════════════════════════════
+window.onload = async () => {
+  // Récupération du pseudo (depuis localStorage ou saisie rapide)
+  myPseudo = localStorage.getItem('cdsi_logged_user') || localStorage.getItem('wormz_pseudo');
+  if(!myPseudo) {
+    myPseudo = prompt('Ton pseudo :') || 'Joueur' + Math.floor(Math.random()*99);
+    localStorage.setItem('wormz_pseudo', myPseudo);
+  }
+  await autoJoinLobby();
+};
+
+async function autoJoinLobby() {
+  let state = await getState();
+
+  if(!state || !state.players || Object.keys(state.players).length === 0) {
+    state = { phase:'lobby', master:myPseudo, players:{}, settings:{wormsPerTeam:3, turnDuration:45}, gameEndedSaved:false };
+    isMaster = true;
+  } else {
+    if(!state.players[state.master]) state.master = myPseudo;
+    isMaster = (state.master === myPseudo);
+  }
+
+  if(!state.players[myPseudo]) {
+    const teamIdx = Object.keys(state.players).length % TEAM_COLORS.length;
+    state.players[myPseudo] = {
+      pseudo: myPseudo,
+      teamIndex: teamIdx,
+      avatar: null,
+      ready: false,
+      joinedAt: Date.now()
+    };
+  }
+
+  await setState(state);
+  startSync();
+  showScreen('screenLobby');
+  renderLobby(state);
+}
+
+function renderLobby(state) {
+  isMaster = (state.master === myPseudo);
+  const players = Object.values(state.players).sort((a,b)=>a.joinedAt-b.joinedAt);
+
+  document.getElementById('playersList').innerHTML = players.map(p => {
+    const col = TEAM_COLORS[p.teamIndex];
+    return `<div class="player-row">
+      <div class="team-dot" style="background:${col}"></div>
+      <span>${p.pseudo}${p.pseudo===myPseudo?' <span style="color:var(--muted);font-size:11px">(toi)</span>':''}</span>
+      <span class="badge ${p.pseudo===state.master?'badge-master':'badge-ready'}">${p.pseudo===state.master?'👑 Maître':'✓ Prêt'}</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('settingsBox').style.display = isMaster ? 'block' : 'none';
+
+  const n = players.length;
+  if(isMaster) {
+    document.getElementById('lobbyControls').innerHTML = n >= 2
+      ? `<button class="btn-green" onclick="startCharSelect()">▶ Lancer la partie (${n} joueurs)</button>`
+      : `<p style="color:var(--accent2);font-size:14px;font-weight:bold;">Il faut au moins 2 joueurs !</p>`;
+  } else {
+    document.getElementById('lobbyControls').innerHTML = '';
+  }
+  document.getElementById('lobbyHint').textContent = isMaster
+    ? `Tu es maître du jeu · ${n} joueur(s) connecté(s)`
+    : `En attente que ${state.master} démarre…`;
+}
+
+// ══════════════════════════════════════════════════
+//  CHAR SELECT
+// ══════════════════════════════════════════════════
+async function startCharSelect() {
+  if(!isMaster) return;
+  const state = await getState(); if(!state) return;
+  state.phase = 'charselect';
+  state.charSelectEndTime = Date.now() + 20000;
+  state.settings = {
+    wormsPerTeam: parseInt(document.getElementById('wormsPerTeam').value),
+    turnDuration: parseInt(document.getElementById('turnDuration').value)
+  };
+  await setState(state);
+}
+
+function enterCharSelect(state) {
+  showScreen('screenCharSelect');
+  myAvatar = null;
+  const grid = document.getElementById('charGrid');
+  grid.innerHTML = AVATARS.map(a => `
+    <div class="char-card" id="char_${a.id}" onclick="selectChar('${a.id}')">
+      <span class="char-emoji">${a.emoji}</span>
+      <div class="char-name">${a.name}</div>
+    </div>`).join('');
+  runCharTimer(state.charSelectEndTime);
+}
+
+let selectedCharId = AVATARS[0].id;
+function selectChar(id) {
+  selectedCharId = id;
+  document.querySelectorAll('.char-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('char_'+id).classList.add('selected');
+}
+
+function runCharTimer(endTime) {
+  if(charSelectTimer) clearInterval(charSelectTimer);
+  charSelectTimer = setInterval(async()=>{
+    const rem = Math.max(0, Math.ceil((endTime - Date.now())/1000));
+    document.getElementById('charTimerVal').textContent = rem;
+    if(rem <= 0) {
+      clearInterval(charSelectTimer);
+      await confirmCharacter(true); // auto-confirm
+    }
+  }, 500);
+}
+
+async function confirmCharacter(auto=false) {
+  if(!selectedCharId) selectedCharId = AVATARS[0].id;
+  myAvatar = AVATARS.find(a=>a.id===selectedCharId) || AVATARS[0];
+  const state = await getState(); if(!state) return;
+  state.players[myPseudo].avatar = myAvatar;
+  state.players[myPseudo].ready = true;
+
+  // check all ready
+  const players = Object.values(state.players);
+  const allReady = players.every(p=>p.ready);
+  if(allReady || (isMaster && auto)) {
+    // Génère le terrain et l'état de jeu
+    if(isMaster) {
+      state.phase = 'game';
+      state.terrain = generateTerrain();
+      state.gameState = buildInitialGameState(state);
+      state.gameState.turnEndAt = Date.now() + state.settings.turnDuration * 1000;
+    }
+  }
+  await setState(state);
+  if(!allReady && !auto) showToast('Personnage confirmé ! En attente des autres...', true);
+}
+
+function updateCharSelect(state) {
+  const players = Object.values(state.players);
+  const readyCount = players.filter(p=>p.ready).length;
+  document.getElementById('charSelectTimer').innerHTML = `${readyCount}/${players.length} prêts`;
+}
+
+// ══════════════════════════════════════════════════
+//  GÉNÉRATION DU TERRAIN
+// ══════════════════════════════════════════════════
+function generateTerrain() {
+  // Heightmap Perlin-like avec midpoint displacement
+  const n = MAP_W;
+  const heights = new Array(n);
+  
+  // Plusieurs octaves de bruit
+  for(let x=0; x<n; x++) {
+    let h = 0;
+    h += 120 * Math.sin(x * 0.003 + 1.2);
+    h += 60  * Math.sin(x * 0.008 + 2.4);
+    h += 30  * Math.sin(x * 0.020 + 0.8);
+    h += 15  * Math.sin(x * 0.050 + 3.1);
+    h += 8   * Math.sin(x * 0.120 + 1.7);
+    heights[x] = Math.round(MAP_H * 0.55 - h);
+  }
+  
+  // Quelques plateaux
+  for(let p=0; p<5; p++) {
+    const px = Math.floor(rand(200, n-200));
+    const pw = Math.floor(rand(80, 200));
+    const ph = heights[px];
+    for(let i=Math.max(0,px-pw/2); i<Math.min(n,px+pw/2); i++) {
+      const t = 1 - Math.abs(i-px)/(pw/2);
+      heights[i] = Math.round(heights[i]*(1-t) + ph*t);
+    }
+  }
+  return heights;
+}
+
+// ══════════════════════════════════════════════════
+//  ÉTAT INITIAL DU JEU
+// ══════════════════════════════════════════════════
+function buildInitialGameState(state) {
+  const players = Object.values(state.players).sort((a,b)=>a.joinedAt-b.joinedAt);
+  const wpT = state.settings.wormsPerTeam;
+
+  const teams = players.map((p, ti) => {
+    const worms = [];
+    for(let w=0; w<wpT; w++) {
+      const x = Math.floor(100 + (MAP_W-200) * ((ti*wpT+w) / (players.length*wpT)));
+      const y = getTerrainY(state.terrain, x) - WORM_RADIUS - 1;
+      worms.push({ x, y, vx:0, vy:0, hp:100, maxHp:100, name:`${p.pseudo.slice(0,6)}${w+1}`, alive:true, onGround:false });
+    }
+    return {
+      pseudo: p.pseudo,
+      color: TEAM_COLORS[p.teamIndex],
+      teamName: TEAM_NAMES[p.teamIndex],
+      avatar: p.avatar || AVATARS[0],
+      worms
+    };
+  });
+
+  // Ammo initiale pour chaque joueur
+  const ammo = {};
+  WEAPONS.forEach(w=>{
+    ammo[w.id] = w.ammo === Infinity ? Infinity : w.ammo;
+  });
+
+  return {
+    teams,
+    currentTeam: 0,
+    currentWorm: 0,
+    wind: parseFloat((rand(-3,3)).toFixed(1)),
+    turnEndAt: Date.now() + state.settings.turnDuration * 1000,
+    turnDuration: state.settings.turnDuration,
+    ammo,      // ammo partagée
+    phase: 'move',
+    lastAction: null,
+    winner: null,
+  };
+}
+
+function getTerrainY(terrain, x) {
+  const xi = Math.max(0, Math.min(terrain.length-1, Math.floor(x)));
+  return terrain[xi];
+}
+
+// ══════════════════════════════════════════════════
+//  DÉMARRAGE DU JEU (depuis l'état Supabase)
+// ══════════════════════════════════════════════════
+function startGameFromState(state) {
+  const gs = state.gameState;
+  if(!gs) return;
+
+  showScreen('screenGame');
+  document.getElementById('gameHud').style.display = 'flex';
+  document.getElementById('teamsHud').style.display = 'flex';
+  document.getElementById('mobileControls').style.display = '';
+
+  canvas = document.getElementById('gameCanvas');
+  ctx = canvas.getContext('2d');
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  // Reconstruit l'état local
+  G.teams = gs.teams;
+  G.terrain = state.terrain;
+  G.currentTeam = gs.currentTeam;
+  G.currentWorm = gs.currentWorm;
+  G.wind = gs.wind;
+  G.turnEndAt = gs.turnEndAt;
+  G.turnDuration = gs.turnDuration;
+  G.ammo = gs.ammo;
+  G.phase = gs.phase || 'move';
+
+  // Terrain canvas (bitmask)
+  rebuildTerrainCanvas();
+
+  // Qui suis-je ?
+  myTeamIndex = G.teams.findIndex(t=>t.pseudo===myPseudo);
+  updateLocalActive();
+
+  projectiles = []; particles = []; explosions = []; craters = [];
+  selectedWeapon = WEAPONS[0];
+  aimAngle = Math.PI;  // vise à gauche par défaut
+
+  setupInput();
+  showTurnBanner();
+  renderHUD();
+  startHudTimer();
+  renderTeamsHUD();
+
+  // Centre caméra sur le ver actif
+  centerCamOnActiveWorm();
+
+  requestAnimationFrame(gameLoop);
+}
+
+function syncGameState(state) {
+  if(gamePhase !== 'game') return;
+  const gs = state.gameState;
+  if(!gs) return;
+
+  // Mise à jour des HP, positions, tours depuis le serveur
+  G.teams = gs.teams;
+  G.currentTeam = gs.currentTeam;
+  G.currentWorm = gs.currentWorm;
+  G.wind = gs.wind;
+  G.turnEndAt = gs.turnEndAt;
+  G.ammo = gs.ammo;
+
+  updateLocalActive();
+  renderTeamsHUD();
+
+  if(gs.winner) { showEndScreen(state); return; }
+
+  if(gs.lastAction) {
+    processRemoteAction(gs.lastAction);
+    gs.lastAction = null;
+  }
+}
+
+function updateLocalActive() {
+  const was = localActive;
+  localActive = (myTeamIndex === G.currentTeam);
+  if(!was && localActive) {
+    showTurnBanner();
+    G.phase = 'move';
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  TERRAIN CANVAS
+// ══════════════════════════════════════════════════
+let terrainCanvas, tCtx;
+function rebuildTerrainCanvas() {
+  terrainCanvas = document.createElement('canvas');
+  terrainCanvas.width  = MAP_W;
+  terrainCanvas.height = MAP_H;
+  tCtx = terrainCanvas.getContext('2d');
+  redrawTerrainFull();
+}
+
+function redrawTerrainFull() {
+  tCtx.clearRect(0,0,MAP_W,MAP_H);
+
+  // Ciel gradient
+  const sky = tCtx.createLinearGradient(0,0,0,MAP_H);
+  sky.addColorStop(0,'#0a1628');
+  sky.addColorStop(1,'#1a2a3a');
+  tCtx.fillStyle = sky;
+  tCtx.fillRect(0,0,MAP_W,MAP_H);
+
+  // Étoiles
+  tCtx.fillStyle = 'rgba(255,255,255,0.5)';
+  for(let i=0;i<200;i++){
+    const sx=rand(0,MAP_W), sy=rand(0,MAP_H*0.6);
+    tCtx.fillRect(sx,sy,1,1);
+  }
+
+  // Sol (terrain)
+  tCtx.beginPath();
+  tCtx.moveTo(0, MAP_H);
+  for(let x=0;x<MAP_W;x++) tCtx.lineTo(x, G.terrain[x]);
+  tCtx.lineTo(MAP_W, MAP_H);
+  tCtx.closePath();
+
+  const terrGrad = tCtx.createLinearGradient(0, MAP_H*0.4, 0, MAP_H);
+  terrGrad.addColorStop(0,'#3d5a3e');
+  terrGrad.addColorStop(0.05,'#4a7c59');
+  terrGrad.addColorStop(0.1,'#6b4f28');
+  terrGrad.addColorStop(1,'#3a2010');
+  tCtx.fillStyle = terrGrad;
+  tCtx.fill();
+
+  // Contour herbe
+  tCtx.beginPath();
+  for(let x=0;x<MAP_W;x++) {
+    if(x===0) tCtx.moveTo(0,G.terrain[0]);
+    else tCtx.lineTo(x,G.terrain[x]);
+  }
+  tCtx.strokeStyle = '#7ec850';
+  tCtx.lineWidth = 3;
+  tCtx.stroke();
+
+  // Eau
+  const waterGrad = tCtx.createLinearGradient(0,WATER_Y,0,MAP_H);
+  waterGrad.addColorStop(0,'rgba(30,100,200,0.8)');
+  waterGrad.addColorStop(1,'rgba(10,40,120,0.95)');
+  tCtx.fillStyle = waterGrad;
+  tCtx.fillRect(0,WATER_Y,MAP_W,MAP_H-WATER_Y);
+
+  // Craters existants
+  craters.forEach(c=>applyCrater(c.x,c.y,c.r,false));
+}
+
+function applyCrater(cx,cy,cr,redraw=true) {
+  if(!tCtx) return;
+  tCtx.globalCompositeOperation = 'destination-out';
+  tCtx.beginPath();
+  tCtx.arc(cx,cy,cr,0,Math.PI*2);
+  tCtx.fillStyle = 'rgba(0,0,0,1)';
+  tCtx.fill();
+  tCtx.globalCompositeOperation = 'source-over';
+
+  // Mise à jour du heightmap
+  for(let x=Math.max(0,Math.floor(cx-cr)); x<Math.min(MAP_W,Math.ceil(cx+cr)); x++) {
+    const depth = Math.sqrt(Math.max(0, cr*cr - (x-cx)*(x-cx)));
+    const newY = cy - depth;
+    if(newY < G.terrain[x]) G.terrain[x] = Math.round(newY);
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  BOUCLE DE JEU
+// ══════════════════════════════════════════════════
+let lastTime = 0;
+function gameLoop(ts) {
+  const dt = Math.min((ts-lastTime)/16.67, 3);
+  lastTime = ts;
+
+  update(dt);
+  draw();
+  requestAnimationFrame(gameLoop);
+}
+
+function update(dt) {
+  if(!canvas) return;
+  handleInput(dt);
+  updateProjectiles(dt);
+  updateParticles(dt);
+  updateWorms(dt);
+  checkTurnEnd();
+}
+
+// ══════════════════════════════════════════════════
+//  INPUT
+// ══════════════════════════════════════════════════
+function setupInput() {
+  window.addEventListener('keydown', e=>{
+    if(keys[e.key]) return;
+    keys[e.key] = true;
+    if(!localActive || G.phase==='flying' || G.phase==='wait') return;
+    if(e.key===' ') { e.preventDefault(); onFirePress(); }
+  });
+  window.addEventListener('keyup', e=>{
+    keys[e.key] = false;
+    if(e.key===' ' && charging) onFireRelease();
+  });
+  // Zoom via scroll
+  canvas.addEventListener('wheel', e=>{
+    cam.zoom = Math.max(0.4, Math.min(2, cam.zoom - e.deltaY*0.001));
+  });
+  // Drag camera
+  canvas.addEventListener('mousedown', e=>{ if(e.button===0){dragStart={x:e.clientX,y:e.clientY};camAtDrag={x:cam.x,y:cam.y};} });
+  canvas.addEventListener('mousemove', e=>{
+    if(dragStart) { cam.x=camAtDrag.x-(e.clientX-dragStart.x)/cam.zoom; cam.y=camAtDrag.y-(e.clientY-dragStart.y)/cam.zoom; }
+  });
+  canvas.addEventListener('mouseup', ()=>dragStart=null);
+  canvas.addEventListener('mouseleave', ()=>dragStart=null);
+}
+
+function mobileKey(key,down) { keys[key]=down; if(!down&&key===' '&&charging)onFireRelease(); }
+function mobileFireBtn() { if(!charging){onFirePress();}else{onFireRelease();} }
+
+function handleInput(dt) {
+  if(!localActive || G.phase==='flying' || G.phase==='wait') return;
+  const worm = activeWorm();
+  if(!worm || !worm.alive) return;
+
+  if(keys['ArrowLeft'])  { worm.x -= MOVE_SPEED*dt; worm.vx=-MOVE_SPEED*0.5; }
+  if(keys['ArrowRight']) { worm.x += MOVE_SPEED*dt; worm.vx= MOVE_SPEED*0.5; }
+  if(keys['ArrowUp'] && worm.onGround) { worm.vy=JUMP_FORCE; worm.onGround=false; }
+
+  // Visée avec ← → quand on vise
+  if(G.phase==='aiming') {
+    if(keys['ArrowLeft'])  aimAngle -= 0.04*dt;
+    if(keys['ArrowRight']) aimAngle += 0.04*dt;
+    aimAngle = Math.max(-Math.PI, Math.min(0, aimAngle)); // au-dessus seulement
+  }
+
+  // Charge
+  if(charging) {
+    power = Math.min(100, power + 1.5*dt);
+    document.getElementById('powerBarFill').style.width = power+'%';
+    document.getElementById('powerBarVal').textContent = Math.round(power)+'%';
+  }
+}
+
+function onFirePress() {
+  if(!localActive || G.phase==='flying') return;
+  if(selectedWeapon.airstrike) { fireAirstrike(); return; }
+  G.phase = 'aiming';
+  charging = true; power = 0;
+  document.getElementById('powerBarWrap').style.display='flex';
+  document.getElementById('aimIndicator').classList.add('show');
+}
+
+function onFireRelease() {
+  if(!charging) return;
+  charging = false;
+  document.getElementById('powerBarWrap').style.display='none';
+  document.getElementById('aimIndicator').classList.remove('show');
+  fireWeapon();
+}
+
+function fireWeapon() {
+  const worm = activeWorm(); if(!worm||!worm.alive) return;
+  const w = selectedWeapon;
+  const speed = w.projectileSpeed * (power/100 + 0.2);
+
+  const proj = {
+    x: worm.x,
+    y: worm.y - WORM_RADIUS,
+    vx: Math.cos(aimAngle) * speed,
+    vy: Math.sin(aimAngle) * speed,
+    weapon: w,
+    bounces: w.bounces,
+    explodeAt: w.delay > 0 ? Date.now() + w.delay : 0,
+    alive: true,
+    guided: w.guided || false,
+    trail: [],
+    owner: { team: G.currentTeam, worm: G.currentWorm }
+  };
+
+  projectiles.push(proj);
+  if(w.guided) guidedProj = proj;
+  G.phase = 'flying';
+
+  // Consomme ammo
+  if(G.ammo[w.id] !== Infinity && G.ammo[w.id] > 0) G.ammo[w.id]--;
+
+  broadcastAction({ type:'fire', proj:{...proj, trail:[]} });
+}
+
+function fireAirstrike() {
+  const worm = activeWorm(); if(!worm||!worm.alive) return;
+  const x = worm.x;
+
+  // 3 bombes tombent depuis le ciel
+  for(let i=-1;i<=1;i++) {
+    const bx = x + i*80;
+    projectiles.push({
+      x: bx, y: -50,
+      vx: 0, vy: 3,
+      weapon: selectedWeapon,
+      bounces: 0, explodeAt: 0, alive: true, guided: false, trail:[],
+      owner:{team:G.currentTeam,worm:G.currentWorm}
+    });
+  }
+  if(G.ammo[selectedWeapon.id] !== Infinity) G.ammo[selectedWeapon.id]--;
+  G.phase = 'flying';
+  broadcastAction({type:'airstrike', x, weaponId:selectedWeapon.id});
+}
+
+// ══════════════════════════════════════════════════
+//  MISE À JOUR PROJECTILES
+// ══════════════════════════════════════════════════
+function updateProjectiles(dt) {
+  projectiles.forEach(proj=>{
+    if(!proj.alive) return;
+
+    // Missile guidé: suit la direction des flèches
+    if(proj.guided && localActive) {
+      if(keys['ArrowLeft'])  proj.vx -= 0.5*dt;
+      if(keys['ArrowRight']) proj.vx += 0.5*dt;
+      if(keys['ArrowUp'])    proj.vy -= 0.5*dt;
+      if(keys['ArrowDown'])  proj.vy += 0.5*dt;
+      const spd = Math.sqrt(proj.vx**2+proj.vy**2);
+      proj.vx = (proj.vx/spd)*proj.weapon.projectileSpeed;
+      proj.vy = (proj.vy/spd)*proj.weapon.projectileSpeed;
+    }
+
+    proj.vx += G.wind * 0.02 * dt;
+    proj.vy += (proj.weapon.projectileGravity||GRAVITY) * dt;
+
+    proj.x += proj.vx*dt;
+    proj.y += proj.vy*dt;
+
+    proj.trail.push({x:proj.x,y:proj.y,a:1});
+    if(proj.trail.length>20) proj.trail.shift();
+
+    // Sortie de carte
+    if(proj.x<-100||proj.x>MAP_W+100||proj.y>MAP_H+100) { proj.alive=false; afterProjectile(); return; }
+
+    // Timer explosion (grenade)
+    if(proj.explodeAt>0 && Date.now()>=proj.explodeAt) { explode(proj); return; }
+
+    // Collision terrain
+    const ty = getTerrainY(G.terrain, proj.x);
+    if(proj.y >= ty) {
+      if(proj.bounces>0) {
+        proj.vy *= -0.6;
+        proj.vx *= 0.7;
+        proj.bounces--;
+        proj.y = ty-1;
+        if(proj.explodeAt===0) { /* grenade: ne pas exploser au rebond */ }
+      } else {
+        if(proj.explodeAt===0) explode(proj);
+        else { proj.y=ty-1; }
+      }
+    }
+
+    // Collision eau
+    if(proj.y >= WATER_Y) { spawnParticles(proj.x,WATER_Y,'#38bdf8',8); proj.alive=false; afterProjectile(); return; }
+
+    // Collision vers
+    G.teams.forEach((team,ti)=>{
+      team.worms.forEach((w,wi)=>{
+        if(!w.alive) return;
+        if(ti===proj.owner.team&&wi===proj.owner.worm) return;
+        const dx=w.x-proj.x, dy=w.y-proj.y;
+        if(Math.sqrt(dx*dx+dy*dy) < WORM_RADIUS+5) explode(proj);
+      });
+    });
+  });
+
+  projectiles = projectiles.filter(p=>p.alive);
+}
+
+function explode(proj) {
+  if(!proj.alive) return;
+  proj.alive = false;
+  const {x,y,weapon} = proj;
+
+  // Crater terrain
+  craters.push({x,y,r:weapon.blastRadius*0.7});
+  applyCrater(x,y,weapon.blastRadius*0.7);
+
+  // Dégâts aux vers
+  G.teams.forEach(team=>{
+    team.worms.forEach(w=>{
+      if(!w.alive) return;
+      const dx=w.x-x, dy=w.y-y;
+      const dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist < weapon.blastRadius) {
+        const dmg = Math.round(weapon.damage*(1-dist/weapon.blastRadius));
+        w.hp = Math.max(0, w.hp-dmg);
+        // Knockback
+        const kb = (1-dist/weapon.blastRadius)*8;
+        w.vx += (dx/dist)*kb;
+        w.vy += (dy/dist)*kb - 2;
+        if(w.hp<=0) { w.alive=false; }
+        spawnDamageNumber(w.x, w.y-30, dmg);
+      }
+    });
+  });
+
+  // Particules explosion
+  spawnParticles(x,y,'#ff4d6d',20);
+  spawnParticles(x,y,'#ffd166',12);
+  explosions.push({x,y,r:0,maxR:weapon.blastRadius,t:0});
+
+  renderTeamsHUD();
+
+  if(localActive) {
+    G.phase='wait';
+    setTimeout(()=>{
+      checkGameOver();
+      endTurn();
+    }, 1500);
+  }
+}
+
+function afterProjectile() {
+  if(projectiles.length===0 && G.phase==='flying' && localActive) {
+    G.phase='wait';
+    setTimeout(()=>{ checkGameOver(); endTurn(); },1500);
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  VErs — physique
+// ══════════════════════════════════════════════════
+function updateWorms(dt) {
+  G.teams.forEach(team=>{
+    team.worms.forEach(w=>{
+      if(!w.alive) return;
+      if(!w.onGround) {
+        w.vy += GRAVITY*dt;
+        w.x  += w.vx*dt;
+        w.y  += w.vy*dt;
+        w.vx *= 0.98;
+
+        const ty = getTerrainY(G.terrain, w.x);
+        if(w.y >= ty) { w.y=ty; w.vy=0; w.vx*=0.7; w.onGround=true; }
+        if(w.y >= WATER_Y) { w.hp=0; w.alive=false; renderTeamsHUD(); }
+      } else {
+        w.vx*=0.85;
+        if(Math.abs(w.vx)<0.1) w.vx=0;
+        const ty = getTerrainY(G.terrain, w.x);
+        w.y = ty;
+      }
+    });
+  });
+}
+
+// ══════════════════════════════════════════════════
+//  PARTICULES
+// ══════════════════════════════════════════════════
+function spawnParticles(x,y,color,n) {
+  for(let i=0;i<n;i++) {
+    const angle=rand(0,Math.PI*2), spd=rand(1,6);
+    particles.push({x,y,vx:Math.cos(angle)*spd,vy:Math.sin(angle)*spd-2,color,a:1,r:rand(2,5)});
+  }
+}
+function spawnDamageNumber(x,y,dmg) {
+  const el=document.createElement('div');
+  el.className='dmg-float dmg';
+  el.textContent='-'+dmg;
+  const {sx,sy}=worldToScreen(x,y);
+  el.style.left=sx+'px'; el.style.top=sy+'px';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1500);
+}
+function updateParticles(dt) {
+  particles.forEach(p=>{ p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=0.2*dt; p.a=Math.max(0,p.a-0.03*dt); });
+  particles=particles.filter(p=>p.a>0);
+  explosions.forEach(e=>{ e.r+=3*dt; e.t+=dt; });
+  explosions=explosions.filter(e=>e.r<e.maxR*1.2);
+}
+
+// ══════════════════════════════════════════════════
+//  RENDU
+// ══════════════════════════════════════════════════
+function draw() {
+  if(!canvas||!ctx) return;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  ctx.save();
+  ctx.translate(canvas.width/2, canvas.height/2);
+  ctx.scale(cam.zoom, cam.zoom);
+  ctx.translate(-cam.x, -cam.y);
+
+  // Terrain
+  if(terrainCanvas) ctx.drawImage(terrainCanvas,0,0);
+
+  // Craters (déjà dans terrainCanvas mais on garde ici pour debug)
+
+  // Particules
+  particles.forEach(p=>{
+    ctx.globalAlpha=p.a;
+    ctx.fillStyle=p.color;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fill();
+  });
+  ctx.globalAlpha=1;
+
+  // Explosions flash
+  explosions.forEach(e=>{
+    const a=Math.max(0,0.6-e.r/e.maxR);
+    ctx.globalAlpha=a;
+    const grad=ctx.createRadialGradient(e.x,e.y,0,e.x,e.y,e.r);
+    grad.addColorStop(0,'#fff8e0');
+    grad.addColorStop(0.4,'#ff4d6d');
+    grad.addColorStop(1,'transparent');
+    ctx.fillStyle=grad;
+    ctx.beginPath();
+    ctx.arc(e.x,e.y,e.r,0,Math.PI*2);
+    ctx.fill();
+  });
+  ctx.globalAlpha=1;
+
+  // Projectiles
+  projectiles.forEach(proj=>{
+    // Trail
+    proj.trail.forEach((t,i)=>{
+      ctx.globalAlpha=t.a*(i/proj.trail.length)*0.5;
+      ctx.fillStyle=proj.weapon.color||'#ffd166';
+      ctx.beginPath();
+      ctx.arc(t.x,t.y,3,0,Math.PI*2);
+      ctx.fill();
+    });
+    ctx.globalAlpha=1;
+    // Projectile
+    ctx.fillStyle=proj.weapon.color||'#ffd166';
+    ctx.beginPath();
+    ctx.arc(proj.x,proj.y,5,0,Math.PI*2);
+    ctx.fill();
+    // Icône
+    ctx.font='16px serif';
+    ctx.fillText(proj.weapon.icon, proj.x-8, proj.y-8);
+  });
+
+  // Vers
+  G.teams.forEach((team,ti)=>{
+    team.worms.forEach((worm,wi)=>{
+      if(!worm.alive) return;
+      const isActive = localActive && ti===G.currentTeam && wi===G.currentWorm;
+      const isCurrentTeamWorm = ti===G.currentTeam && wi===G.currentWorm;
+
+      // Ombre
+      ctx.globalAlpha=0.3;
+      ctx.fillStyle='#000';
+      ctx.beginPath();
+      ctx.ellipse(worm.x,worm.y+1,WORM_RADIUS*0.8,4,0,0,Math.PI*2);
+      ctx.fill();
+      ctx.globalAlpha=1;
+
+      // Corps
+      ctx.beginPath();
+      ctx.arc(worm.x,worm.y-WORM_RADIUS,WORM_RADIUS,0,Math.PI*2);
+      ctx.fillStyle=team.color;
+      ctx.fill();
+      ctx.strokeStyle=isCurrentTeamWorm?'#fff':team.color;
+      ctx.lineWidth=isCurrentTeamWorm?2.5:1;
+      ctx.stroke();
+
+      // Avatar emoji
+      ctx.font = `${WORM_RADIUS*1.4}px serif`;
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(team.avatar?.emoji||'🪖', worm.x, worm.y-WORM_RADIUS);
+
+      // Barre de vie au-dessus
+      const barW=34, barH=4;
+      const bx=worm.x-barW/2, by=worm.y-WORM_RADIUS*2-10;
+      ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.fillRect(bx,by,barW,barH);
+      const hpPct=worm.hp/worm.maxHp;
+      const hpColor = hpPct>0.5?'#06d6a0':hpPct>0.25?'#ffd166':'#ff4d6d';
+      ctx.fillStyle=hpColor; ctx.fillRect(bx,by,barW*hpPct,barH);
+      ctx.strokeStyle=team.color; ctx.lineWidth=1; ctx.strokeRect(bx,by,barW,barH);
+
+      // Nom
+      ctx.fillStyle='#fff'; ctx.font='bold 9px DM Sans'; ctx.textAlign='center';
+      ctx.fillText(worm.name, worm.x, by-5);
+
+      // Indicateur actif
+      if(isActive) {
+        ctx.fillStyle='#ffd166';
+        ctx.beginPath();
+        ctx.moveTo(worm.x, worm.y-WORM_RADIUS*2-16);
+        ctx.lineTo(worm.x-5, worm.y-WORM_RADIUS*2-22);
+        ctx.lineTo(worm.x+5, worm.y-WORM_RADIUS*2-22);
+        ctx.closePath();
+        ctx.fill();
+      }
+    });
+  });
+
+  // Visée
+  if(localActive && (G.phase==='aiming'||charging)) {
+    const worm = activeWorm();
+    if(worm&&worm.alive) {
+      const len=60+(power*0.4);
+      const ex=worm.x+Math.cos(aimAngle)*len;
+      const ey=(worm.y-WORM_RADIUS)+Math.sin(aimAngle)*len;
+      ctx.setLineDash([6,4]);
+      ctx.strokeStyle=selectedWeapon.color||'#ffd166';
+      ctx.lineWidth=2;
+      ctx.globalAlpha=0.7;
+      ctx.beginPath();
+      ctx.moveTo(worm.x,worm.y-WORM_RADIUS);
+      ctx.lineTo(ex,ey);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha=1;
+      // Flèche
+      ctx.fillStyle=selectedWeapon.color;
+      ctx.beginPath();
+      ctx.arc(ex,ey,5,0,Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  ctx.restore();
+}
+
+function worldToScreen(wx,wy) {
+  return {
+    sx: canvas.width/2  + (wx-cam.x)*cam.zoom,
+    sy: canvas.height/2 + (wy-cam.y)*cam.zoom
+  };
+}
+
+function resizeCanvas() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+// ══════════════════════════════════════════════════
+//  CAMÉRA
+// ══════════════════════════════════════════════════
+function centerCamOnActiveWorm() {
+  const worm = activeWorm();
+  if(worm) { cam.x=worm.x; cam.y=worm.y-WORM_RADIUS*3; }
+}
+
+// ══════════════════════════════════════════════════
+//  GESTION DES TOURS
+// ══════════════════════════════════════════════════
+function checkTurnEnd() {
+  if(!localActive || G.phase==='flying' || G.phase==='wait') return;
+  if(Date.now() >= G.turnEndAt) endTurn();
+}
+
+async function endTurn() {
+  if(!localActive) return;
+  G.phase = 'wait';
+  localActive = false;
+
+  // Passe au prochain ver / équipe
+  const state = await getState(); if(!state) return;
+  const gs = state.gameState;
+
+  // Avance au prochain ver vivant
+  let nextTeam = gs.currentTeam;
+  let nextWorm = gs.currentWorm;
+  let tries = 0;
+  do {
+    nextWorm++;
+    if(nextWorm >= gs.teams[nextTeam].worms.length) { nextWorm=0; nextTeam=(nextTeam+1)%gs.teams.length; }
+    tries++;
+  } while(tries < gs.teams.length*4 && (!gs.teams[nextTeam].worms[nextWorm].alive || gs.teams[nextTeam].worms.filter(w=>w.alive).length===0));
+
+  // Met à jour l'état HP depuis notre simulation locale
+  gs.teams.forEach((team,ti)=>{
+    team.worms.forEach((w,wi)=>{
+      const lw = G.teams[ti]?.worms[wi];
+      if(lw) { w.hp=lw.hp; w.x=lw.x; w.y=lw.y; w.alive=lw.alive; }
+    });
+  });
+
+  gs.currentTeam = nextTeam;
+  gs.currentWorm = nextWorm;
+  gs.wind = parseFloat((rand(-3,3)).toFixed(1));
+  gs.turnEndAt = Date.now() + gs.turnDuration*1000;
+  gs.lastAction = null;
+  gs.ammo = G.ammo;
+
+  checkGameOverState(gs);
+  await setState(state);
+}
+
+function checkGameOver() {
+  const alive = G.teams.filter(t=>t.worms.some(w=>w.alive));
+  if(alive.length<=1) return true;
+  return false;
+}
+
+function checkGameOverState(gs) {
+  const alive = gs.teams.filter(t=>t.worms.some(w=>w.alive));
+  if(alive.length<=1) {
+    gs.winner = alive[0]?.pseudo || 'Personne';
+    gs.phase = 'end'; // will be caught by handleStateUpdate? no: we set on state directly
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  ACTIONS RÉSEAU
+// ══════════════════════════════════════════════════
+async function broadcastAction(action) {
+  const state = await getState(); if(!state||!state.gameState) return;
+  state.gameState.lastAction = action;
+  await setState(state);
+}
+
+function processRemoteAction(action) {
+  if(!action) return;
+  if(action.type==='fire') {
+    const proj = {...action.proj};
+    projectiles.push(proj);
+    G.phase='flying';
+  }
+  if(action.type==='airstrike') {
+    for(let i=-1;i<=1;i++) {
+      projectiles.push({
+        x:action.x+i*80, y:-50, vx:0, vy:3,
+        weapon: WEAPONS.find(w=>w.id===action.weaponId)||WEAPONS[0],
+        bounces:0,explodeAt:0,alive:true,guided:false,trail:[],
+        owner:{team:-1,worm:-1}
+      });
+    }
+    G.phase='flying';
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  HUD
+// ══════════════════════════════════════════════════
+function activeWorm() {
+  const team=G.teams[G.currentTeam]; if(!team) return null;
+  return team.worms[G.currentWorm]||null;
+}
+
+function showTurnBanner() {
+  const team=G.teams[G.currentTeam]; if(!team) return;
+  const banner=document.getElementById('turnBanner');
+  banner.style.color=team.color;
+  document.getElementById('turnBannerTitle').textContent=localActive?'TON TOUR !':team.pseudo;
+  document.getElementById('turnBannerTitle').style.background=`linear-gradient(135deg,${team.color},var(--accent2))`;
+  document.getElementById('turnBannerTitle').style.webkitBackgroundClip='text';
+  document.getElementById('turnBannerTitle').style.webkitTextFillColor='transparent';
+  document.getElementById('turnBannerSub').textContent=localActive?'Déplace-toi et tire !':`Tour de l'équipe ${team.teamName}`;
+  banner.classList.remove('show');
+  void banner.offsetWidth;
+  banner.classList.add('show');
+  setTimeout(()=>banner.classList.remove('show'),2500);
+}
+
+function renderHUD() {
+  const team=G.teams[G.currentTeam]; if(!team) return;
+  document.getElementById('hudTurn').textContent=`Tour de ${team.pseudo}`;
+  document.getElementById('hudTurn').style.color=team.color;
+
+  // Vent
+  const w=G.wind;
+  document.getElementById('windVal').textContent=Math.abs(w).toFixed(1);
+  document.getElementById('windArrow').textContent=w>0?'→':'←';
+  document.getElementById('windArrow').style.transform=`scaleX(${w>0?1:-1})`;
+
+  renderWeaponTray();
+  updateWeaponHUD();
+}
+
+function startHudTimer() {
+  if(hudTimerInterval) clearInterval(hudTimerInterval);
+  hudTimerInterval = setInterval(()=>{
+    const rem=Math.max(0,Math.ceil((G.turnEndAt-Date.now())/1000));
+    const el=document.getElementById('hudTimer');
+    el.textContent=rem;
+    el.className='hud-timer'+(rem<=10?' urgent':'');
+  }, 200);
+}
+
+function renderTeamsHUD() {
+  const el=document.getElementById('teamsHud');
+  if(!el||!G.teams) return;
+  el.innerHTML=G.teams.map((team,ti)=>{
+    const isActive=ti===G.currentTeam;
+    const wormRows=team.worms.map((w,wi)=>{
+      const isAW=isActive&&wi===G.currentWorm;
+      const pct=Math.max(0,(w.hp/w.maxHp)*100);
+      const hpColor=pct>50?'#06d6a0':pct>25?'#ffd166':'#ff4d6d';
+      return `<div class="worm-hp-row">
+        <div class="worm-name-sm ${isAW?'active':''}">${w.alive?w.name:'<s>'+w.name+'</s>'}</div>
+        <div class="worm-hp-bar"><div class="worm-hp-fill" style="width:${w.alive?pct:0}%;background:${hpColor}"></div></div>
+        <div style="font-size:10px;color:${hpColor};min-width:26px;text-align:right">${w.alive?w.hp:''}</div>
+      </div>`;
+    }).join('');
+    return `<div class="team-hud" style="border-color:${isActive?team.color:'var(--border)'}">
+      <div class="team-hud-name" style="color:${team.color}">${team.avatar?.emoji||'🪖'} ${team.pseudo}${isActive?' ◀':''}</div>
+      ${wormRows}
+    </div>`;
+  }).join('');
+}
+
+function renderWeaponTray() {
+  const tray=document.getElementById('weaponTray');
+  tray.innerHTML=WEAPONS.map(w=>{
+    const ammo=G.ammo?.[w.id];
+    const ammoTxt=ammo===Infinity?'∞':ammo;
+    const sel=selectedWeapon.id===w.id;
+    return `<div class="weapon-btn ${sel?'selected-w':''}" onclick="selectWeapon('${w.id}')">
+      <span class="w-icon">${w.icon}</span>
+      <div class="w-name">${w.name}</div>
+      <div class="w-ammo">${ammoTxt}</div>
+    </div>`;
+  }).join('');
+}
+
+function updateWeaponHUD() {
+  document.getElementById('hudWeaponIcon').textContent=selectedWeapon.icon;
+  document.getElementById('hudWeaponName').textContent=selectedWeapon.name;
+}
+
+function selectWeapon(id) {
+  const w=WEAPONS.find(x=>x.id===id); if(!w) return;
+  if(G.ammo?.[id]===0) { showToast('Plus de munitions !'); return; }
+  selectedWeapon=w;
+  updateWeaponHUD();
+  renderWeaponTray();
+  toggleWeaponTray(); // ferme le tray
+}
+
+let weaponTrayVisible=false;
+function toggleWeaponTray() {
+  weaponTrayVisible=!weaponTrayVisible;
+  document.getElementById('weaponTray').classList.toggle('visible', weaponTrayVisible);
+  if(weaponTrayVisible) renderWeaponTray();
+}
+
+// ══════════════════════════════════════════════════
+//  FIN DE PARTIE
+// ══════════════════════════════════════════════════
+async function showEndScreen(state) {
+  showScreen('screenEnd');
+  document.getElementById('gameHud').style.display='none';
+  document.getElementById('teamsHud').style.display='none';
+  document.getElementById('mobileControls').style.display='none';
+
+  const gs=state.gameState||{teams:G.teams};
+  const winner=state.gameState?.winner;
+  document.getElementById('endTitle').textContent=winner?`${winner} gagne !`:'Match nul !';
+  document.getElementById('endSub').textContent=`Partie terminée`;
+
+  // Tri par HP restant
+  const ranked=[...gs.teams].sort((a,b)=>{
+    const ha=a.worms.reduce((s,w)=>s+(w.alive?w.hp:0),0);
+    const hb=b.worms.reduce((s,w)=>s+(w.alive?w.hp:0),0);
+    return hb-ha;
+  });
+
+  document.getElementById('endPodium').innerHTML=ranked.map((team,i)=>{
+    const totalHp=team.worms.reduce((s,w)=>s+(w.alive?w.hp:0),0);
+    const medals=['🥇','🥈','🥉'];
+    return `<div class="end-row ${i===0?'first':''}" style="border-color:${i===0?team.color:'var(--border)'}">
+      <div style="font-size:28px">${medals[i]||i+1}</div>
+      <div style="font-size:24px">${team.avatar?.emoji||'🪖'}</div>
+      <div style="flex:1">
+        <div style="font-weight:700;color:${team.color}">${team.pseudo}</div>
+        <div style="font-size:11px;color:var(--muted)">${team.worms.filter(w=>w.alive).length}/${team.worms.length} vers en vie</div>
+      </div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:${team.color}">${totalHp} HP</div>
+    </div>`;
+  }).join('');
+}
+
+async function resetGame() {
+  const state={
+    phase:'lobby', master:myPseudo, players:{}, settings:{wormsPerTeam:3,turnDuration:45},
+    gameEndedSaved:false
+  };
+  await setState(state);
+  location.reload();
+}
+</script>
+</body>
+</html>
