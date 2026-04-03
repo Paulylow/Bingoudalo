@@ -225,13 +225,13 @@ function update() {
   if (slideT>0) slideT--;
 
   // Scroll planks
-  planks = planks.map(z => { z+=spd*1.6; return z>1.05?z-1.05:z; });
+  planks = planks.map(z => { z+=spd*1.2; return z>1.05?z-1.05:z; });
 
   // Obstacles
-  obstacles.forEach(o => o.z+=spd*1.5);
+  obstacles.forEach(o => o.z+=spd*0.9);
   obstacles = obstacles.filter(o => {
     if (o.z>1.08) return false;
-    if (!o.hit && invFrames===0 && o.z>0.83 && o.z<1.04) {
+    if (!o.hit && invFrames===0 && o.z>0.90 && o.z<1.04) {
       if (Math.round(lerpLane)===o.lane) {
         const jH = isJump?Math.sin(jumpT/42*Math.PI)*130:0;
         let hit=false;
@@ -245,10 +245,10 @@ function update() {
   });
 
   // Coins
-  coinObjs.forEach(c=>c.z+=spd*1.5);
+  coinObjs.forEach(c=>c.z+=spd*0.9);
   coinObjs = coinObjs.filter(c => {
     if (c.z>1.08) return false;
-    if (c.z>0.83 && c.z<1.04 && Math.round(lerpLane)===c.lane) {
+    if (c.z>0.90 && c.z<1.04 && Math.round(lerpLane)===c.lane) {
       const jH=isJump?Math.sin(jumpT/42*Math.PI)*130:0;
       const cH=c.air?90:0;
       if (Math.abs(jH-cH)<55) {
@@ -262,9 +262,9 @@ function update() {
   });
 
   // Spawn
-  const iv=Math.max(Math.round(52-spd*1800),20);
+  const iv=Math.max(Math.round(70-spd*2000),28);
   if (frame%iv===0) spawnObs();
-  if (frame%28===0) spawnCoins();
+  if (frame%35===0) spawnCoins();
 }
 
 function takeHit() {
@@ -295,9 +295,9 @@ function draw() {
   drawGround();
   drawRoad();
   drawPlanks();
+  drawPursuer();
   coinObjs.slice().sort((a,b)=>a.z-b.z).forEach(c=>drawCoin(c));
   obstacles.slice().sort((a,b)=>a.z-b.z).forEach(o=>drawObs(o));
-  drawPursuer();
   drawPlayer();
 }
 
@@ -479,11 +479,11 @@ function drawCart(c,s,hit) {
 function drawPlayer() {
   const lx   = laneToRoad(lerpLane);
   const jH   = isJump ? Math.sin(jumpT/42*Math.PI)*130 : 0;
-  const p    = proj(lx, 0.97, jH);
-  const s    = p.s * 0.95;
+  const p    = proj(lx, 0.995, jH);
+  const s    = p.s * 1.35;
 
   // ground shadow
-  const pg=proj(lx,0.97,0);
+  const pg=proj(lx,0.995,0);
   cx.save();
   cx.globalAlpha=0.20*(1-jH/145);
   cx.fillStyle='rgba(0,0,0,0.55)';
@@ -545,8 +545,8 @@ function drawPlayer() {
 function drawPursuer() {
   bobT+=0.11;
   const bob=Math.sin(bobT)*5;
-  const p=proj(laneToRoad(lerpLane), 0.80, -bob);
-  const s=p.s*0.86;
+  const p=proj(laneToRoad(lerpLane), 0.88, -bob);
+  const s=p.s*1.1;
 
   cx.save();cx.translate(p.x,p.y);
   const lg=Math.sin(frame*0.34+Math.PI);
