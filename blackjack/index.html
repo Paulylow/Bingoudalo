@@ -157,7 +157,6 @@
     
     <!-- CROUPIER -->
     <div class="hand-section" id="dealer-section">
-        <!-- IMAGE DU CROUPIER -->
         <img src="croupier.png" alt="Croupier" class="dealer-avatar" onerror="this.src='https://via.placeholder.com/70x70/111/f1c40f?text=CROUPIER'">
         
         <div class="score-badge">CROUPIER : <span id="dealer-score">?</span></div>
@@ -243,7 +242,6 @@ function buildDeck() {
     const suits = ['♠', '♥', '♦', '♣'];
     const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
     
-    // On met 4 jeux de cartes pour éviter de tomber à court
     for(let d = 0; d < 4; d++) {
         for (let suit of suits) {
             for (let value of values) {
@@ -251,7 +249,6 @@ function buildDeck() {
             }
         }
     }
-    // Mélange de Fisher-Yates
     for (let i = deck.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [deck[i], deck[j]] = [deck[j], deck[i]];
@@ -274,7 +271,6 @@ function calculateScore(hand) {
         score += val;
     }
     
-    // Si on dépasse 21 et qu'on a des As, les As valent 1 au lieu de 11
     while (score > 21 && aces > 0) {
         score -= 10;
         aces -= 1;
@@ -301,35 +297,35 @@ function updateBoard(revealDealer = false) {
     const playerContainer = document.getElementById('player-cards');
     const dealerContainer = document.getElementById('dealer-cards');
     
-    // Joueur
     playerContainer.innerHTML = playerHand.map(c => renderCard(c)).join('');
     document.getElementById('player-score').innerText = calculateScore(playerHand);
     
-    // Croupier
     if (!revealDealer && dealerHand.length > 0) {
-        // Cache la deuxième carte du croupier
         dealerContainer.innerHTML = renderCard(dealerHand[0]) + renderCard(dealerHand[1], true);
-        document.getElementById('dealer-score').innerText = getCardValue(dealerHand[0]); // Affiche juste le score de la carte visible
+        document.getElementById('dealer-score').innerText = getCardValue(dealerHand[0]); 
     } else {
         dealerContainer.innerHTML = dealerHand.map(c => renderCard(c)).join('');
         document.getElementById('dealer-score').innerText = calculateScore(dealerHand);
     }
 }
 
-// --- ACTIONS DE JEU ---
+// --- ACTIONS DE JEU SÉCURISÉES ---
 
 async function placeBet(amount) {
-    await fetchUserWallet(); // Vérif de sécurité
+    // SÉCURITÉ : On récupère le vrai solde en DB juste avant de miser
+    const { data } = await sb.from('cdsi_users').select('wallet').eq('pseudo', myPseudo).single();
+    let realWallet = data ? Math.floor(parseFloat(data.wallet || 0)) : myWallet;
+
+    let betAmount = amount === 'ALL' ? realWallet : amount;
     
-    let betAmount = amount === 'ALL' ? myWallet : amount;
-    
-    if (myWallet < betAmount || betAmount <= 0) {
+    if (realWallet < betAmount || betAmount <= 0) {
         alert("Fonds insuffisants !");
         return;
     }
     
     currentBet = betAmount;
-    await updateUserWallet(myWallet - currentBet); // On prélève la mise
+    // On prélève immédiatement de la base de données
+    await updateUserWallet(realWallet - currentBet); 
     
     document.getElementById('betDisplay').innerText = `MISE : ${currentBet} M$`;
     document.getElementById('bettingPhase').style.display = 'none';
@@ -346,12 +342,10 @@ function startGame() {
     
     gameState = 'playing';
     
-    // Réactiver le bouton double
     document.getElementById('btnDouble').disabled = false;
     
     updateBoard();
     
-    // Check Blackjack naturel du joueur
     let pScore = calculateScore(playerHand);
     if (pScore === 21) {
         endGame('blackjack');
@@ -361,7 +355,6 @@ function startGame() {
 function hit() {
     if (gameState !== 'playing') return;
     
-    // Dès qu'on tire une carte, on ne peut plus doubler
     document.getElementById('btnDouble').disabled = true;
     
     playerHand.push(deck.pop());
@@ -371,26 +364,27 @@ function hit() {
     if (pScore > 21) {
         endGame('bust');
     } else if (pScore === 21) {
-        stand(); // Forcer le stand si on fait 21
+        stand(); 
     }
 }
 
 async function doubleDown() {
     if (gameState !== 'playing') return;
     
-    // Vérifier si assez d'argent pour doubler
-    await fetchUserWallet();
-    if (myWallet < currentBet) {
+    // SÉCURITÉ : On récupère le vrai solde en DB avant de doubler
+    const { data } = await sb.from('cdsi_users').select('wallet').eq('pseudo', myPseudo).single();
+    let realWallet = data ? Math.floor(parseFloat(data.wallet || 0)) : myWallet;
+
+    if (realWallet < currentBet) {
         alert("Pas assez d'argent pour doubler !");
         return;
     }
     
-    // Prélèvement de la deuxième mise
-    await updateUserWallet(myWallet - currentBet);
+    // On prélève la deuxième partie de la mise
+    await updateUserWallet(realWallet - currentBet);
     currentBet *= 2;
     document.getElementById('betDisplay').innerText = `MISE : ${currentBet} M$ (DOUBLÉ)`;
     
-    // Tire 1 seule carte puis force le stand
     playerHand.push(deck.pop());
     updateBoard();
     
@@ -409,7 +403,7 @@ function stand() {
     document.getElementById('btnStand').disabled = true;
     document.getElementById('btnDouble').disabled = true;
     
-    updateBoard(true); // Révèle la carte du croupier
+    updateBoard(true); 
     playDealer();
 }
 
@@ -425,7 +419,7 @@ function playDealer() {
             clearInterval(drawInterval);
             checkWinner();
         }
-    }, 800); // 800ms de délai entre chaque carte tirée par le croupier
+    }, 800); 
 }
 
 async function checkWinner() {
@@ -453,32 +447,36 @@ async function endGame(reason) {
     
     let msg = document.getElementById('game-message');
     
+    // SÉCURITÉ ABSOLUE : On lit la base de données avant de payer le joueur
+    const { data } = await sb.from('cdsi_users').select('wallet').eq('pseudo', myPseudo).single();
+    let realWallet = data ? Math.floor(parseFloat(data.wallet || 0)) : myWallet;
+
     if (reason === 'blackjack') {
-        let winAmount = currentBet + (currentBet * 1.5); // Paiement 3:2
-        await updateUserWallet(myWallet + winAmount);
+        let winAmount = currentBet + (currentBet * 1.5); 
+        await updateUserWallet(realWallet + winAmount);
         msg.innerHTML = `BLACKJACK !<br><span style="font-size:30px">+${winAmount} M$</span>`;
         msg.className = "message-overlay msg-win";
     } 
     else if (reason === 'win' || reason === 'dealerBust') {
-        let winAmount = currentBet * 2; // Paiement 1:1 (récupère mise + gain)
-        await updateUserWallet(myWallet + winAmount);
+        let winAmount = currentBet * 2; 
+        await updateUserWallet(realWallet + winAmount);
         msg.innerHTML = `GAGNÉ !<br><span style="font-size:30px">+${winAmount} M$</span>`;
         msg.className = "message-overlay msg-win";
     } 
     else if (reason === 'push') {
-        await updateUserWallet(myWallet + currentBet); // Récupère sa mise
+        await updateUserWallet(realWallet + currentBet); 
         msg.innerHTML = `ÉGALITÉ<br><span style="font-size:30px">MISE RENDUE</span>`;
         msg.className = "message-overlay msg-push";
     } 
     else {
-        // Bust ou Lose
+        // Bust ou Lose : on met simplement à jour l'affichage avec la BDD
+        await updateUserWallet(realWallet);
         msg.innerHTML = `PERDU...`;
         msg.className = "message-overlay msg-lose";
     }
     
     msg.style.opacity = '1';
     
-    // Remettre le plateau à zéro après quelques secondes
     setTimeout(() => {
         document.getElementById('bettingPhase').style.display = 'flex';
         document.getElementById('playingPhase').style.display = 'none';
