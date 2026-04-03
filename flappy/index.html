@@ -8,35 +8,26 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
     --cyan:    #00E8FF;
     --magenta: #FF2D78;
     --gold:    #FFD84D;
     --green:   #2ecc71;
-    --orange:  #f39c12;
     --bg:      #0f1629;
-    --border:  rgba(0, 232, 255, 0.22);
-    --glow-c:  rgba(0, 232, 255, 0.45);
-    --glow-m:  rgba(255, 45, 120, 0.45);
+    --border:  rgba(0,232,255,0.22);
+    --glow-c:  rgba(0,232,255,0.45);
+    --glow-m:  rgba(255,45,120,0.45);
   }
-
   html, body { height: 100%; }
-
   body {
     background: var(--bg);
     min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     font-family: 'Orbitron', monospace;
-    overflow: hidden;
-    position: relative;
+    overflow: hidden; position: relative;
   }
-
   body::before {
-    content: '';
-    position: fixed; inset: 0;
+    content: ''; position: fixed; inset: 0;
     background-image:
       linear-gradient(rgba(0,232,255,0.05) 1px, transparent 1px),
       linear-gradient(90deg, rgba(0,232,255,0.05) 1px, transparent 1px);
@@ -45,8 +36,7 @@
     pointer-events: none; z-index: 0;
   }
   body::after {
-    content: '';
-    position: fixed; inset: 0;
+    content: ''; position: fixed; inset: 0;
     background: radial-gradient(ellipse at 50% 50%, transparent 25%, rgba(10,14,35,0.7) 100%);
     pointer-events: none; z-index: 0;
   }
@@ -60,124 +50,170 @@
     background: rgba(15,22,41,0.92);
     border: 1px solid rgba(0,232,255,0.35); border-radius: 9px;
     text-decoration: none; color: var(--cyan);
-    font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 700; letter-spacing: 2px;
-    transition: all 0.2s ease; backdrop-filter: blur(12px);
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    transition: all 0.2s; backdrop-filter: blur(12px);
   }
-  #hub-btn:hover { border-color:var(--cyan); box-shadow:0 0 22px var(--glow-c),inset 0 0 16px rgba(0,232,255,0.07); color:#fff; }
+  #hub-btn:hover { border-color:var(--cyan); box-shadow:0 0 22px var(--glow-c); color:#fff; }
   #hub-btn svg { transition: transform 0.2s; }
   #hub-btn:hover svg { transform: translateX(-3px); }
 
-  /* ---- AUTH OVERLAY ---- */
-  #authOverlay {
-    display: none;
-    position: fixed; inset: 0; z-index: 300;
-    background: rgba(6,8,20,0.96);
-    backdrop-filter: blur(16px);
-    align-items: center; justify-content: center;
-    flex-direction: column;
-  }
-  #authOverlay.visible { display: flex; }
-
-  .auth-box {
-    background: rgba(12,16,32,0.98);
-    border: 1px solid rgba(0,232,255,0.3);
-    border-radius: 18px;
-    padding: 38px 36px 30px;
-    width: 100%; max-width: 380px;
-    text-align: center;
-    box-shadow: 0 0 60px rgba(0,232,255,0.1);
-    position: relative;
-  }
-  .auth-box::before {
-    content: '';
-    position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
-    background: linear-gradient(90deg,transparent,var(--cyan),transparent);
-    opacity: 0.6;
-  }
-
-  .auth-title {
-    font-size: 26px; font-weight: 900; letter-spacing: 6px;
-    background: linear-gradient(90deg, var(--cyan), #fff, var(--magenta));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    margin-bottom: 6px;
-  }
-  .auth-sub {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 9px; color: rgba(0,232,255,0.4); letter-spacing: 3px; margin-bottom: 28px;
-  }
-  .auth-input {
-    width: 100%; background: rgba(0,0,0,0.5);
-    border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
-    padding: 13px 16px; color: white; margin-bottom: 12px;
-    font-size: 14px; font-family: 'DM Sans', sans-serif;
-    outline: none; transition: 0.2s; text-align: center;
-  }
-  .auth-input:focus { border-color: var(--cyan); box-shadow: 0 0 14px rgba(0,232,255,0.2); }
-  .auth-input::placeholder { color: rgba(255,255,255,0.25); }
-
-  .auth-btn {
-    width: 100%; padding: 13px; border: none; border-radius: 8px;
-    font-family: 'Orbitron', monospace; font-weight: 700; font-size: 12px;
-    letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: 0.2s; margin-bottom: 10px;
-  }
-  .btn-cyan { background: var(--cyan); color: #060810; }
-  .btn-cyan:hover { box-shadow: 0 0 20px var(--glow-c); transform: translateY(-1px); }
-  .btn-outline-cyan { background: transparent; border: 1.5px solid var(--cyan); color: var(--cyan); }
-  .btn-outline-cyan:hover { background: rgba(0,232,255,0.1); box-shadow: 0 0 16px var(--glow-c); }
-  .btn-skip { background: transparent; border: none; color: rgba(255,255,255,0.25); font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 2px; cursor: pointer; margin-top: 6px; transition: color 0.2s; }
-  .btn-skip:hover { color: rgba(255,255,255,0.5); }
-
-  .auth-error { color: #ff4466; font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 1px; min-height: 18px; margin-bottom: 10px; }
-
-  /* ---- USER PILL (top right) ---- */
+  /* ---- USER BAR ---- */
   #userBar {
     position: fixed; top: 20px; right: 20px; z-index: 200;
     display: none; align-items: center; gap: 10px;
   }
   #userBar.visible { display: flex; }
-
   .wallet-pill {
-    background: rgba(39,174,96,0.15); border: 1.5px solid #27ae60; color: #2ecc71;
+    background: rgba(39,174,96,0.15); border: 1.5px solid #27ae60; color: var(--green);
     padding: 0 16px; height: 42px; border-radius: 21px;
     display: flex; align-items: center; gap: 7px;
-    font-family: 'Orbitron', monospace; font-size: 14px; font-weight: 700;
-    box-shadow: 0 0 14px rgba(39,174,96,0.25); backdrop-filter: blur(6px);
-    transition: all 0.3s;
+    font-size: 14px; font-weight: 700;
+    box-shadow: 0 0 14px rgba(39,174,96,0.25); backdrop-filter: blur(6px); transition: all 0.3s;
   }
-  .wallet-pill.earning {
-    box-shadow: 0 0 28px rgba(39,174,96,0.7);
-    background: rgba(39,174,96,0.3);
-  }
+  .wallet-pill.earning { box-shadow:0 0 28px rgba(39,174,96,0.7); background:rgba(39,174,96,0.3); }
   @keyframes walletPop { 0%{transform:scale(1)} 50%{transform:scale(1.18)} 100%{transform:scale(1)} }
   .wallet-pop { animation: walletPop 0.25s ease; }
-
   .user-avatar-btn {
     width: 42px; height: 42px; border-radius: 50%;
-    border: 2px solid var(--cyan); cursor: pointer;
-    overflow: hidden; box-shadow: 0 0 14px var(--glow-c);
-    transition: box-shadow 0.2s;
+    border: 2px solid var(--cyan); cursor: pointer; overflow: hidden;
+    box-shadow: 0 0 14px var(--glow-c); transition: box-shadow 0.2s;
   }
   .user-avatar-btn:hover { box-shadow: 0 0 22px var(--glow-c); }
-  .user-avatar-btn img { width: 100%; height: 100%; object-fit: cover; }
+  .user-avatar-btn img { width:100%; height:100%; object-fit:cover; }
+
+  /* ---- AUTH OVERLAY ---- */
+  #authOverlay {
+    display: none; position: fixed; inset: 0; z-index: 300;
+    background: rgba(6,8,20,0.96); backdrop-filter: blur(16px);
+    align-items: center; justify-content: center; flex-direction: column;
+  }
+  #authOverlay.visible { display: flex; }
+  .auth-box {
+    background: rgba(12,16,32,0.98);
+    border: 1px solid rgba(0,232,255,0.3); border-radius: 18px;
+    padding: 38px 36px 30px; width: 100%; max-width: 380px;
+    text-align: center; box-shadow: 0 0 60px rgba(0,232,255,0.1); position: relative;
+  }
+  .auth-box::before {
+    content: ''; position:absolute; top:0; left:10%; right:10%; height:1px;
+    background: linear-gradient(90deg,transparent,var(--cyan),transparent); opacity:0.6;
+  }
+  .auth-title { font-size:26px; font-weight:900; letter-spacing:6px; background:linear-gradient(90deg,var(--cyan),#fff,var(--magenta)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:6px; }
+  .auth-sub { font-family:'Share Tech Mono',monospace; font-size:9px; color:rgba(0,232,255,0.4); letter-spacing:3px; margin-bottom:28px; }
+  .auth-input { width:100%; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:13px 16px; color:white; margin-bottom:12px; font-size:14px; font-family:'DM Sans',sans-serif; outline:none; transition:0.2s; text-align:center; }
+  .auth-input:focus { border-color:var(--cyan); box-shadow:0 0 14px rgba(0,232,255,0.2); }
+  .auth-input::placeholder { color:rgba(255,255,255,0.25); }
+  .auth-btn { width:100%; padding:13px; border:none; border-radius:8px; font-family:'Orbitron',monospace; font-weight:700; font-size:12px; letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:0.2s; margin-bottom:10px; }
+  .btn-cyan { background:var(--cyan); color:#060810; }
+  .btn-cyan:hover { box-shadow:0 0 20px var(--glow-c); transform:translateY(-1px); }
+  .btn-outline-cyan { background:transparent; border:1.5px solid var(--cyan); color:var(--cyan); }
+  .btn-outline-cyan:hover { background:rgba(0,232,255,0.1); }
+  .btn-skip { background:transparent; border:none; color:rgba(255,255,255,0.25); font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:2px; cursor:pointer; margin-top:6px; transition:color 0.2s; }
+  .btn-skip:hover { color:rgba(255,255,255,0.5); }
+  .auth-error { color:#ff4466; font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:1px; min-height:18px; margin-bottom:10px; }
 
   /* ---- TOAST ---- */
   #toast {
     position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px);
     background: rgba(10,14,30,0.95); border: 1px solid var(--green);
     border-radius: 10px; padding: 10px 22px;
-    font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--green);
-    letter-spacing: 2px; z-index: 500;
-    box-shadow: 0 0 20px rgba(46,204,113,0.3);
+    font-family: 'Share Tech Mono',monospace; font-size:12px; color:var(--green); letter-spacing:2px;
+    z-index:500; box-shadow:0 0 20px rgba(46,204,113,0.3);
     transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s;
-    opacity: 0; pointer-events: none;
+    opacity:0; pointer-events:none;
   }
-  #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  #toast.show { transform: translateX(-50%) translateY(0); opacity:1; }
+
+  /* ---- PAGE LAYOUT ---- */
+  #page-layout {
+    position: relative; z-index: 10;
+    display: flex; align-items: flex-start; gap: 20px;
+  }
+
+  /* ---- LEADERBOARD PANEL ---- */
+  #lb-panel {
+    width: 210px;
+    background: rgba(10,14,28,0.92);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 0 30px rgba(0,232,255,0.05);
+    flex-shrink: 0;
+    /* vertically align with game shell */
+    align-self: stretch;
+    display: flex; flex-direction: column;
+  }
+  #lb-panel::before {
+    content: ''; display: block; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity: 0.5;
+  }
+  .lb-panel-title {
+    font-family: 'Orbitron', monospace; font-size: 10px; font-weight: 900;
+    letter-spacing: 3px; color: var(--cyan);
+    padding: 14px 16px 10px; text-align: center;
+    border-bottom: 1px solid rgba(0,232,255,0.1);
+  }
+  .lb-panel-sub {
+    font-family: 'Share Tech Mono', monospace; font-size: 8px;
+    color: rgba(0,232,255,0.3); letter-spacing: 2px; text-align: center;
+    padding: 0 16px 10px; border-bottom: 1px solid rgba(0,232,255,0.08);
+  }
+  #lb-list { flex: 1; padding: 8px 10px; overflow-y: auto; }
+  #lb-list::-webkit-scrollbar { width: 3px; }
+  #lb-list::-webkit-scrollbar-thumb { background: rgba(0,232,255,0.2); border-radius: 2px; }
+
+  .lb-entry {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 6px; border-radius: 8px;
+    margin-bottom: 4px;
+    border: 1px solid transparent;
+    transition: background 0.2s;
+  }
+  .lb-entry:hover { background: rgba(0,232,255,0.04); }
+  .lb-entry.rank-1 { background: rgba(255,216,77,0.08); border-color: rgba(255,216,77,0.25); }
+  .lb-entry.rank-2 { background: rgba(200,210,220,0.06); border-color: rgba(200,210,220,0.15); }
+  .lb-entry.rank-3 { background: rgba(180,120,60,0.08); border-color: rgba(180,120,60,0.2); }
+  .lb-entry.is-me  { background: rgba(0,232,255,0.07); border-color: rgba(0,232,255,0.3); }
+
+  .lb-rank {
+    font-family: 'Share Tech Mono', monospace; font-size: 10px;
+    width: 16px; text-align: center; flex-shrink: 0;
+    color: rgba(255,255,255,0.3);
+  }
+  .lb-entry.rank-1 .lb-rank { color: var(--gold); }
+  .lb-entry.rank-2 .lb-rank { color: #c8d2dc; }
+  .lb-entry.rank-3 .lb-rank { color: #b47840; }
+
+  .lb-avatar { width:26px; height:26px; border-radius:50%; object-fit:cover; flex-shrink:0; border:1px solid rgba(255,255,255,0.1); }
+  .lb-entry.rank-1 .lb-avatar { border-color:var(--gold); box-shadow:0 0 6px rgba(255,216,77,0.4); }
+  .lb-entry.is-me  .lb-avatar { border-color:var(--cyan); }
+
+  .lb-info { flex:1; min-width:0; }
+  .lb-pseudo { font-family:'Share Tech Mono',monospace; font-size:9px; color:#ddd; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .lb-entry.is-me .lb-pseudo { color:var(--cyan); }
+  .lb-score-val { font-family:'Orbitron',monospace; font-size:13px; font-weight:700; color:rgba(255,255,255,0.7); flex-shrink:0; }
+  .lb-entry.rank-1 .lb-score-val { color:var(--gold); }
+  .lb-entry.is-me  .lb-score-val { color:var(--cyan); }
+
+  .lb-empty { padding:20px 10px; text-align:center; font-family:'Share Tech Mono',monospace; font-size:9px; color:rgba(255,255,255,0.2); letter-spacing:2px; }
+  .lb-loading { padding:16px 10px; text-align:center; font-family:'Share Tech Mono',monospace; font-size:9px; color:rgba(0,232,255,0.3); letter-spacing:2px; }
+
+  @keyframes refreshSpin { to { transform: rotate(360deg); } }
+  .lb-refresh-btn {
+    display: block; margin: 8px auto 10px; background: transparent;
+    border: 1px solid rgba(0,232,255,0.2); border-radius: 6px;
+    color: rgba(0,232,255,0.4); font-family:'Share Tech Mono',monospace; font-size:8px;
+    letter-spacing:2px; padding:5px 12px; cursor:pointer; transition:all 0.2s;
+  }
+  .lb-refresh-btn:hover { color:var(--cyan); border-color:var(--cyan); }
+
+  /* ---- DIFF BADGE (shown in canvas area) ---- */
+  /* rendered via canvas */
 
   /* ---- GAME SHELL ---- */
-  #game-shell {
-    position: relative; z-index: 10;
-    display: flex; flex-direction: column; align-items: center;
-  }
+  #game-shell { display: flex; flex-direction: column; align-items: center; }
 
   #game-header {
     width: 640px; padding: 18px 28px 14px;
@@ -186,31 +222,19 @@
     border-radius: 18px 18px 0 0; text-align: center; position: relative; overflow: hidden;
   }
   #game-header::before {
-    content: ''; position: absolute; top:0; left:10%; right:10%; height:1px;
-    background: linear-gradient(90deg, transparent, var(--cyan), transparent); opacity:0.7;
+    content: ''; position:absolute; top:0; left:10%; right:10%; height:1px;
+    background: linear-gradient(90deg,transparent,var(--cyan),transparent); opacity:0.7;
   }
-  #game-title {
-    font-size: 34px; font-weight: 900; letter-spacing: 10px;
-    background: linear-gradient(90deg, var(--cyan) 0%, #ffffff 45%, var(--magenta) 100%);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    filter: drop-shadow(0 0 18px rgba(0,232,255,0.35)); line-height: 1;
-  }
-  #game-sub {
-    font-family: 'Share Tech Mono', monospace; font-size: 9px;
-    color: rgba(0,232,255,0.4); letter-spacing: 4px; margin-top: 6px;
-  }
+  #game-title { font-size:34px; font-weight:900; letter-spacing:10px; background:linear-gradient(90deg,var(--cyan) 0%,#fff 45%,var(--magenta) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; filter:drop-shadow(0 0 18px rgba(0,232,255,0.35)); line-height:1; }
+  #game-sub { font-family:'Share Tech Mono',monospace; font-size:9px; color:rgba(0,232,255,0.4); letter-spacing:4px; margin-top:6px; }
 
-  #canvas-wrap {
-    position: relative; width: 640px;
-    border-left: 1px solid var(--border); border-right: 1px solid var(--border);
-  }
-  #fb-canvas { display: block; width: 640px; height: 600px; cursor: pointer; }
+  #canvas-wrap { position:relative; width:640px; border-left:1px solid var(--border); border-right:1px solid var(--border); }
+  #fb-canvas { display:block; width:640px; height:600px; cursor:pointer; }
   #canvas-wrap::after {
-    content: ''; position: absolute; inset: 0;
-    background: repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.06) 3px,rgba(0,0,0,0.06) 4px);
-    pointer-events: none; z-index: 5;
+    content:''; position:absolute; inset:0;
+    background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.06) 3px,rgba(0,0,0,0.06) 4px);
+    pointer-events:none; z-index:5;
   }
-
   .corner { position:absolute; width:18px; height:18px; z-index:10; pointer-events:none; }
   .corner-tl { top:-1px; left:-1px;   border-top:2px solid var(--cyan); border-left:2px solid var(--cyan); }
   .corner-tr { top:-1px; right:-1px;  border-top:2px solid var(--cyan); border-right:2px solid var(--cyan); }
@@ -218,35 +242,29 @@
   .corner-br { bottom:-1px; right:-1px; border-bottom:2px solid var(--cyan); border-right:2px solid var(--cyan); }
 
   #game-footer {
-    width: 640px; padding: 14px 32px;
-    background: rgba(12,18,38,0.97);
-    border: 1px solid var(--border); border-top: 1px solid rgba(0,232,255,0.1);
-    border-radius: 0 0 18px 18px;
-    display: flex; align-items: center; justify-content: space-between; position: relative;
+    width:640px; padding:14px 32px;
+    background:rgba(12,18,38,0.97);
+    border:1px solid var(--border); border-top:1px solid rgba(0,232,255,0.1);
+    border-radius:0 0 18px 18px;
+    display:flex; align-items:center; justify-content:space-between; position:relative;
   }
-  #game-footer::after {
-    content: ''; position: absolute; bottom:0; left:15%; right:15%; height:1px;
-    background: linear-gradient(90deg, transparent, rgba(255,45,120,0.35), transparent);
-  }
-
+  #game-footer::after { content:''; position:absolute; bottom:0; left:15%; right:15%; height:1px; background:linear-gradient(90deg,transparent,rgba(255,45,120,0.35),transparent); }
   .hud-block { display:flex; flex-direction:column; align-items:center; gap:2px; min-width:100px; }
   .hud-label { font-family:'Share Tech Mono',monospace; font-size:8px; letter-spacing:3px; color:rgba(255,255,255,0.28); text-transform:uppercase; }
   .hud-value { font-family:'Orbitron',monospace; font-size:32px; font-weight:900; line-height:1; }
   #score-val { color:var(--cyan); filter:drop-shadow(0 0 10px var(--glow-c)); }
   #best-val  { color:var(--gold); filter:drop-shadow(0 0 10px rgba(255,216,77,0.5)); }
   .hud-sep { width:1px; height:44px; background:linear-gradient(180deg,transparent,rgba(0,232,255,0.25),transparent); }
-
   @keyframes scorePulse { 0%{transform:scale(1)} 50%{transform:scale(1.3)} 100%{transform:scale(1)} }
   .score-pulse { animation: scorePulse 0.18s ease; }
 
-  .game-glow { position:absolute; z-index:-1; border-radius:50%; filter:blur(90px); pointer-events:none; }
-  .glow-left  { width:320px; height:320px; background:rgba(0,232,255,0.07); top:15%; left:-100px; }
-  .glow-right { width:320px; height:320px; background:rgba(255,45,120,0.06); top:45%; right:-100px; }
+  .game-glow { position:fixed; z-index:1; border-radius:50%; filter:blur(90px); pointer-events:none; }
+  .glow-left  { width:320px; height:320px; background:rgba(0,232,255,0.07); top:15%; left:5%; }
+  .glow-right { width:320px; height:320px; background:rgba(255,45,120,0.06); top:45%; right:5%; }
 </style>
 </head>
 <body>
 
-<!-- HUB BUTTON -->
 <a id="hub-btn" href="https://bingoudalo.vercel.app/index.html">
   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
     <path d="M8.5 2L3.5 7L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -254,288 +272,303 @@
   HUB
 </a>
 
-<!-- USER BAR (top right) -->
 <div id="userBar">
-  <div class="wallet-pill" id="walletPill">
-    💰 <span id="walletDisplay">0 M$</span>
-  </div>
+  <div class="wallet-pill" id="walletPill">💰 <span id="walletDisplay">0 M$</span></div>
   <div class="user-avatar-btn" onclick="toggleUserInfo()" title="Profil">
     <img id="userAvatarImg" src="" alt="">
   </div>
 </div>
 
-<!-- AUTH OVERLAY -->
 <div id="authOverlay" class="visible">
   <div class="auth-box">
     <div class="auth-title">FLAPPY JEJ</div>
     <div class="auth-sub">CONNECTE-TOI POUR SAUVEGARDER</div>
-
     <div class="auth-error" id="authError"></div>
-
     <input type="text" id="authPseudo" class="auth-input" placeholder="Pseudo" maxlength="15" autocomplete="off">
     <input type="password" id="authPassword" class="auth-input" placeholder="Mot de passe" autocomplete="off">
-
     <button class="auth-btn btn-cyan" onclick="authLogin()">Se connecter</button>
     <button class="auth-btn btn-outline-cyan" onclick="authRegister()">Créer un compte</button>
     <button class="btn-skip" onclick="playAsGuest()">Jouer sans compte →</button>
   </div>
 </div>
 
-<!-- TOAST -->
 <div id="toast"></div>
-
-<!-- AMBIENT GLOWS -->
 <div class="game-glow glow-left"></div>
 <div class="game-glow glow-right"></div>
 
-<!-- GAME SHELL -->
-<div id="game-shell">
-  <div id="game-header">
-    <div id="game-title">FLAPPY JEJ</div>
-    <div id="game-sub">ESPACE &nbsp;/&nbsp; CLIC &nbsp;/&nbsp; TAP POUR VOLER</div>
+<div id="page-layout">
+
+  <!-- LEADERBOARD PANEL -->
+  <div id="lb-panel">
+    <div class="lb-panel-title">🏆 FLAPPY JEJ</div>
+    <div class="lb-panel-sub">MEILLEURS SCORES</div>
+    <div id="lb-list"><div class="lb-loading">Chargement...</div></div>
+    <button class="lb-refresh-btn" onclick="loadLeaderboard()">↺ ACTUALISER</button>
   </div>
-  <div id="canvas-wrap">
-    <div class="corner corner-tl"></div>
-    <div class="corner corner-tr"></div>
-    <div class="corner corner-bl"></div>
-    <div class="corner corner-br"></div>
-    <canvas id="fb-canvas" width="640" height="600"></canvas>
-  </div>
-  <div id="game-footer">
-    <div class="hud-block">
-      <span class="hud-label">Score</span>
-      <span class="hud-value" id="score-val">0</span>
+
+  <!-- GAME -->
+  <div id="game-shell">
+    <div id="game-header">
+      <div id="game-title">FLAPPY JEJ</div>
+      <div id="game-sub">ESPACE &nbsp;/&nbsp; CLIC &nbsp;/&nbsp; TAP POUR VOLER</div>
     </div>
-    <div class="hud-sep"></div>
-    <div class="hud-block">
-      <span class="hud-label">Meilleur</span>
-      <span class="hud-value" id="best-val">0</span>
+    <div id="canvas-wrap">
+      <div class="corner corner-tl"></div>
+      <div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div>
+      <div class="corner corner-br"></div>
+      <canvas id="fb-canvas" width="640" height="600"></canvas>
+    </div>
+    <div id="game-footer">
+      <div class="hud-block">
+        <span class="hud-label">Score</span>
+        <span class="hud-value" id="score-val">0</span>
+      </div>
+      <div class="hud-sep"></div>
+      <div class="hud-block">
+        <span class="hud-label">Meilleur</span>
+        <span class="hud-value" id="best-val">0</span>
+      </div>
     </div>
   </div>
-</div>
+
+</div><!-- end page-layout -->
 
 <script>
-/* ===================================================
+/* =====================================================
    SUPABASE
-=================================================== */
+===================================================== */
 const SUPABASE_URL = 'https://pdybshweyfvxzvngnuxe.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkeWJzaHdleWZ2eHp2bmdudXhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDg2MDAsImV4cCI6MjA5MDUyNDYwMH0.u442X28Mhs-4T-tydabnMm8now8VfAEeNU-Sicuipq4';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let currentUser = null;      // null = guest
-let walletLocal  = 0;        // cached wallet value
-const COINS_PER_POINT = 1;  // M$ earned per point
+let currentUser = null;
+let walletLocal  = 0;
+const COINS_PER_POINT = 2;
 
-async function hashPassword(password) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+async function hashPassword(p) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(p));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
-
-function showAuthError(msg) { document.getElementById('authError').textContent = msg; }
+function showAuthError(m) { document.getElementById('authError').textContent = m; }
 
 async function authLogin() {
   const pseudo = document.getElementById('authPseudo').value.trim();
   const pwd    = document.getElementById('authPassword').value;
-  if (!pseudo || !pwd) return showAuthError('Remplis tous les champs.');
+  if (!pseudo||!pwd) return showAuthError('Remplis tous les champs.');
   const hash = await hashPassword(pwd);
-  const { data, error } = await sb.from('cdsi_users').select('*').eq('pseudo', pseudo).single();
-  if (error || !data) return showAuthError("Ce pseudo n'existe pas.");
-  if (data.password !== hash) return showAuthError('Mot de passe incorrect.');
-  localStorage.setItem('cdsi_logged_user', pseudo);
-  currentUser = data;
-  onAuthSuccess();
+  const {data,error} = await sb.from('cdsi_users').select('*').eq('pseudo',pseudo).single();
+  if (error||!data) return showAuthError("Ce pseudo n'existe pas.");
+  if (data.password!==hash) return showAuthError('Mot de passe incorrect.');
+  localStorage.setItem('cdsi_logged_user',pseudo);
+  currentUser=data; onAuthSuccess();
 }
-
 async function authRegister() {
   const pseudo = document.getElementById('authPseudo').value.trim();
   const pwd    = document.getElementById('authPassword').value;
-  if (!pseudo || !pwd) return showAuthError('Remplis tous les champs.');
-  const { data: existing } = await sb.from('cdsi_users').select('pseudo').eq('pseudo', pseudo).maybeSingle();
+  if (!pseudo||!pwd) return showAuthError('Remplis tous les champs.');
+  const {data:existing} = await sb.from('cdsi_users').select('pseudo').eq('pseudo',pseudo).maybeSingle();
   if (existing) return showAuthError('Ce pseudo est déjà pris !');
   const hash = await hashPassword(pwd);
-  const newUser = {
-    pseudo, password: hash,
-    avatar: 'bingoudalo/avatar/paulo1.jpg',
-    kavale_wins: 0, bingoudalo_wins: 0, wanted_wins: 0, franclick_score: 0, maubeugopoly_wins: 0,
-    wallet: 1000, flappy_best: 0
-  };
-  const { error } = await sb.from('cdsi_users').insert([newUser]);
+  const newUser = { pseudo, password:hash, avatar:'bingoudalo/avatar/paulo1.jpg',
+    kavale_wins:0, bingoudalo_wins:0, wanted_wins:0, franclick_score:0, maubeugopoly_wins:0,
+    wallet:1000, flappy_best:0 };
+  const {error} = await sb.from('cdsi_users').insert([newUser]);
   if (error) return showAuthError('Erreur lors de la création.');
-  localStorage.setItem('cdsi_logged_user', pseudo);
-  currentUser = newUser;
-  onAuthSuccess();
+  localStorage.setItem('cdsi_logged_user',pseudo);
+  currentUser=newUser; onAuthSuccess();
 }
-
 function playAsGuest() {
-  currentUser = null;
+  currentUser=null;
   document.getElementById('authOverlay').classList.remove('visible');
+  loadLeaderboard();
 }
-
 function onAuthSuccess() {
   document.getElementById('authOverlay').classList.remove('visible');
-  walletLocal = currentUser.wallet || 0;
-  bestScore   = currentUser.flappy_best || 0;
-  updateHUD();
-  refreshUserBar();
-  showToast('✓ CONNECTÉ EN TANT QUE ' + currentUser.pseudo.toUpperCase());
+  walletLocal = currentUser.wallet||0;
+  bestScore   = currentUser.flappy_best||0;
+  updateHUD(); refreshUserBar();
+  showToast('✓ CONNECTÉ : '+currentUser.pseudo.toUpperCase());
+  loadLeaderboard();
 }
-
 function refreshUserBar() {
   if (!currentUser) { document.getElementById('userBar').classList.remove('visible'); return; }
   document.getElementById('userBar').classList.add('visible');
-  document.getElementById('walletDisplay').textContent = Math.floor(walletLocal) + ' M$';
-  document.getElementById('userAvatarImg').src = currentUser.avatar || '';
+  document.getElementById('walletDisplay').textContent = Math.floor(walletLocal)+' M$';
+  document.getElementById('userAvatarImg').src = currentUser.avatar||'';
 }
-
-// Called after each pipe pass — earn coins + save to DB
 async function earnCoins(pts) {
   if (!currentUser) return;
-  const earned = pts * COINS_PER_POINT;
-  walletLocal += earned;
-  document.getElementById('walletDisplay').textContent = Math.floor(walletLocal) + ' M$';
-  const pill = document.getElementById('walletPill');
-  pill.classList.add('earning', 'wallet-pop');
-  setTimeout(() => pill.classList.remove('earning', 'wallet-pop'), 500);
-  // Debounced DB write (every 5 pts or on death)
-  if (score % 5 === 0) await flushStats();
+  walletLocal += pts*COINS_PER_POINT;
+  document.getElementById('walletDisplay').textContent = Math.floor(walletLocal)+' M$';
+  const pill=document.getElementById('walletPill');
+  pill.classList.add('earning','wallet-pop');
+  setTimeout(()=>pill.classList.remove('earning','wallet-pop'),500);
+  if (score%5===0) await flushStats();
 }
-
-async function flushStats(isFinal = false) {
+async function flushStats(isFinal=false) {
   if (!currentUser) return;
-  const updateData = { wallet: Math.floor(walletLocal) };
-  if (isFinal && score > (currentUser.flappy_best || 0)) {
-    updateData.flappy_best = score;
-    currentUser.flappy_best = score;
+  const upd={wallet:Math.floor(walletLocal)};
+  if (isFinal && score>(currentUser.flappy_best||0)) {
+    upd.flappy_best=score;
+    currentUser.flappy_best=score;
   }
-  await sb.from('cdsi_users').update(updateData).eq('pseudo', currentUser.pseudo);
-  currentUser.wallet = Math.floor(walletLocal);
+  await sb.from('cdsi_users').update(upd).eq('pseudo',currentUser.pseudo);
+  currentUser.wallet=Math.floor(walletLocal);
 }
-
 function toggleUserInfo() {
   if (!currentUser) return;
-  showToast('👤 ' + currentUser.pseudo.toUpperCase() + '  ·  BEST: ' + (currentUser.flappy_best||0) + ' pts');
+  showToast('👤 '+currentUser.pseudo.toUpperCase()+'  ·  BEST: '+(currentUser.flappy_best||0)+' pts');
 }
-
-// Load saved session
-window.addEventListener('load', async () => {
-  const saved = localStorage.getItem('cdsi_logged_user');
+window.addEventListener('load', async ()=>{
+  const saved=localStorage.getItem('cdsi_logged_user');
   if (saved) {
-    const { data } = await sb.from('cdsi_users').select('*').eq('pseudo', saved).single();
-    if (data) { currentUser = data; onAuthSuccess(); return; }
+    const {data}=await sb.from('cdsi_users').select('*').eq('pseudo',saved).single();
+    if (data) { currentUser=data; onAuthSuccess(); return; }
   }
-  // show auth overlay (already visible by default)
+  loadLeaderboard();
 });
 
-/* ===================================================
-   TOAST
-=================================================== */
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(showToast._t);
-  showToast._t = setTimeout(() => t.classList.remove('show'), 3000);
+/* =====================================================
+   LEADERBOARD
+===================================================== */
+async function loadLeaderboard() {
+  const list = document.getElementById('lb-list');
+  list.innerHTML = '<div class="lb-loading">Chargement...</div>';
+  try {
+    const {data,error} = await sb.from('cdsi_users')
+      .select('pseudo,avatar,flappy_best')
+      .gt('flappy_best',0)
+      .order('flappy_best',{ascending:false})
+      .limit(15);
+    if (error || !data || data.length===0) {
+      list.innerHTML='<div class="lb-empty">AUCUN SCORE<br>ENREGISTRÉ</div>'; return;
+    }
+    const rankIcons=['🥇','🥈','🥉'];
+    list.innerHTML = data.map((u,i)=>{
+      const rankClass = i<3 ? `rank-${i+1}` : '';
+      const meClass   = currentUser && u.pseudo===currentUser.pseudo ? 'is-me' : '';
+      const rankLabel = i<3 ? rankIcons[i] : `${i+1}.`;
+      const avatar    = u.avatar || 'https://via.placeholder.com/26/0f1629/00E8FF?text=?';
+      return `
+        <div class="lb-entry ${rankClass} ${meClass}">
+          <span class="lb-rank">${rankLabel}</span>
+          <img class="lb-avatar" src="${avatar}" onerror="this.src='https://via.placeholder.com/26/0f1629/00E8FF?text=?'">
+          <div class="lb-info">
+            <div class="lb-pseudo">${u.pseudo}</div>
+          </div>
+          <div class="lb-score-val">${u.flappy_best}</div>
+        </div>`;
+    }).join('');
+  } catch(e) {
+    list.innerHTML='<div class="lb-empty">ERREUR</div>';
+  }
 }
 
-/* ===================================================
+/* =====================================================
+   TOAST
+===================================================== */
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+/* =====================================================
    GAME ENGINE
-=================================================== */
-const canvas = document.getElementById('fb-canvas');
-const ctx    = canvas.getContext('2d');
-const W = canvas.width, H = canvas.height;
+===================================================== */
+const canvas=document.getElementById('fb-canvas');
+const ctx=canvas.getContext('2d');
+const W=canvas.width, H=canvas.height;
 
-const CYAN    = '#00E8FF';
-const MAGENTA = '#FF2D78';
-const GOLD    = '#FFD84D';
-const GREEN   = '#00FF9C';
+const CYAN='#00E8FF', MAGENTA='#FF2D78', GOLD='#FFD84D', GREEN='#00FF9C';
 
-const PIPE_W     = 64;
-const GAP        = 162;
-const PIPE_SPEED = 2.5;
-const BIRD_R     = 26;   // BIG head — photo clearly visible
+// Difficulté progressive
+const BASE_SPEED     = 1.8;   // vitesse de départ (lente)
+const MAX_SPEED      = 3.8;   // vitesse max
+const SPEED_PER_PT   = 0.08;  // accélération par point
+const BASE_GAP       = 185;   // gap de départ (large)
+const MIN_GAP        = 120;   // gap minimum
+const GAP_PER_PT     = 1.8;   // réduction du gap par point
+const BASE_INTERVAL  = 110;   // frames entre les tuyaux (fréquence de départ)
+const MIN_INTERVAL   = 64;    // fréquence max
+const INTERVAL_PER_PT= 1.5;
 
-let state = 'idle';
-let bird, pipes, score, bestScore = 0, frame = 0, raf;
-let particles = [];
+const PIPE_W=64, BIRD_R=26;
 
-const stars = Array.from({length:70}, () => ({
-  x: Math.random()*W, y: Math.random()*H,
-  r: Math.random()*1.4+0.2, a: Math.random()*0.6+0.1
-}));
+let state='idle';
+let bird, pipes, score, bestScore=0, frame=0, raf;
+let particles=[];
+let currentSpeed, currentGap, currentInterval;
 
-// Load custom head photo
-const headImg = new Image();
-headImg.src = 'flappy-jej.png';
-let headLoaded = false;
-headImg.onload  = () => { headLoaded = true; if (state==='idle') drawIdle(); };
-headImg.onerror = () => { headLoaded = false; };
+const stars=Array.from({length:70},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.4+0.2,a:Math.random()*0.6+0.1}));
+
+const headImg=new Image();
+headImg.src='flappy-jej.png';
+let headLoaded=false;
+headImg.onload=()=>{headLoaded=true; if(state==='idle') drawIdle();};
+headImg.onerror=()=>{headLoaded=false;};
+
+function getDifficulty() {
+  currentSpeed    = Math.min(BASE_SPEED + score*SPEED_PER_PT, MAX_SPEED);
+  currentGap      = Math.max(BASE_GAP - score*GAP_PER_PT, MIN_GAP);
+  currentInterval = Math.max(Math.floor(BASE_INTERVAL - score*INTERVAL_PER_PT), MIN_INTERVAL);
+}
+
+// Difficulty level label
+function diffLabel() {
+  if (score < 5)  return { label:'FACILE',    color:'#2ecc71' };
+  if (score < 12) return { label:'NORMAL',    color:GOLD };
+  if (score < 22) return { label:'DIFFICILE', color:'#e67e22' };
+  if (score < 35) return { label:'HARDCORE',  color:MAGENTA };
+  return              { label:'INSANE 🔥',   color:'#ff0044' };
+}
 
 function init() {
-  bird = { x: 130, y: H/2, vy: 0, angle: 0 };
-  pipes = []; particles = [];
-  score = 0; frame = 0;
+  bird={x:130,y:H/2,vy:0,angle:0};
+  pipes=[]; particles=[];
+  score=0; frame=0;
+  getDifficulty();
   updateHUD();
 }
 
 function flap() {
-  if (state === 'dead')  { state = 'idle'; init(); drawIdle(); return; }
-  if (state === 'idle')  { state = 'playing'; loop(); }
-  bird.vy = -7.4;
+  if (state==='dead')  { state='idle'; init(); drawIdle(); return; }
+  if (state==='idle')  { state='playing'; loop(); }
+  bird.vy=-7.2;
   spawnFlapParticles();
 }
-
-canvas.addEventListener('click', flap);
-document.addEventListener('keydown', e => {
-  if (e.code==='Space'||e.code==='ArrowUp') { e.preventDefault(); flap(); }
-});
+canvas.addEventListener('click',flap);
+document.addEventListener('keydown',e=>{if(e.code==='Space'||e.code==='ArrowUp'){e.preventDefault();flap();}});
 
 /* ---- PARTICLES ---- */
-function spawnFlapParticles() {
-  for (let i=0; i<8; i++) particles.push({
-    x:bird.x-14, y:bird.y+14,
-    vx:-(Math.random()*2.5+0.5), vy:Math.random()*2.5-1.2,
-    life:1, r:Math.random()*3.5+1,
-    color: Math.random()>0.5 ? CYAN : '#ffffff'
-  });
+function spawnFlapParticles(){
+  for(let i=0;i<8;i++) particles.push({x:bird.x-14,y:bird.y+14,vx:-(Math.random()*2.5+0.5),vy:Math.random()*2.5-1.2,life:1,r:Math.random()*3.5+1,color:Math.random()>0.5?CYAN:'#fff'});
 }
-function spawnDeathParticles() {
+function spawnDeathParticles(){
   const cols=[MAGENTA,CYAN,GOLD,GREEN];
-  for(let i=0;i<32;i++){
-    const a=(i/32)*Math.PI*2, spd=Math.random()*6+1.5;
-    particles.push({x:bird.x,y:bird.y,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,life:1,r:Math.random()*6+2,color:cols[i%4]});
-  }
+  for(let i=0;i<32;i++){const a=(i/32)*Math.PI*2,spd=Math.random()*6+1.5;particles.push({x:bird.x,y:bird.y,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,life:1,r:Math.random()*6+2,color:cols[i%4]});}
 }
-function updateParticles() {
-  for(let p of particles){p.x+=p.vx;p.y+=p.vy;p.vy+=0.12;p.life-=0.033;}
-  particles=particles.filter(p=>p.life>0);
-}
-function drawParticles() {
-  for(let p of particles){
-    ctx.save(); ctx.globalAlpha=p.life*0.9;
-    ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-    ctx.fillStyle=p.color; ctx.shadowColor=p.color; ctx.shadowBlur=12; ctx.fill(); ctx.restore();
-  }
-}
+function updateParticles(){for(let p of particles){p.x+=p.vx;p.y+=p.vy;p.vy+=0.12;p.life-=0.033;}particles=particles.filter(p=>p.life>0);}
+function drawParticles(){for(let p of particles){ctx.save();ctx.globalAlpha=p.life*0.9;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=p.color;ctx.shadowColor=p.color;ctx.shadowBlur=12;ctx.fill();ctx.restore();}}
 
 /* ---- PIPES ---- */
 function spawnPipe(){
-  const topH=100+Math.random()*(H-GAP-200);
+  const topH=90+Math.random()*(H-currentGap-180);
   pipes.push({x:W+10,topH,scored:false});
 }
 
 /* ---- UPDATE ---- */
 function update(){
   frame++;
-  bird.vy+=0.4; bird.y+=bird.vy;
+  getDifficulty();
+  bird.vy+=0.38; bird.y+=bird.vy;
   bird.angle=Math.min(Math.max(bird.vy*3.5,-30),80);
-  if(frame%86===0) spawnPipe();
+  if(frame%currentInterval===0) spawnPipe();
   for(let p of pipes){
-    p.x-=PIPE_SPEED;
-    if(!p.scored && p.x+PIPE_W<bird.x){
-      p.scored=true; score++;
-      updateHUD(true);
-      earnCoins(1);
-    }
+    p.x-=currentSpeed;
+    if(!p.scored&&p.x+PIPE_W<bird.x){p.scored=true;score++;updateHUD(true);earnCoins(1);}
   }
   pipes=pipes.filter(p=>p.x+PIPE_W>-10);
   updateParticles();
@@ -543,7 +576,7 @@ function update(){
   for(let p of pipes){
     const inX=bird.x+BIRD_R-10>p.x&&bird.x-BIRD_R+10<p.x+PIPE_W;
     const inTop=bird.y-BIRD_R+10<p.topH;
-    const inBot=bird.y+BIRD_R-10>p.topH+GAP;
+    const inBot=bird.y+BIRD_R-10>p.topH+currentGap;
     if(inX&&(inTop||inBot)) return die();
   }
 }
@@ -556,16 +589,17 @@ function die(){
   updateHUD();
   cancelAnimationFrame(raf);
   flushStats(true).then(()=>{
-    if(currentUser && score>0){
+    if(currentUser&&score>0){
       showToast('🏆 BEST: '+bestScore+' pts  ·  +'+score*COINS_PER_POINT+' M$ gagnés !');
       refreshUserBar();
+      loadLeaderboard();
     }
   });
   let fc=0;
   function flashFrame(){
-    updateParticles(); draw();
+    updateParticles();draw();
     ctx.fillStyle=`rgba(255,45,120,${0.28*(1-fc/7)})`;
-    ctx.fillRect(0,0,W,H); fc++;
+    ctx.fillRect(0,0,W,H);fc++;
     if(fc<7) requestAnimationFrame(flashFrame); else drawDead();
   }
   flashFrame();
@@ -582,121 +616,104 @@ function updateHUD(pulse=false){
 /* ---- DRAW BIRD ---- */
 function drawBird(x,y,angle){
   ctx.save(); ctx.translate(x,y); ctx.rotate(angle*Math.PI/180);
-
-  // Outer glow
   const grd=ctx.createRadialGradient(0,0,4,0,0,BIRD_R+18);
   grd.addColorStop(0,'rgba(0,232,255,0.25)'); grd.addColorStop(1,'rgba(0,232,255,0)');
-  ctx.beginPath(); ctx.arc(0,0,BIRD_R+18,0,Math.PI*2);
-  ctx.fillStyle=grd; ctx.fill();
-
+  ctx.beginPath();ctx.arc(0,0,BIRD_R+18,0,Math.PI*2);ctx.fillStyle=grd;ctx.fill();
   if(headLoaded){
-    // Photo clipped to circle — LARGE
-    ctx.save();
-    ctx.beginPath(); ctx.arc(0,0,BIRD_R,0,Math.PI*2); ctx.clip();
-    ctx.drawImage(headImg,-BIRD_R,-BIRD_R,BIRD_R*2,BIRD_R*2);
-    ctx.restore();
-    // Glowing ring
-    ctx.beginPath(); ctx.arc(0,0,BIRD_R,0,Math.PI*2);
-    ctx.strokeStyle=CYAN; ctx.lineWidth=3;
-    ctx.shadowColor=CYAN; ctx.shadowBlur=16; ctx.stroke(); ctx.shadowBlur=0;
+    ctx.save();ctx.beginPath();ctx.arc(0,0,BIRD_R,0,Math.PI*2);ctx.clip();
+    ctx.drawImage(headImg,-BIRD_R,-BIRD_R,BIRD_R*2,BIRD_R*2);ctx.restore();
+    ctx.beginPath();ctx.arc(0,0,BIRD_R,0,Math.PI*2);
+    ctx.strokeStyle=CYAN;ctx.lineWidth=3;ctx.shadowColor=CYAN;ctx.shadowBlur=16;ctx.stroke();ctx.shadowBlur=0;
   } else {
-    // Fallback drawn bird
     const bg=ctx.createRadialGradient(-5,-5,3,0,0,BIRD_R);
-    bg.addColorStop(0,'#1a2a50'); bg.addColorStop(1,'#0f1629');
-    ctx.beginPath(); ctx.arc(0,0,BIRD_R,0,Math.PI*2);
-    ctx.fillStyle=bg; ctx.fill();
-    ctx.strokeStyle=CYAN; ctx.lineWidth=3;
-    ctx.shadowColor=CYAN; ctx.shadowBlur=14; ctx.stroke(); ctx.shadowBlur=0;
-
-    ctx.save(); ctx.translate(-5,7);
-    ctx.beginPath(); ctx.ellipse(0,0,14,7,-0.3,0,Math.PI*2);
-    ctx.fillStyle='rgba(0,232,255,0.2)'; ctx.fill();
-    ctx.strokeStyle='rgba(0,232,255,0.55)'; ctx.lineWidth=2; ctx.stroke(); ctx.restore();
-
-    ctx.beginPath(); ctx.arc(9,-6,8,0,Math.PI*2);
-    ctx.fillStyle=CYAN; ctx.shadowColor=CYAN; ctx.shadowBlur=10; ctx.fill(); ctx.shadowBlur=0;
-    ctx.beginPath(); ctx.arc(10,-6,3.5,0,Math.PI*2); ctx.fillStyle='#0f1629'; ctx.fill();
-    ctx.beginPath(); ctx.arc(11,-8,1.4,0,Math.PI*2); ctx.fillStyle='#fff'; ctx.fill();
-
-    ctx.beginPath(); ctx.moveTo(20,-3); ctx.lineTo(30,0); ctx.lineTo(20,6);
-    ctx.closePath(); ctx.fillStyle=GOLD;
-    ctx.shadowColor=GOLD; ctx.shadowBlur=8; ctx.fill(); ctx.shadowBlur=0;
+    bg.addColorStop(0,'#1a2a50');bg.addColorStop(1,'#0f1629');
+    ctx.beginPath();ctx.arc(0,0,BIRD_R,0,Math.PI*2);ctx.fillStyle=bg;ctx.fill();
+    ctx.strokeStyle=CYAN;ctx.lineWidth=3;ctx.shadowColor=CYAN;ctx.shadowBlur=14;ctx.stroke();ctx.shadowBlur=0;
+    ctx.save();ctx.translate(-5,7);ctx.beginPath();ctx.ellipse(0,0,14,7,-0.3,0,Math.PI*2);
+    ctx.fillStyle='rgba(0,232,255,0.2)';ctx.fill();ctx.strokeStyle='rgba(0,232,255,0.55)';ctx.lineWidth=2;ctx.stroke();ctx.restore();
+    ctx.beginPath();ctx.arc(9,-6,8,0,Math.PI*2);ctx.fillStyle=CYAN;ctx.shadowColor=CYAN;ctx.shadowBlur=10;ctx.fill();ctx.shadowBlur=0;
+    ctx.beginPath();ctx.arc(10,-6,3.5,0,Math.PI*2);ctx.fillStyle='#0f1629';ctx.fill();
+    ctx.beginPath();ctx.arc(11,-8,1.4,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
+    ctx.beginPath();ctx.moveTo(20,-3);ctx.lineTo(30,0);ctx.lineTo(20,6);ctx.closePath();
+    ctx.fillStyle=GOLD;ctx.shadowColor=GOLD;ctx.shadowBlur=8;ctx.fill();ctx.shadowBlur=0;
   }
   ctx.restore();
 }
 
 /* ---- DRAW PIPES ---- */
 function drawPipe(p){
-  const r=8;
+  const r=8,gap=currentGap;
   const pGrd=ctx.createLinearGradient(p.x,0,p.x+PIPE_W,0);
-  pGrd.addColorStop(0,'#1a2040'); pGrd.addColorStop(0.35,'#232b50'); pGrd.addColorStop(1,'#141830');
+  pGrd.addColorStop(0,'#1a2040');pGrd.addColorStop(0.35,'#232b50');pGrd.addColorStop(1,'#141830');
   const cGrd=ctx.createLinearGradient(p.x-7,0,p.x+PIPE_W+7,0);
-  cGrd.addColorStop(0,'#1e2550'); cGrd.addColorStop(0.4,'#2c3560'); cGrd.addColorStop(1,'#181e42');
-
+  cGrd.addColorStop(0,'#1e2550');cGrd.addColorStop(0.4,'#2c3560');cGrd.addColorStop(1,'#181e42');
   ctx.lineWidth=1.5;
-  ctx.fillStyle=pGrd; ctx.strokeStyle='#2e3660';
-  roundRect(ctx,p.x,0,PIPE_W,p.topH-20,[0,0,r,r]); ctx.fill(); ctx.stroke();
-  ctx.fillStyle=cGrd; ctx.strokeStyle='#3a4070';
-  roundRect(ctx,p.x-7,p.topH-32,PIPE_W+14,32,[0,0,r,r]); ctx.fill(); ctx.stroke();
-
-  const botY=p.topH+GAP;
-  ctx.fillStyle=pGrd; ctx.strokeStyle='#2e3660';
-  roundRect(ctx,p.x,botY+20,PIPE_W,H-botY-20,[r,r,0,0]); ctx.fill(); ctx.stroke();
-  ctx.fillStyle=cGrd; ctx.strokeStyle='#3a4070';
-  roundRect(ctx,p.x-7,botY,PIPE_W+14,32,[r,r,0,0]); ctx.fill(); ctx.stroke();
-
-  ctx.save();
-  ctx.strokeStyle=MAGENTA; ctx.lineWidth=1.5; ctx.globalAlpha=0.3;
-  ctx.shadowColor=MAGENTA; ctx.shadowBlur=10;
-  ctx.beginPath(); ctx.moveTo(p.x-7,p.topH-31); ctx.lineTo(p.x+PIPE_W+7,p.topH-31); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(p.x-7,botY+1); ctx.lineTo(p.x+PIPE_W+7,botY+1); ctx.stroke();
+  ctx.fillStyle=pGrd;ctx.strokeStyle='#2e3660';
+  roundRect(ctx,p.x,0,PIPE_W,p.topH-20,[0,0,r,r]);ctx.fill();ctx.stroke();
+  ctx.fillStyle=cGrd;ctx.strokeStyle='#3a4070';
+  roundRect(ctx,p.x-7,p.topH-32,PIPE_W+14,32,[0,0,r,r]);ctx.fill();ctx.stroke();
+  const botY=p.topH+gap;
+  ctx.fillStyle=pGrd;ctx.strokeStyle='#2e3660';
+  roundRect(ctx,p.x,botY+20,PIPE_W,H-botY-20,[r,r,0,0]);ctx.fill();ctx.stroke();
+  ctx.fillStyle=cGrd;ctx.strokeStyle='#3a4070';
+  roundRect(ctx,p.x-7,botY,PIPE_W+14,32,[r,r,0,0]);ctx.fill();ctx.stroke();
+  ctx.save();ctx.strokeStyle=MAGENTA;ctx.lineWidth=1.5;ctx.globalAlpha=0.3;ctx.shadowColor=MAGENTA;ctx.shadowBlur=10;
+  ctx.beginPath();ctx.moveTo(p.x-7,p.topH-31);ctx.lineTo(p.x+PIPE_W+7,p.topH-31);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(p.x-7,botY+1);ctx.lineTo(p.x+PIPE_W+7,botY+1);ctx.stroke();
   ctx.restore();
-
   ctx.fillStyle='rgba(255,255,255,0.04)';
-  ctx.fillRect(p.x+10,0,8,p.topH-20);
-  ctx.fillRect(p.x+10,botY+20,8,H);
+  ctx.fillRect(p.x+10,0,8,p.topH-20);ctx.fillRect(p.x+10,botY+20,8,H);
 }
 
 function roundRect(ctx,x,y,w,h,radii){
   const[tl,tr,br,bl]=radii;
-  ctx.beginPath();
-  ctx.moveTo(x+tl,y);
-  ctx.lineTo(x+w-tr,y); ctx.arcTo(x+w,y,x+w,y+tr,tr);
-  ctx.lineTo(x+w,y+h-br); ctx.arcTo(x+w,y+h,x+w-br,y+h,br);
-  ctx.lineTo(x+bl,y+h); ctx.arcTo(x,y+h,x,y+h-bl,bl);
-  ctx.lineTo(x,y+tl); ctx.arcTo(x,y,x+tl,y,tl);
+  ctx.beginPath();ctx.moveTo(x+tl,y);
+  ctx.lineTo(x+w-tr,y);ctx.arcTo(x+w,y,x+w,y+tr,tr);
+  ctx.lineTo(x+w,y+h-br);ctx.arcTo(x+w,y+h,x+w-br,y+h,br);
+  ctx.lineTo(x+bl,y+h);ctx.arcTo(x,y+h,x,y+h-bl,bl);
+  ctx.lineTo(x,y+tl);ctx.arcTo(x,y,x+tl,y,tl);
   ctx.closePath();
 }
 
 /* ---- BACKGROUND ---- */
 function drawBg(){
   const sky=ctx.createLinearGradient(0,0,0,H);
-  sky.addColorStop(0,'#111e40'); sky.addColorStop(0.6,'#0f1835'); sky.addColorStop(1,'#0c1228');
-  ctx.fillStyle=sky; ctx.fillRect(0,0,W,H);
-
-  for(let s of stars){
-    ctx.globalAlpha=s.a;
-    ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-    ctx.fillStyle='#c8d8ff'; ctx.fill();
-  }
+  sky.addColorStop(0,'#111e40');sky.addColorStop(0.6,'#0f1835');sky.addColorStop(1,'#0c1228');
+  ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+  for(let s of stars){ctx.globalAlpha=s.a;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle='#c8d8ff';ctx.fill();}
   ctx.globalAlpha=1;
-
   const groundY=H-34;
   const groundGrd=ctx.createLinearGradient(0,groundY,0,H);
-  groundGrd.addColorStop(0,'#16213a'); groundGrd.addColorStop(1,'#0c1228');
-  ctx.fillStyle=groundGrd; ctx.fillRect(0,groundY,W,H-groundY);
-  ctx.save();
-  ctx.strokeStyle=CYAN; ctx.lineWidth=1.5; ctx.globalAlpha=0.3;
-  ctx.shadowColor=CYAN; ctx.shadowBlur=12;
-  ctx.beginPath(); ctx.moveTo(0,groundY); ctx.lineTo(W,groundY); ctx.stroke();
-  ctx.restore();
+  groundGrd.addColorStop(0,'#16213a');groundGrd.addColorStop(1,'#0c1228');
+  ctx.fillStyle=groundGrd;ctx.fillRect(0,groundY,W,H-groundY);
+  ctx.save();ctx.strokeStyle=CYAN;ctx.lineWidth=1.5;ctx.globalAlpha=0.3;ctx.shadowColor=CYAN;ctx.shadowBlur=12;
+  ctx.beginPath();ctx.moveTo(0,groundY);ctx.lineTo(W,groundY);ctx.stroke();ctx.restore();
 }
 
 function drawFloatingScore(){
   ctx.save();
-  ctx.font='900 90px Orbitron, sans-serif'; ctx.textAlign='center';
-  ctx.fillStyle='rgba(255,255,255,0.05)'; ctx.fillText(score,W/2+2,110);
-  ctx.fillStyle='rgba(255,255,255,0.6)';  ctx.fillText(score,W/2,108);
+  ctx.font='900 90px Orbitron, sans-serif';ctx.textAlign='center';
+  ctx.fillStyle='rgba(255,255,255,0.05)';ctx.fillText(score,W/2+2,110);
+  ctx.fillStyle='rgba(255,255,255,0.6)';ctx.fillText(score,W/2,108);
+  ctx.restore();
+}
+
+function drawDiffBadge(){
+  if(state!=='playing') return;
+  const d=diffLabel();
+  ctx.save();
+  ctx.font='700 10px Share Tech Mono, monospace';
+  ctx.textAlign='right';
+  ctx.fillStyle=d.color;
+  ctx.shadowColor=d.color;ctx.shadowBlur=8;
+  ctx.fillText(d.label, W-14, H-42);
+  // speed bar
+  const barW=60, barH=3, barX=W-14-barW, barY=H-36;
+  const pct=Math.min((currentSpeed-BASE_SPEED)/(MAX_SPEED-BASE_SPEED),1);
+  ctx.globalAlpha=0.25;ctx.fillStyle='#fff';
+  ctx.fillRect(barX,barY,barW,barH);
+  ctx.globalAlpha=1;ctx.fillStyle=d.color;ctx.shadowBlur=6;
+  ctx.fillRect(barX,barY,barW*pct,barH);
   ctx.restore();
 }
 
@@ -706,64 +723,58 @@ function draw(){
   drawParticles();
   drawBird(bird.x,bird.y,bird.angle);
   drawFloatingScore();
+  drawDiffBadge();
 }
 
 /* ---- OVERLAYS ---- */
 function drawOverlayBox(x,y,w,h,bc){
-  ctx.save();
-  ctx.fillStyle='rgba(10,14,32,0.93)';
-  roundRect(ctx,x,y,w,h,[16,16,16,16]); ctx.fill();
-  ctx.strokeStyle=bc; ctx.lineWidth=1.5;
-  ctx.globalAlpha=0.65; ctx.shadowColor=bc; ctx.shadowBlur=18;
-  roundRect(ctx,x,y,w,h,[16,16,16,16]); ctx.stroke();
-  ctx.restore();
+  ctx.save();ctx.fillStyle='rgba(10,14,32,0.93)';
+  roundRect(ctx,x,y,w,h,[16,16,16,16]);ctx.fill();
+  ctx.strokeStyle=bc;ctx.lineWidth=1.5;ctx.globalAlpha=0.65;ctx.shadowColor=bc;ctx.shadowBlur=18;
+  roundRect(ctx,x,y,w,h,[16,16,16,16]);ctx.stroke();ctx.restore();
 }
 
 function drawIdle(){
-  drawBg();
-  drawBird(bird.x,bird.y,0);
-  drawOverlayBox(W/2-170,H/2-72,340,138,CYAN);
-  ctx.save();
-  ctx.font='900 40px Orbitron, sans-serif'; ctx.textAlign='center';
-  ctx.fillStyle=CYAN; ctx.shadowColor=CYAN; ctx.shadowBlur=22;
-  ctx.fillText('FLAPPY JEJ',W/2,H/2-14); ctx.shadowBlur=0;
-  ctx.font='400 11px Share Tech Mono, monospace';
-  ctx.fillStyle='rgba(255,255,255,0.38)';
-  ctx.fillText('CLIC / ESPACE POUR JOUER',W/2,H/2+22);
+  drawBg();drawBird(bird.x,bird.y,0);
+  drawOverlayBox(W/2-170,H/2-76,340,148,CYAN);
+  ctx.save();ctx.font='900 40px Orbitron, sans-serif';ctx.textAlign='center';
+  ctx.fillStyle=CYAN;ctx.shadowColor=CYAN;ctx.shadowBlur=22;
+  ctx.fillText('FLAPPY JEJ',W/2,H/2-18);ctx.shadowBlur=0;
+  ctx.font='400 11px Share Tech Mono, monospace';ctx.fillStyle='rgba(255,255,255,0.38)';
+  ctx.fillText('CLIC / ESPACE POUR JOUER',W/2,H/2+20);
   if(currentUser){
-    ctx.font='700 10px Share Tech Mono, monospace';
-    ctx.fillStyle='rgba(46,204,113,0.7)';
-    ctx.fillText('✓ '+currentUser.pseudo.toUpperCase()+'  ·  +'+COINS_PER_POINT+' M$ PAR POINT',W/2,H/2+50);
+    ctx.font='700 10px Share Tech Mono, monospace';ctx.fillStyle='rgba(46,204,113,0.7)';
+    ctx.fillText('✓ '+currentUser.pseudo.toUpperCase()+'  ·  +'+COINS_PER_POINT+' M$ PAR POINT',W/2,H/2+46);
   }
   ctx.restore();
 }
 
 function drawDead(){
+  const d=diffLabel();
   draw();
-  ctx.fillStyle='rgba(8,12,28,0.78)'; ctx.fillRect(0,0,W,H);
-  drawOverlayBox(W/2-175,H/2-112,350,230,MAGENTA);
-  ctx.save(); ctx.textAlign='center';
+  ctx.fillStyle='rgba(8,12,28,0.78)';ctx.fillRect(0,0,W,H);
+  drawOverlayBox(W/2-180,H/2-115,360,242,MAGENTA);
+  ctx.save();ctx.textAlign='center';
   ctx.font='900 58px Orbitron, sans-serif';
-  ctx.fillStyle=MAGENTA; ctx.shadowColor=MAGENTA; ctx.shadowBlur=28;
-  ctx.fillText('GAME',W/2,H/2-50); ctx.fillText('OVER',W/2,H/2+6); ctx.shadowBlur=0;
-  ctx.font='400 10px Share Tech Mono, monospace';
-  ctx.fillStyle='rgba(255,255,255,0.35)';
-  ctx.fillText('SCORE  '+score+'   ·   MEILLEUR  '+bestScore,W/2,H/2+44);
-  if(currentUser && score>0){
-    ctx.font='700 11px Share Tech Mono, monospace';
-    ctx.fillStyle='#2ecc71'; ctx.shadowColor='#2ecc71'; ctx.shadowBlur=10;
-    ctx.fillText('+'+score*COINS_PER_POINT+' M$ GAGNÉS !',W/2,H/2+68); ctx.shadowBlur=0;
+  ctx.fillStyle=MAGENTA;ctx.shadowColor=MAGENTA;ctx.shadowBlur=28;
+  ctx.fillText('GAME',W/2,H/2-52);ctx.fillText('OVER',W/2,H/2+4);ctx.shadowBlur=0;
+  ctx.font='400 10px Share Tech Mono, monospace';ctx.fillStyle='rgba(255,255,255,0.35)';
+  ctx.fillText('SCORE  '+score+'   ·   MEILLEUR  '+bestScore,W/2,H/2+40);
+  if(currentUser&&score>0){
+    ctx.font='700 11px Share Tech Mono, monospace';ctx.fillStyle='#2ecc71';ctx.shadowColor='#2ecc71';ctx.shadowBlur=10;
+    ctx.fillText('+'+score*COINS_PER_POINT+' M$ GAGNÉS !',W/2,H/2+66);ctx.shadowBlur=0;
   }
-  ctx.font='700 11px Share Tech Mono, monospace';
-  ctx.fillStyle=CYAN; ctx.shadowColor=CYAN; ctx.shadowBlur=10;
-  ctx.fillText('[ CLIC / ESPACE POUR REJOUER ]',W/2,H/2+96);
+  ctx.font='700 10px Share Tech Mono, monospace';ctx.fillStyle=d.color;ctx.shadowColor=d.color;ctx.shadowBlur=8;
+  ctx.fillText('NIVEAU ATTEINT : '+d.label,W/2,H/2+90);ctx.shadowBlur=0;
+  ctx.font='700 11px Share Tech Mono, monospace';ctx.fillStyle=CYAN;ctx.shadowColor=CYAN;ctx.shadowBlur=10;
+  ctx.fillText('[ CLIC / ESPACE POUR REJOUER ]',W/2,H/2+116);
   ctx.restore();
 }
 
 /* ---- LOOP ---- */
 function loop(){
   if(state!=='playing') return;
-  update(); draw();
+  update();draw();
   raf=requestAnimationFrame(loop);
 }
 
