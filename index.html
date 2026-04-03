@@ -200,6 +200,63 @@
             color: #555;
         }
 
+        /* WIDGET CLASSEMENT RICHESSE (EN HAUT À DROITE) */
+        #richestWidget {
+            display: none;
+            position: fixed;
+            top: 115px; /* S'affiche juste en dessous des boutons flottants */
+            right: 40px;
+            z-index: 49;
+            width: 250px;
+            background: rgba(14, 14, 18, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(241, 196, 15, 0.4);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 20px rgba(241, 196, 15, 0.1);
+        }
+        .richest-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(241, 196, 15, 0.2);
+            background: rgba(241, 196, 15, 0.1);
+        }
+        .richest-title {
+            font-family: 'Bebas Neue';
+            font-size: 16px;
+            color: #f1c40f;
+            letter-spacing: 1px;
+        }
+        .richest-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .richest-item:last-child { border-bottom: none; }
+        .richest-player {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #ddd;
+            font-weight: bold;
+        }
+        .richest-player img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #555;
+        }
+        .richest-score {
+            font-family: 'Bebas Neue';
+            font-size: 16px;
+            color: #f1c40f;
+        }
     </style>
 </head>
 <body>
@@ -214,6 +271,16 @@
         </div>
         <div class="floating-btn" onclick="openProfileModal()" title="Mon Profil">
             <img id="floatingAvatarSrc" src="" alt="Profil">
+        </div>
+    </div>
+
+    <!-- WIDGET CLASSEMENT RICHESSE (M$) -->
+    <div id="richestWidget">
+        <div class="richest-header">
+            <span class="richest-title">💰 LES PLUS RICHES</span>
+        </div>
+        <div id="widgetRichestList">
+            <div class="widget-empty" style="padding: 14px; text-align: center; font-size: 11px; color: #555;">Chargement...</div>
         </div>
     </div>
 
@@ -280,10 +347,16 @@
                     <div class="game-info"><h2>Gamble le JEJ</h2><span>Casino & Chance</span></div>
                 </a>
 
+                <!-- BLACKJACK MAUBEUGE -->
+                <a href="blackjack/index.html" class="game-card">
+                    <img src="images/vignette-blackjack.png" class="game-thumbnail" onerror="this.src='https://via.placeholder.com/400x190/111/fff?text=BLACKJACK'">
+                    <div class="game-info"><h2>Blackjack</h2><span>Contre le Croupier</span></div>
+                </a>
+
                 <!-- CARREFOUR MAUBEUGE -->
-                <a href="carrefour/index.html" class="game-card" style="border-color: #27ae60; box-shadow: 0 0 20px rgba(39, 174, 96, 0.2);">
-                    <img src="images/carrefour-vignette.png" class="game-thumbnail" onerror="this.src='https://via.placeholder.com/400x190/111/27ae60?text=CARREFOUR+MAUBEUGE'">
-                    <div class="game-info"><h2 style="color: #27ae60; text-shadow: 0 0 10px rgba(39,174,96,0.5);">Carrefour Maubeuge</h2><span>Marché Prédictif</span></div>
+                <a href="carrefour/index.html" class="game-card">
+                    <img src="images/carrefour-vignette.png" class="game-thumbnail" onerror="this.src='https://via.placeholder.com/400x190/111/fff?text=CARREFOUR+MAUBEUGE'">
+                    <div class="game-info"><h2>Carrefour Maubeuge</h2><span>Marché Prédictif</span></div>
                 </a>
 
                 <!-- TCG MAUBEUGE -->
@@ -292,9 +365,10 @@
                     <div class="game-info"><h2>TCG Maubeuge</h2><span>Cartes à collectionner</span></div>
                 </a>
 
-                <a href="flappy/index.html" class="game-card" style="border-color: #00FFFF; box-shadow: 0 0 20px rgba(0,255,255,0.15);">
-                    <img src="images/flappy-vignette.png" class="game-thumbnail" onerror="this.src='https://via.placeholder.com/400x190/0b0c10/00FFFF?text=FLAPPY+JEJ'">
-                    <div class="game-info"><h2 style="color: #00FFFF; text-shadow: 0 0 10px rgba(0,255,255,0.5);">Flappy JEJ</h2><span>Jeu Solo</span></div>
+                <!-- FLAPPY JEJ -->
+                <a href="flappy/index.html" class="game-card">
+                    <img src="images/flappy-vignette.png" class="game-thumbnail" onerror="this.src='https://via.placeholder.com/400x190/111/fff?text=FLAPPY+JEJ'">
+                    <div class="game-info"><h2>Flappy JEJ</h2><span>Jeu Solo</span></div>
                 </a>
 
             </div>
@@ -332,21 +406,28 @@
 
             <div class="avatar-picker">
                 <button class="auth-btn btn-outline" style="font-size: 13px; padding: 10px; width: auto;" onclick="toggleAvatarGrid()">Changer d'avatar de profil</button>
-                <div class="avatar-grid-container" id="avatarGridContainer">
-                    </div>
+                <div class="avatar-grid-container" id="avatarGridContainer"></div>
             </div>
 
             <button class="logout-btn" onclick="logout()">Déconnexion</button>
         </div>
     </div>
 
+    <!-- MODAL LEADERBOARD GÉNÉRAL -->
     <div id="leaderboardModal" class="modal" onclick="if(event.target === this) closeLeaderboardModal()">
-        <div class="modal-content" style="max-width: 700px;">
+        <div class="modal-content" style="max-width: 800px;">
             <span class="close-btn" onclick="closeLeaderboardModal()">&times;</span>
             
             <h2 style="font-family: 'Bebas Neue'; font-size: 50px; color: var(--yellow); text-align: center; margin-bottom: 30px; text-shadow: 0 0 15px rgba(241,196,15,0.5); letter-spacing: 2px;">CLASSEMENT GÉNÉRAL</h2>
 
             <div class="modal-grid">
+                
+                <!-- On ajoute l'argent dans le grand Leaderboard aussi -->
+                <div class="lb-section" style="grid-column: 1 / -1;">
+                    <h3 style="color: var(--yellow); border-bottom-color: rgba(241,196,15,0.3);">💰 Les Plus Riches (M$)</h3>
+                    <div id="lb-wallet" class="lb-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">Chargement...</div>
+                </div>
+
                 <div class="lb-section">
                     <h3>Bingoudalo</h3>
                     <div id="lb-bingo" class="lb-list">Chargement...</div>
@@ -470,10 +551,15 @@
     function onLoginSuccess() {
         document.getElementById('floatingControls').style.display = 'flex';
         document.getElementById('marketsWidget').style.display = 'block';
+        document.getElementById('richestWidget').style.display = 'block';
         updateDashboardUI();
         showView('appView');
+        
         loadMarketsWidget();
+        loadRichestWidget();
+        
         setInterval(loadMarketsWidget, 5000);
+        setInterval(loadRichestWidget, 10000);
     }
 
     function logout() {
@@ -483,6 +569,7 @@
         document.getElementById('passwordInput').value = '';
         document.getElementById('floatingControls').style.display = 'none';
         document.getElementById('marketsWidget').style.display = 'none';
+        document.getElementById('richestWidget').style.display = 'none';
         closeProfileModal();
         closeLeaderboardModal();
         showError("");
@@ -622,6 +709,25 @@
         }).join('');
     }
 
+    // --- WIDGET CLASSEMENT RICHESSE (M$) ---
+    async function loadRichestWidget() {
+        try {
+            const { data, error } = await sb.from('cdsi_users').select('pseudo, avatar, wallet').order('wallet', { ascending: false }).limit(5);
+            if(error || !data) return;
+
+            const list = document.getElementById('widgetRichestList');
+            list.innerHTML = data.map((u, i) => `
+            <div class="richest-item">
+                <div class="richest-player">
+                    <span style="color:#aaa; width: 12px;">${i+1}.</span>
+                    <img src="${u.avatar || 'https://via.placeholder.com/24'}" onerror="this.src='https://via.placeholder.com/24'">
+                    ${u.pseudo}
+                </div>
+                <div class="richest-score">${Math.floor(u.wallet || 0)} M$</div>
+            </div>`).join('');
+        } catch(e) { /* silencieux */ }
+    }
+
 
     function openLeaderboardModal() {
         document.getElementById('leaderboardModal').style.display = 'flex';
@@ -636,6 +742,8 @@
         const { data, error } = await sb.from('cdsi_users').select('*');
         if (error || !data) return;
 
+        // Appel de renderLbList pour chaque catégorie
+        document.getElementById('lb-wallet').innerHTML = renderLbList(data, 'wallet', 'M$');
         document.getElementById('lb-bingo').innerHTML = renderLbList(data, 'bingoudalo_wins', 'victoires');
         document.getElementById('lb-kavale').innerHTML = renderLbList(data, 'kavale_wins', 'victoires');
         document.getElementById('lb-wanted').innerHTML = renderLbList(data, 'wanted_wins', 'victoires');
@@ -644,7 +752,10 @@
 
     function renderLbList(users, field, suffix) {
         let sorted = [...users].sort((a, b) => (b[field] || 0) - (a[field] || 0));
-        sorted = sorted.filter(u => (u[field] || 0) > 0).slice(0, 5);
+        
+        // Pour l'argent on prend le top 6 par exemple, pour les autres on garde top 5
+        let limit = field === 'wallet' ? 6 : 5;
+        sorted = sorted.filter(u => (u[field] || 0) > 0).slice(0, limit);
 
         if (sorted.length === 0) {
             return "<div style='text-align:center; color:#aaa; font-size: 13px; padding: 15px;'>Aucun score enregistré</div>";
