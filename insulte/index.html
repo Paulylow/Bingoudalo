@@ -284,7 +284,7 @@ async function selectChoice(choiceIndex) {
         `<span style="color: #e74c3c; font-weight: bold;">${currentData.name} :</span> ${selectedChoice.reply}`;
 
     // On donne 10 M$ de récompense pour le clash (optionnel, mais ça motive !)
-    await rewardPlayer(-10);
+    await rewardPlayer(1);
 
     // Afficher le bouton Suivant
     document.getElementById('nextContainer').style.display = 'flex';
