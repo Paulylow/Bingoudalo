@@ -1333,7 +1333,7 @@ function saveGame() {
     // 2. Push vers Supabase en arrière-plan (lié au compte, pas au PC)
     if (myPseudo) {
         sb.from('cdsi_users')
-          .update({ franclick_save: raw, franclick_score: Math.floor(score) })
+          .update({ franclick_save: raw, franclick_score: Math.floor(bps) })
           .eq('pseudo', myPseudo)
           .then(({ error }) => { if (error) console.warn('Save DB:', error.message); });
     }
