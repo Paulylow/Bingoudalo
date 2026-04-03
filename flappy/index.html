@@ -269,7 +269,7 @@
 </head>
 <body>
 
-<a id="hub-btn" href="https://bingoudalo.vercel.app/index.html">
+<a id="hub-btn" href="../index.html">
   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
     <path d="M8.5 2L3.5 7L8.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
@@ -336,7 +336,7 @@
     </div>
   </div>
 
-</div><!-- end page-layout -->
+</div>
 
 <script>
 /* =====================================================
@@ -347,7 +347,10 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentUser = null;
-let walletLocal  = 0;
+
+/* VARIABLES DE PROTECTION SYNCHRONISATION */
+let baseWallet = 0;
+let pendingCoins = 0;
 const COINS_PER_POINT = 2;
 
 async function hashPassword(p) {
@@ -365,8 +368,10 @@ async function authLogin() {
   if (error||!data) return showAuthError("Ce pseudo n'existe pas.");
   if (data.password!==hash) return showAuthError('Mot de passe incorrect.');
   localStorage.setItem('cdsi_logged_user',pseudo);
-  currentUser=data; onAuthSuccess();
+  currentUser=data; 
+  onAuthSuccess();
 }
+
 async function authRegister() {
   const pseudo = document.getElementById('authPseudo').value.trim();
   const pwd    = document.getElementById('authPassword').value;
@@ -380,50 +385,81 @@ async function authRegister() {
   const {error} = await sb.from('cdsi_users').insert([newUser]);
   if (error) return showAuthError('Erreur lors de la création.');
   localStorage.setItem('cdsi_logged_user',pseudo);
-  currentUser=newUser; onAuthSuccess();
+  currentUser=newUser; 
+  onAuthSuccess();
 }
+
 function playAsGuest() {
   currentUser=null;
   document.getElementById('authOverlay').classList.remove('visible');
   loadLeaderboard();
 }
-function onAuthSuccess() {
+
+async function onAuthSuccess() {
   document.getElementById('authOverlay').classList.remove('visible');
-  walletLocal = currentUser.wallet||0;
-  bestScore   = currentUser.flappy_best||0;
-  updateHUD(); refreshUserBar();
+  bestScore = currentUser.flappy_best||0;
+
+  // IMPORTANT : On récupère l'argent réel en BDD au moment où on se connecte
+  const { data } = await sb.from('cdsi_users').select('wallet').eq('pseudo', currentUser.pseudo).single();
+  baseWallet = data ? parseFloat(data.wallet || 0) : (currentUser.wallet || 0);
+
+  updateHUD(); 
+  refreshUserBar();
   showToast('✓ CONNECTÉ : '+currentUser.pseudo.toUpperCase());
   loadLeaderboard();
 }
+
 function refreshUserBar() {
   if (!currentUser) { document.getElementById('userBar').classList.remove('visible'); return; }
   document.getElementById('userBar').classList.add('visible');
-  document.getElementById('walletDisplay').textContent = Math.floor(walletLocal)+' M$';
+  document.getElementById('walletDisplay').textContent = Math.floor(baseWallet + pendingCoins)+' M$';
   document.getElementById('userAvatarImg').src = currentUser.avatar||'';
 }
+
 async function earnCoins(pts) {
   if (!currentUser) return;
-  walletLocal += pts*COINS_PER_POINT;
-  document.getElementById('walletDisplay').textContent = Math.floor(walletLocal)+' M$';
+  pendingCoins += pts * COINS_PER_POINT;
+  document.getElementById('walletDisplay').textContent = Math.floor(baseWallet + pendingCoins)+' M$';
   const pill=document.getElementById('walletPill');
   pill.classList.add('earning','wallet-pop');
   setTimeout(()=>pill.classList.remove('earning','wallet-pop'),500);
+  
   if (score%5===0) await flushStats();
 }
+
 async function flushStats(isFinal=false) {
   if (!currentUser) return;
-  const upd={wallet:Math.floor(walletLocal)};
+  let upd = {};
+
+  // On n'écrase pas l'argent. On ajoute l'argent gagné au VRAI solde actuel de la base de données.
+  if (pendingCoins > 0) {
+    const { data } = await sb.from('cdsi_users').select('wallet').eq('pseudo', currentUser.pseudo).single();
+    let realWallet = data ? parseFloat(data.wallet || 0) : 0;
+
+    let newWallet = realWallet + pendingCoins;
+    upd.wallet = Math.floor(newWallet);
+
+    pendingCoins = 0;
+    baseWallet = newWallet;
+    document.getElementById('walletDisplay').textContent = Math.floor(baseWallet)+' M$';
+  }
+
   if (isFinal && score>(currentUser.flappy_best||0)) {
     upd.flappy_best=score;
     currentUser.flappy_best=score;
   }
-  await sb.from('cdsi_users').update(upd).eq('pseudo',currentUser.pseudo);
-  currentUser.wallet=Math.floor(walletLocal);
+
+  if (Object.keys(upd).length > 0) {
+     await sb.from('cdsi_users').update(upd).eq('pseudo',currentUser.pseudo);
+     if (upd.wallet !== undefined) currentUser.wallet = upd.wallet;
+  }
 }
+
 function toggleUserInfo() {
   if (!currentUser) return;
   showToast('👤 '+currentUser.pseudo.toUpperCase()+'  ·  BEST: '+(currentUser.flappy_best||0)+' pts');
 }
+
 window.addEventListener('load', async ()=>{
   const saved=localStorage.getItem('cdsi_logged_user');
   if (saved) {
