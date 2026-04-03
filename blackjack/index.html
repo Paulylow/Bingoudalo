@@ -32,6 +32,18 @@
   
   .hand-section { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 250px; position: relative; }
   
+  /* AVATAR DU CROUPIER */
+  .dealer-avatar {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      border: 3px solid #f1c40f;
+      object-fit: cover;
+      margin-bottom: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+      background: #111;
+  }
+
   .score-badge { font-family: 'Bebas Neue'; font-size: 24px; background: rgba(0,0,0,0.6); padding: 5px 15px; border-radius: 10px; border: 1px solid #555; margin-bottom: 15px; letter-spacing: 1px;}
   
   .cards-container { display: flex; gap: -50px; justify-content: center; height: 160px;}
@@ -143,6 +155,9 @@
     
     <!-- CROUPIER -->
     <div class="hand-section" id="dealer-section">
+        <!-- IMAGE DU CROUPIER ICI -->
+        <img src="croupier.png" alt="Croupier" class="dealer-avatar" onerror="this.src='https://via.placeholder.com/90x90/111/f1c40f?text=CROUPIER'">
+        
         <div class="score-badge">CROUPIER : <span id="dealer-score">?</span></div>
         <div class="cards-container" id="dealer-cards">
             <!-- Cartes injectées ici -->
