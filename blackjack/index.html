@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BLACKJACK MAUBEUGE 🃏</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; font-family: 'DM Sans', sans-serif; }
+  
+  /* Fond Table de Casino */
+  body { 
+      background: radial-gradient(circle at center, #0a3a2a 0%, #02120b 100%); 
+      color: #fff; 
+      min-height: 100vh; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      overflow: hidden;
+  }
+
+  /* --- TOP BAR --- */
+  .top-bar { position: fixed; top: 0; left: 0; width: 100%; padding: 15px 30px; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); z-index: 100;}
+  .logo { font-family: 'Bebas Neue'; font-size: 30px; color: #f1c40f; letter-spacing: 2px; text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);}
+  .wallet-pill { background: rgba(39, 174, 96, 0.2); border: 2px solid #27ae60; padding: 8px 20px; border-radius: 20px; color: #2ecc71; font-family: 'Bebas Neue'; font-size: 22px; letter-spacing: 1px; box-shadow: 0 0 10px rgba(39, 174, 96, 0.3);}
+  .hub-link { color: #aaa; text-decoration: none; font-weight: bold; transition: 0.2s; text-transform: uppercase; font-size: 14px;}
+  .hub-link:hover { color: #fff; }
+
+  /* --- GAME AREA --- */
+  .game-area { flex: 1; width: 100%; max-width: 1000px; padding-top: 80px; display: flex; flex-direction: column; justify-content: space-between; position: relative;}
+  
+  .hand-section { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 250px; position: relative; }
+  
+  .score-badge { font-family: 'Bebas Neue'; font-size: 24px; background: rgba(0,0,0,0.6); padding: 5px 15px; border-radius: 10px; border: 1px solid #555; margin-bottom: 15px; letter-spacing: 1px;}
+  
+  .cards-container { display: flex; gap: -50px; justify-content: center; height: 160px;}
+
+  /* --- CARTES CSS --- */
+  .playing-card {
+      width: 110px;
+      height: 160px;
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      box-shadow: 2px 5px 15px rgba(0,0,0,0.5);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 10px;
+      font-size: 24px;
+      font-weight: bold;
+      position: relative;
+      margin-left: -50px; /* Chevauchement */
+      transition: transform 0.3s;
+      animation: dealCard 0.4s ease-out forwards;
+  }
+  .playing-card:first-child { margin-left: 0; }
+  .playing-card.red { color: #e74c3c; }
+  .playing-card.black { color: #2c3e50; }
+  
+  .card-top { align-self: flex-start; line-height: 1; }
+  .card-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 50px; opacity: 0.2; }
+  .card-bottom { align-self: flex-end; transform: rotate(180deg); line-height: 1;}
+
+  .card-hidden {
+      background: repeating-linear-gradient(45deg, #111, #111 10px, #b22222 10px, #b22222 20px);
+      border: 2px solid #fff;
+      color: transparent !important;
+  }
+  .card-hidden .card-center, .card-hidden .card-top, .card-hidden .card-bottom { display: none; }
+
+  @keyframes dealCard {
+      from { transform: translateY(-200px) rotate(-20deg); opacity: 0; }
+      to { transform: translateY(0) rotate(0); opacity: 1; }
+  }
+
+  /* --- BETTING & CONTROLS --- */
+  .controls-area {
+      background: rgba(0,0,0,0.8);
+      border-top: 2px solid #f1c40f;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      border-radius: 20px 20px 0 0;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
+  }
+
+  .betting-phase, .playing-phase { display: flex; gap: 15px; }
+  .playing-phase { display: none; }
+
+  .btn { font-family: 'Bebas Neue'; font-size: 22px; letter-spacing: 2px; padding: 12px 30px; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
+  
+  .btn-bet { background: transparent; border: 2px solid #f1c40f; color: #f1c40f; }
+  .btn-bet:hover { background: rgba(241, 196, 15, 0.2); }
+  
+  .btn-action { background: #3498db; color: white; box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);}
+  .btn-action:hover { background: #2980b9; transform: translateY(-2px); }
+  
+  .btn-stand { background: #e67e22; box-shadow: 0 5px 15px rgba(230, 126, 34, 0.4);}
+  .btn-stand:hover { background: #d35400; }
+  
+  .btn-double { background: #9b59b6; box-shadow: 0 5px 15px rgba(155, 89, 182, 0.4);}
+  .btn-double:hover { background: #8e44ad; }
+
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+  /* --- MESSAGES --- */
+  .message-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'Bebas Neue';
+      font-size: 60px;
+      letter-spacing: 4px;
+      text-align: center;
+      z-index: 50;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s;
+      text-shadow: 0 10px 30px rgba(0,0,0,0.8);
+  }
+  .msg-win { color: #f1c40f; text-shadow: 0 0 30px #f1c40f; }
+  .msg-lose { color: #e74c3c; text-shadow: 0 0 30px #e74c3c; }
+  .msg-push { color: #bdc3c7; }
+
+  .bet-display { font-family: 'Bebas Neue'; font-size: 24px; color: #f1c40f; margin-bottom: 10px; letter-spacing: 1px;}
+
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+    <a href="../index.html" class="hub-link">← Retour au Hub</a>
+    <div class="logo">BLACKJACK MAUBEUGE</div>
+    <div class="wallet-pill">💰 <span id="myWallet">0</span> M$</div>
+</div>
+
+<div class="game-area">
+    
+    <!-- CROUPIER -->
+    <div class="hand-section" id="dealer-section">
+        <div class="score-badge">CROUPIER : <span id="dealer-score">?</span></div>
+        <div class="cards-container" id="dealer-cards">
+            <!-- Cartes injectées ici -->
+        </div>
+    </div>
+
+    <!-- MESSAGE CENTRAL -->
+    <div class="message-overlay" id="game-message"></div>
+
+    <!-- JOUEUR -->
+    <div class="hand-section" id="player-section">
+        <div class="cards-container" id="player-cards">
+            <!-- Cartes injectées ici -->
+        </div>
+        <div class="score-badge" style="margin-top: 15px; margin-bottom: 0;">MON SCORE : <span id="player-score">0</span></div>
+    </div>
+
+    <!-- CONTRÔLES -->
+    <div class="controls-area">
+        <div class="bet-display" id="betDisplay">SÉLECTIONNE TA MISE</div>
+        
+        <!-- Phase de mise -->
+        <div class="betting-phase" id="bettingPhase">
+            <button class="btn btn-bet" onclick="placeBet(10)">10 M$</button>
+            <button class="btn btn-bet" onclick="placeBet(50)">50 M$</button>
+            <button class="btn btn-bet" onclick="placeBet(100)">100 M$</button>
+            <button class="btn btn-bet" onclick="placeBet(500)">500 M$</button>
+            <button class="btn btn-bet" style="color: #e74c3c; border-color: #e74c3c;" onclick="placeBet('ALL')">ALL IN</button>
+        </div>
+
+        <!-- Phase de jeu -->
+        <div class="playing-phase" id="playingPhase">
+            <button class="btn btn-action" id="btnHit" onclick="hit()">TIRER</button>
+            <button class="btn btn-stand" id="btnStand" onclick="stand()">RESTER</button>
+            <button class="btn btn-double" id="btnDouble" onclick="doubleDown()">DOUBLER</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// --- CONFIGURATION SUPABASE ---
+const SUPABASE_URL = 'https://pdybshweyfvxzvngnuxe.supabase.co'; 
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkeWJzaHdleWZ2eHp2bmdudXhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDg2MDAsImV4cCI6MjA5MDUyNDYwMH0.u442X28Mhs-4T-tydabnMm8now8VfAEeNU-Sicuipq4'; 
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let myPseudo = '';
+let myWallet = 0;
+
+// Variables de jeu
+let deck = [];
+let playerHand = [];
+let dealerHand = [];
+let currentBet = 0;
+let gameState = 'betting'; // betting, playing, over
+
+// --- INITIALISATION ---
+window.onload = async () => {
+    myPseudo = localStorage.getItem('cdsi_logged_user');
+    if (!myPseudo || myPseudo === 'null') { window.location.href = '../index.html'; return; }
+    await fetchUserWallet();
+};
+
+async function fetchUserWallet() {
+    const { data } = await sb.from('cdsi_users').select('wallet').eq('pseudo', myPseudo).single();
+    if(data) {
+        myWallet = Math.floor(parseFloat(data.wallet || 0));
+        document.getElementById('myWallet').innerText = myWallet;
+    }
+}
+
+async function updateUserWallet(newAmount) {
+    myWallet = Math.floor(newAmount);
+    document.getElementById('myWallet').innerText = myWallet;
+    await sb.from('cdsi_users').update({ wallet: myWallet }).eq('pseudo', myPseudo);
+}
+
+// --- LOGIQUE DU PAQUET DE CARTES ---
+function buildDeck() {
+    deck = [];
+    const suits = ['♠', '♥', '♦', '♣'];
+    const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+    
+    // On met 4 jeux de cartes pour éviter de tomber à court
+    for(let d = 0; d < 4; d++) {
+        for (let suit of suits) {
+            for (let value of values) {
+                deck.push({ suit, value });
+            }
+        }
+    }
+    // Mélange de Fisher-Yates
+    for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+}
+
+function getCardValue(card) {
+    if (['J', 'Q', 'K'].includes(card.value)) return 10;
+    if (card.value === 'A') return 11;
+    return parseInt(card.value);
+}
+
+function calculateScore(hand) {
+    let score = 0;
+    let aces = 0;
+    
+    for (let card of hand) {
+        let val = getCardValue(card);
+        if (val === 11) aces += 1;
+        score += val;
+    }
+    
+    // Si on dépasse 21 et qu'on a des As, les As valent 1 au lieu de 11
+    while (score > 21 && aces > 0) {
+        score -= 10;
+        aces -= 1;
+    }
+    return score;
+}
+
+// --- RENDU GRAPHIQUE ---
+function renderCard(card, isHidden = false) {
+    let colorClass = (card.suit === '♥' || card.suit === '♦') ? 'red' : 'black';
+    if (isHidden) {
+        return `<div class="playing-card card-hidden"></div>`;
+    }
+    return `
+        <div class="playing-card ${colorClass}">
+            <div class="card-top">${card.value}${card.suit}</div>
+            <div class="card-center">${card.suit}</div>
+            <div class="card-bottom">${card.value}${card.suit}</div>
+        </div>
+    `;
+}
+
+function updateBoard(revealDealer = false) {
+    const playerContainer = document.getElementById('player-cards');
+    const dealerContainer = document.getElementById('dealer-cards');
+    
+    // Joueur
+    playerContainer.innerHTML = playerHand.map(c => renderCard(c)).join('');
+    document.getElementById('player-score').innerText = calculateScore(playerHand);
+    
+    // Croupier
+    if (!revealDealer && dealerHand.length > 0) {
+        // Cache la deuxième carte du croupier
+        dealerContainer.innerHTML = renderCard(dealerHand[0]) + renderCard(dealerHand[1], true);
+        document.getElementById('dealer-score').innerText = getCardValue(dealerHand[0]); // Affiche juste le score de la carte visible
+    } else {
+        dealerContainer.innerHTML = dealerHand.map(c => renderCard(c)).join('');
+        document.getElementById('dealer-score').innerText = calculateScore(dealerHand);
+    }
+}
+
+// --- ACTIONS DE JEU ---
+
+async function placeBet(amount) {
+    await fetchUserWallet(); // Vérif de sécurité
+    
+    let betAmount = amount === 'ALL' ? myWallet : amount;
+    
+    if (myWallet < betAmount || betAmount <= 0) {
+        alert("Fonds insuffisants !");
+        return;
+    }
+    
+    currentBet = betAmount;
+    await updateUserWallet(myWallet - currentBet); // On prélève la mise
+    
+    document.getElementById('betDisplay').innerText = `MISE : ${currentBet} M$`;
+    document.getElementById('bettingPhase').style.display = 'none';
+    document.getElementById('playingPhase').style.display = 'flex';
+    document.getElementById('game-message').style.opacity = '0';
+    
+    startGame();
+}
+
+function startGame() {
+    buildDeck();
+    playerHand = [deck.pop(), deck.pop()];
+    dealerHand = [deck.pop(), deck.pop()];
+    
+    gameState = 'playing';
+    
+    // Réactiver le bouton double
+    document.getElementById('btnDouble').disabled = false;
+    
+    updateBoard();
+    
+    // Check Blackjack naturel du joueur
+    let pScore = calculateScore(playerHand);
+    if (pScore === 21) {
+        endGame('blackjack');
+    }
+}
+
+function hit() {
+    if (gameState !== 'playing') return;
+    
+    // Dès qu'on tire une carte, on ne peut plus doubler
+    document.getElementById('btnDouble').disabled = true;
+    
+    playerHand.push(deck.pop());
+    updateBoard();
+    
+    let pScore = calculateScore(playerHand);
+    if (pScore > 21) {
+        endGame('bust');
+    } else if (pScore === 21) {
+        stand(); // Forcer le stand si on fait 21
+    }
+}
+
+async function doubleDown() {
+    if (gameState !== 'playing') return;
+    
+    // Vérifier si assez d'argent pour doubler
+    await fetchUserWallet();
+    if (myWallet < currentBet) {
+        alert("Pas assez d'argent pour doubler !");
+        return;
+    }
+    
+    // Prélèvement de la deuxième mise
+    await updateUserWallet(myWallet - currentBet);
+    currentBet *= 2;
+    document.getElementById('betDisplay').innerText = `MISE : ${currentBet} M$ (DOUBLÉ)`;
+    
+    // Tire 1 seule carte puis force le stand
+    playerHand.push(deck.pop());
+    updateBoard();
+    
+    if (calculateScore(playerHand) > 21) {
+        endGame('bust');
+    } else {
+        stand();
+    }
+}
+
+function stand() {
+    if (gameState !== 'playing') return;
+    gameState = 'dealerTurn';
+    
+    document.getElementById('btnHit').disabled = true;
+    document.getElementById('btnStand').disabled = true;
+    document.getElementById('btnDouble').disabled = true;
+    
+    updateBoard(true); // Révèle la carte du croupier
+    playDealer();
+}
+
+function playDealer() {
+    let dScore = calculateScore(dealerHand);
+    
+    const drawInterval = setInterval(() => {
+        if (dScore < 17) {
+            dealerHand.push(deck.pop());
+            updateBoard(true);
+            dScore = calculateScore(dealerHand);
+        } else {
+            clearInterval(drawInterval);
+            checkWinner();
+        }
+    }, 800); // 800ms de délai entre chaque carte tirée par le croupier
+}
+
+async function checkWinner() {
+    let pScore = calculateScore(playerHand);
+    let dScore = calculateScore(dealerHand);
+    
+    if (dScore > 21) {
+        endGame('dealerBust');
+    } else if (pScore > dScore) {
+        endGame('win');
+    } else if (pScore < dScore) {
+        endGame('lose');
+    } else {
+        endGame('push');
+    }
+}
+
+async function endGame(reason) {
+    gameState = 'over';
+    updateBoard(true);
+    
+    document.getElementById('btnHit').disabled = false;
+    document.getElementById('btnStand').disabled = false;
+    document.getElementById('btnDouble').disabled = false;
+    
+    let msg = document.getElementById('game-message');
+    
+    if (reason === 'blackjack') {
+        let winAmount = currentBet + (currentBet * 1.5); // Paiement 3:2
+        await updateUserWallet(myWallet + winAmount);
+        msg.innerHTML = `BLACKJACK !<br><span style="font-size:30px">+${winAmount} M$</span>`;
+        msg.className = "message-overlay msg-win";
+    } 
+    else if (reason === 'win' || reason === 'dealerBust') {
+        let winAmount = currentBet * 2; // Paiement 1:1 (récupère mise + gain)
+        await updateUserWallet(myWallet + winAmount);
+        msg.innerHTML = `GAGNÉ !<br><span style="font-size:30px">+${winAmount} M$</span>`;
+        msg.className = "message-overlay msg-win";
+    } 
+    else if (reason === 'push') {
+        await updateUserWallet(myWallet + currentBet); // Récupère sa mise
+        msg.innerHTML = `ÉGALITÉ<br><span style="font-size:30px">MISE RENDUE</span>`;
+        msg.className = "message-overlay msg-push";
+    } 
+    else {
+        // Bust ou Lose
+        msg.innerHTML = `PERDU...`;
+        msg.className = "message-overlay msg-lose";
+    }
+    
+    msg.style.opacity = '1';
+    
+    // Remettre le plateau à zéro après quelques secondes
+    setTimeout(() => {
+        document.getElementById('bettingPhase').style.display = 'flex';
+        document.getElementById('playingPhase').style.display = 'none';
+        document.getElementById('betDisplay').innerText = "NOUVELLE MISE";
+        
+        playerHand = [];
+        dealerHand = [];
+        document.getElementById('player-cards').innerHTML = '';
+        document.getElementById('dealer-cards').innerHTML = '';
+        document.getElementById('player-score').innerText = '0';
+        document.getElementById('dealer-score').innerText = '0';
+        msg.style.opacity = '0';
+        
+    }, 3500);
+}
+</script>
+</body>
+</html>
