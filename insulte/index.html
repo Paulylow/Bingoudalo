@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLASH MAUBEUGE 🗣️</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; font-family: 'DM Sans', sans-serif; }
+  
+  body { 
+      background: radial-gradient(circle at center, #2c0e15 0%, #0a0508 100%); 
+      color: #fff; 
+      min-height: 100vh; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      overflow-x: hidden;
+  }
+
+  /* --- TOP BAR --- */
+  .top-bar { position: fixed; top: 0; left: 0; width: 100%; padding: 15px 30px; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); z-index: 100;}
+  .logo { font-family: 'Bebas Neue'; font-size: 30px; color: #e74c3c; letter-spacing: 2px; text-shadow: 0 0 10px rgba(231, 76, 60, 0.5);}
+  .wallet-pill { background: rgba(39, 174, 96, 0.2); border: 2px solid #27ae60; padding: 8px 20px; border-radius: 20px; color: #2ecc71; font-family: 'Bebas Neue'; font-size: 22px; letter-spacing: 1px;}
+  .hub-link { color: #aaa; text-decoration: none; font-weight: bold; transition: 0.2s; text-transform: uppercase; font-size: 14px;}
+  .hub-link:hover { color: #fff; }
+
+  /* --- GAME AREA --- */
+  .game-area { flex: 1; width: 100%; max-width: 800px; padding-top: 80px; display: flex; flex-direction: column; justify-content: flex-end; position: relative;}
+  
+  /* CHARACTER DISPLAY */
+  .character-stage {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      animation: fadeIn 0.5s ease-out;
+  }
+  
+  .character-img {
+      max-height: 50vh;
+      max-width: 90%;
+      object-fit: contain;
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8));
+      transition: transform 0.3s;
+  }
+  
+  .character-name {
+      font-family: 'Bebas Neue';
+      font-size: 40px;
+      color: #f1c40f;
+      background: rgba(0,0,0,0.7);
+      padding: 5px 20px;
+      border-radius: 10px;
+      border: 2px solid #f1c40f;
+      margin-top: -20px;
+      z-index: 10;
+      letter-spacing: 2px;
+  }
+
+  /* --- DIALOGUE BOX --- */
+  .dialogue-box {
+      background: rgba(20, 20, 30, 0.95);
+      border: 2px solid #e74c3c;
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 30px rgba(231, 76, 60, 0.2);
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+  }
+  
+  .dialogue-text {
+      font-size: 20px;
+      line-height: 1.5;
+      text-align: center;
+      font-style: italic;
+      color: #ddd;
+  }
+
+  /* --- CHOICES AREA --- */
+  .choices-container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      padding-bottom: 30px;
+  }
+  
+  .btn-choice {
+      background: rgba(0, 0, 0, 0.8);
+      border: 2px solid #555;
+      color: #fff;
+      padding: 15px 20px;
+      border-radius: 10px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: 0.2s;
+      text-align: left;
+      font-weight: bold;
+  }
+  
+  .btn-choice:hover {
+      border-color: #e74c3c;
+      background: rgba(231, 76, 60, 0.2);
+      transform: translateX(10px);
+  }
+
+  /* --- NEXT BUTTON --- */
+  .next-container {
+      display: none; /* Caché au début */
+      justify-content: center;
+      padding-bottom: 30px;
+  }
+
+  .btn-next {
+      background: #e74c3c;
+      color: white;
+      font-family: 'Bebas Neue';
+      font-size: 24px;
+      letter-spacing: 2px;
+      padding: 15px 40px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+  }
+
+  .btn-next:hover {
+      background: #c0392b;
+      transform: scale(1.05);
+  }
+
+  @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+  }
+
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+    <a href="../index.html" class="hub-link">← Retour au Hub</a>
+    <div class="logo">CLASH MAUBEUGE</div>
+    <div class="wallet-pill">💰 <span id="myWallet">0</span> M$</div>
+</div>
+
+<div class="game-area">
+    
+    <!-- LA SCÈNE (Le perso) -->
+    <div class="character-stage" id="characterStage">
+        <img src="" id="charImg" class="character-img" alt="Personnage">
+        <div class="character-name" id="charName">NOM DU PERSO</div>
+    </div>
+
+    <!-- LA BOÎTE DE DIALOGUE -->
+    <div class="dialogue-box">
+        <div class="dialogue-text" id="dialogueText">"Qu'est-ce que tu me veux ?"</div>
+    </div>
+
+    <!-- LES 3 CHOIX D'INSULTES -->
+    <div class="choices-container" id="choicesContainer">
+        <button class="btn-choice" onclick="selectChoice(0)" id="choice0">Choix 1</button>
+        <button class="btn-choice" onclick="selectChoice(1)" id="choice1">Choix 2</button>
+        <button class="btn-choice" onclick="selectChoice(2)" id="choice2">Choix 3</button>
+    </div>
+
+    <!-- BOUTON SUIVANT (Après la réponse) -->
+    <div class="next-container" id="nextContainer">
+        <button class="btn-next" onclick="nextCharacter()">Victime Suivante ⏭️</button>
+    </div>
+
+</div>
+
+<script>
+// --- CONFIGURATION SUPABASE ---
+const SUPABASE_URL = 'https://pdybshweyfvxzvngnuxe.supabase.co'; 
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkeWJzaHdleWZ2eHp2bmdudXhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NDg2MDAsImV4cCI6MjA5MDUyNDYwMH0.u442X28Mhs-4T-tydabnMm8now8VfAEeNU-Sicuipq4'; 
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let myPseudo = '';
+let myWallet = 0;
+let currentIndex = 0; // Pour savoir à quel perso on est
+
+// =====================================================================
+// 📝 LA BASE DE DONNÉES DES CLASHS (À REMPLIR PAR TES SOINS !)
+// =====================================================================
+const ENCOUNTERS = [
+    {
+        name: "Matteo",
+        image: "images/victime1.png", // Mets le bon nom de ton image ici
+        intro: '"Ouais tu veux quoi là ?"',
+        choices: [
+            { text: "Phrase 1: Alors sale fils de pute ? Toujours à se lécher les couilles ?  ", reply: '"Oui et mon père me gode le trou du cul"' },
+            { text: "Phrase 2: Ton aimant à bite de femme n'est pas avec toi ?", reply: '"Elle est au Glorys de Créteille, c est une boulangerie"' },
+            { text: "Phrase 3: Pas mal ton nouvel Ep de Gwer", reply: '"T as vu ça negro."' }
+        ]
+    },
+    {
+        name: "Christophe",
+        image: "images/victime2.png", 
+        intro: '"Laisse-moi tranquille je joue."',
+        choices: [
+            { text: "Alors fils de pute t'as trouvé un glitch pour dupliquer l'argent ?", reply: '"Oui je m ennuyais car ma mère n est pas la pour me branler"' },
+            { text: "Bouzaidi t'as donné sa cumsocks ?", reply: '"Oui du 38 elles sont à mes pieds la"' },
+            { text: "Je te souhaite une profonde chiasse", reply: '"*se chie allégrement dessus*"' }
+        ]
+    },
+    {
+        name: "Etienne",
+        image: "images/victime3.png", 
+        intro: '"Vous avez fait l\'exercice pour aujourd\'hui ?"',
+        choices: [
+            { text: "Tu feras gaffes tes pieds ils puent de fou", reply: '"Oui mais c est super utile pour les footjobs bien sombre akhy"' },
+            { text: "Etienne et pourquoi pas gros fils de pute plutot ?", reply: '"Je vais le dire à ma mere qui bosse au conseil de Nuremberg"' },
+            { text: "Lecher moi la bite", reply: '"Et puis quoi encore une femme musulmane prédisente ?"' }
+        ]
+    }
+    // Tu peux copier-coller des blocs { name: ... } pour ajouter autant de persos que tu veux !
+];
+// =====================================================================
+
+// INITIALISATION
+window.onload = async () => {
+    myPseudo = localStorage.getItem('cdsi_logged_user');
+    if (!myPseudo || myPseudo === 'null') { window.location.href = '../index.html'; return; }
+    await fetchUserWallet();
+    loadEncounter(); // Charge le premier personnage
+};
+
+async function fetchUserWallet() {
+    const { data } = await sb.from('cdsi_users').select('wallet').eq('pseudo', myPseudo).single();
+    if(data) {
+        myWallet = Math.floor(parseFloat(data.wallet || 0));
+        document.getElementById('myWallet').innerText = myWallet;
+    }
+}
+
+// CHARGER UN PERSONNAGE À L'ÉCRAN
+function loadEncounter() {
+    const currentData = ENCOUNTERS[currentIndex];
+    
+    // Reset l'animation
+    const stage = document.getElementById('characterStage');
+    stage.style.animation = 'none';
+    stage.offsetHeight; /* trigger reflow */
+    stage.style.animation = 'fadeIn 0.5s ease-out';
+
+    // Mettre à jour l'image et le nom
+    document.getElementById('charImg').src = currentData.image;
+    // Image de secours si tu t'es trompé dans le nom du fichier
+    document.getElementById('charImg').onerror = function() { this.src='https://via.placeholder.com/300x400/111/e74c3c?text=IMG+INTROUVABLE'; };
+    
+    document.getElementById('charName').innerText = currentData.name;
+    document.getElementById('dialogueText').innerHTML = currentData.intro;
+
+    // Mettre à jour les boutons de choix
+    document.getElementById('choice0').innerText = currentData.choices[0].text;
+    document.getElementById('choice1').innerText = currentData.choices[1].text;
+    document.getElementById('choice2').innerText = currentData.choices[2].text;
+
+    // Afficher les choix, cacher le bouton suivant
+    document.getElementById('choicesContainer').style.display = 'flex';
+    document.getElementById('nextContainer').style.display = 'none';
+}
+
+// QUAND LE JOUEUR CLIQUE SUR UNE PHRASE
+async function selectChoice(choiceIndex) {
+    const currentData = ENCOUNTERS[currentIndex];
+    const selectedChoice = currentData.choices[choiceIndex];
+
+    // Cacher les boutons de choix
+    document.getElementById('choicesContainer').style.display = 'none';
+
+    // Afficher la phrase que le joueur vient de dire, puis la réponse du perso
+    document.getElementById('dialogueText').innerHTML = 
+        `<span style="color: #3498db; font-weight: bold;">Toi :</span> "${selectedChoice.text}"<br><br>` +
+        `<span style="color: #e74c3c; font-weight: bold;">${currentData.name} :</span> ${selectedChoice.reply}`;
+
+    // On donne 10 M$ de récompense pour le clash (optionnel, mais ça motive !)
+    await rewardPlayer(10);
+
+    // Afficher le bouton Suivant
+    document.getElementById('nextContainer').style.display = 'flex';
+}
+
+// PASSER AU PERSONNAGE SUIVANT
+function nextCharacter() {
+    currentIndex++;
+    
+    // Si on a fait tous les persos, on recommence au premier (ou on peut faire autre chose)
+    if (currentIndex >= ENCOUNTERS.length) {
+        currentIndex = 0; 
+        alert("Tu as clashé tout le monde ! On recommence la tournée.");
+    }
+    
+    loadEncounter();
+}
+
+// RÉCOMPENSE EN ARGENT RÉEL EN BDD
+async function rewardPlayer(amount) {
+    // SÉCURITÉ : On récupère le vrai solde avant d'ajouter
+    const { data } = await sb.from('cdsi_users').select('wallet').eq('pseudo', myPseudo).single();
+    let realWallet = data ? Math.floor(parseFloat(data.wallet || 0)) : myWallet;
+
+    myWallet = realWallet + amount;
+    document.getElementById('myWallet').innerText = myWallet;
+
+    await sb.from('cdsi_users').update({ wallet: myWallet }).eq('pseudo', myPseudo);
+}
+
+</script>
+</body>
+</html>
