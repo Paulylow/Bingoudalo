@@ -598,10 +598,10 @@ function fmt(n) {
     if (n === undefined || n === null || isNaN(n)) return '0';
     const abs = Math.abs(n);
     // Pour les grands nombres (>= 1 milliard), afficher en notation courte
-    if (abs >= 1e18) return (n/1e18).toFixed(2).replace('.',',') + ' Qi';
-    if (abs >= 1e15) return (n/1e15).toFixed(2).replace('.',',') + ' Qa';
-    if (abs >= 1e12) return (n/1e12).toFixed(2).replace('.',',') + ' T';
-    if (abs >= 1e9)  return (n/1e9).toFixed(2).replace('.',',') + ' G';
+    if (abs >= 1e18) return (n/1e18).toFixed(5).replace('.',',') + ' Qi';
+    if (abs >= 1e15) return (n/1e15).toFixed(5).replace('.',',') + ' Qa';
+    if (abs >= 1e12) return (n/1e12).toFixed(5).replace('.',',') + ' T';
+    if (abs >= 1e9)  return (n/1e9).toFixed(5).replace('.',',') + ' G';
     // Pour les nombres normaux : séparateurs de milliers avec des points
     const parts = Math.floor(Math.abs(n)).toString().split('');
     let result = '';
@@ -612,7 +612,7 @@ function fmt(n) {
     // Ajouter les décimales si nécessaire
     const dec = n % 1;
     if (dec !== 0 && Math.abs(dec) > 0.05) {
-        result += ',' + dec.toFixed(1).slice(2);
+        result += ',' + dec.toFixed(5).slice(2);
     }
     return (n < 0 ? '-' : '') + result;
 }
@@ -1229,7 +1229,7 @@ function triggerFraude() {
     fraudeOn = true; fraude_t0 = performance.now();
     fx = 150 + Math.random()*(window.innerWidth-300);
     fy = 120 + Math.random()*(window.innerHeight-250);
-    const a = Math.random()*Math.PI*2, sp = 4+Math.random()*3;
+    const a = Math.random()*Math.PI*2, sp = 1.2+Math.random()*0.8;
     fvx = Math.cos(a)*sp; fvy = Math.sin(a)*sp;
     const fo = document.getElementById('fraude-orb');
     fo.style.left=fx+'px'; fo.style.top=fy+'px'; fo.style.display='flex';
